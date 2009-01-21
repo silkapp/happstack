@@ -1,0 +1,20 @@
+Name:                HAppS-Agents
+Version:             0.9
+Description:         Web framework
+License:             BSD3
+Copyright:           2007 HAppS LLC
+Author:              HAppS LLC
+Maintainer:          AlexJacobson@HAppS.org
+Build-Depends:       base, mtl, hslogger >= 1.0.2, HAppS-Util, HAppS-Data, HAppS-State
+hs-source-dirs:      src
+Exposed-modules:     
+--                     HAppS.Agents.MailSender
+                     HAppS.Agents.SessionKeeper
+--                     HAppS.Agents.SessionKeeperEx
+--                     HAppS.Agents.Users
+--                     HAppS.Agents.WithBlockingIO
+extensions:          CPP, OverlappingInstances, RecursiveDo,
+                     RankNTypes, FlexibleInstances,
+                     TypeSynonymInstances
+ghc-options:         -W -fno-warn-incomplete-patterns -fallow-undecidable-instances -DUNIX -fasm
+GHC-Prof-Options:    -auto-all

@@ -1,0 +1,61 @@
+
+Context:
+
+[Bump version and requirements.
+Lemmih <lemmih@vo.com>**20081109135444] 
+
+[Drop the deprecated OperationModes.hs
+Lemmih <lemmih@vo.com>**20081109133735] 
+
+[Check for junk after checkpoints.
+Lemmih <lemmih@vo.com>**20081109133617] 
+
+[Update for ghc-6.10
+Lemmih <lemmih@vo.com>**20081109133515] 
+
+[Fix bug caused by missing box.
+Lemmih <lemmih@vo.com>**20081109133456] 
+
+[Fix: "Not in scope: `me'"
+Joachim Breitner <mail@joachim-breitner.de>**20081001140947
+ This fixes a mistake introduced by re-recording my patch
+ "Pass exceptions in events as IO exceptions". Sorry for the
+ trouble. Thx to Marc Weber for pointing it out.
+] 
+
+[Pass exceptions in events as IO exceptions
+Joachim Breitner <mail@joachim-breitner.de>**20080920202517
+ Instead of passing exceptions as pure exceptions, that might or might not
+ be raised, depending on whether the return value will be used, pass them as
+ IO exceptions.
+] 
+
+[Load checkpoints if they're a previous version of a Component
+Eelco Lempsink <eml@tupil.com>**20080710205158] 
+
+[update .cabal file for windows
+Andrea Vezzosi <sanzhiyan@gmail.com>**20080415172744] 
+
+[Add event sniffing example.
+Lemmih <lemmih@vo.com>**20080317141302] 
+
+[Restore getEventStream. This fixes issue #32.
+Lemmih <lemmih@vo.com>**20080314165237] 
+
+[Multimaster support using spread.
+Lemmih <lemmih@vo.com>**20080312171958] 
+
+[Bumb version.
+Lemmih <lemmih@vo.com>**20080229152055] 
+
+[Fix haddock annotation.
+Lemmih <lemmih@vo.com>**20080229152003] 
+
+[Add synopsis.
+Lemmih <lemmih@vo.com>**20080222232552] 
+
+[Cabal wibbles.
+Lemmih <lemmih@vo.com>**20080222231801] 
+
+[TAG 0.9.2
+Lemmih <lemmih@vo.com>**20080222225455] 

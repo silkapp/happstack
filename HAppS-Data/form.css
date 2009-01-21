@@ -1,0 +1,15 @@
+
+.choices {
+    margin: 3px;
+    border: 1px solid red;
+}
+
+.choice {
+    margin: 3px;
+    border: 1px solid purple;
+}
+
+.contains {
+    margin: 3px;
+    border: 1px solid blue;
+}

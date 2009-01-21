@@ -1,0 +1,41 @@
+
+Context:
+
+[cleanup of copy
+alex@happs.org**20080201200816] 
+
+[nonce
+alex@happs.org**20080201200640] 
+
+[cleanup now locks and works propertly
+alex@happs.org**20080201200429] 
+
+[trying to fix conflicts
+alex@happs.org**20080201024443] 
+
+[now with untested retrySend
+alex@happs.org**20080201024341] 
+
+[nonce
+alex@happs.org**20080131091617] 
+
+[better docs
+alex@happs.org**20080131091423] 
+
+[cleaned up and close to ready.
+alex@happs.org**20080131044843] 
+
+[added new SMTP code
+alex@happs.org**20080131035436] 
+
+[removed old smtp
+alex@happs.org**20080131035353] 
+
+[added package-info
+alex@happs.org**20080102232610] 
+
+[now has correct module names
+alex@happs.org**20080102232422] 
+
+[created repo
+alex@happs.org**20080102232303] 

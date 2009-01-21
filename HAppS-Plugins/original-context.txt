@@ -1,0 +1,17 @@
+
+Context:
+
+[better package-info.  now need to move stuff into here
+alex@happs.org**20080104034907] 
+
+[added package-info
+alex@happs.org**20071231000045] 
+
+[Update SessionKeeper.hs
+Lemmih <lemmih@vo.com>**20070925165446] 
+
+[fix import of HAppS.StdMain.StartState
+shae@ScannedInAvian.com**20070817215749] 
+
+[TAG 0.9
+shae@ScannedInAvian.com**20070813185201] 

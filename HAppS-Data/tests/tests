@@ -1,0 +1,19 @@
+
+use config:
+    runner runner-ghc
+
+test HasT001
+
+with config:
+    runner-arg ghcExitCode "ExitFailure 1"
+do:
+    test HasT002
+    test HasT003
+
+test HList001
+test HList002
+
+test Xml001
+test Xml002
+test Xml003
+

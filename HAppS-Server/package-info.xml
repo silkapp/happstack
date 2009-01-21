@@ -1,0 +1,41 @@
+<package-info  xmlns="http://searchpath.org/package-info.rnc"
+
+ name="HAppS-HTTP" 
+ version="0.9.2"
+ stability="beta"
+ keywords="web network"
+
+> 
+
+  <synopsis>	
+	High performance dynamic web serving framework
+  </synopsis>
+
+  <description>
+	Write web services really easy using an elegant monadic framework
+	for managing control-flow within your server.  Use the built-in
+	proxy functionality so your ajax apps can easily access the data
+	they need anywhere on the internet.  Take advantage of long
+	transactions and lightweight threads for comet apps that need to
+	handle tens of thousands of concurrent users on a single box and
+	it can be as simple as:[% 
+    import HAppS.Server 
+    main = simpleHTTP nullConf [ method GET $ ok "Hello World" ] 
+%]
+
+  </description>
+
+  <copyright year="2007" owner="HAppS LLC" license="BSD3" />
+
+  <contact href="http://happs.org/HAppS-Server" roll="homepage" email="team@happs.org"/>
+
+  <exposes base="HAppS.Server" path="src" />
+
+  <changes since="0.9.0">
+	Move Messagewrap and xslt to happs-data.  move dns to happs-dns.
+	Move smtp and udp stuff to happs-network.
+	
+	Tested with AllIn and new state stuff.
+  </changes> 
+
+</package-info>

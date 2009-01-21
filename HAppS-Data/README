@@ -1,0 +1,39 @@
+HAppS-Data v0.9
+
+Keywwords: XML, Name/Value Pairs, HList, deriveAll, default, normalize, Atom
+
+* toXml and fromXml transform your haskell values to and from XML.
+Declare your own instances of class Xml to customize the Xml
+representation.
+
+* toPairs and fromPairs transform haskell values to and from
+name-value pairs (e.g. for url-encoded data).  Pairs are converted
+between xpath expressions.  Use toPairsX if you want a conversion
+without the top level constructor, fromPairs can handle that as long
+as your type has only one top level constructor.
+
+* toHTMLForms to produce an HTML forms representation of your data
+that can be consumed by fromPairs in a urldecoding context.  toHTMLForms
+uses toPairsX for shorter input field names.
+
+* $(deriveAll) to batch derive Default and as well as the standard
+derivable without all the boring per data "deriving" declarations
+
+* Default missing values by declaring your own instances of class Default or
+have default values derived autotomatically.
+
+* Normalize your values by declaring your own instance of class Normalize.
+
+* Type safe easy-to-use heterogenous collections.  t1 .&. t2 .&. t3
+are a heterogenous lists of values.  (HasT hlist t) is a class
+constraint to that the hlist contains a particular type.  (x hlist)::t
+obtains a value of type t from inside the hlist.  (u hlist v) updates
+the hlist with the value v if the hlist has type.  x and u return
+compile time errors if the type is not inside the hlist. fromPairs is
+currently broken for hlist.  
+
+* Atom haskell data type.
+
+darcs get http://happs.org/HAppS/HAppS-Data
+
+See ./examples

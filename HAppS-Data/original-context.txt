@@ -1,0 +1,29 @@
+
+Context:
+
+[Update for ghc-6.10
+Lemmih <lemmih@vo.com>**20081109135148] 
+
+[Add signature to fix build error with ghc-6.10.1
+Lemmih <lemmih@vo.com>**20081105133846] 
+
+[Bump version.
+Lemmih <lemmih@vo.com>**20081105133840] 
+
+[collectVersions: create a list of typenames of previous versions
+Eelco Lempsink <eml@tupil.com>**20080704161930] 
+
+[remove useless dependency regex-compat
+Andrea Vezzosi <sanzhiyan@gmail.com>**20080415221712] 
+
+[Fix haddock annotation.
+Lemmih <lemmih@vo.com>**20080229151501] 
+
+[Another cabal wibble.
+Lemmih <lemmih@vo.com>**20080222232351] 
+
+[Cabal wibble.
+Lemmih <lemmih@vo.com>**20080222231604] 
+
+[TAG 0.9.2
+Lemmih <lemmih@vo.com>**20080222225447] 
