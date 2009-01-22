@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances , UndecidableInstances,
-             DeriveDataTypeable, MultiParamTypeClasses, CPP, PatternSignatures  #-}
+             DeriveDataTypeable, MultiParamTypeClasses, CPP, ScopedTypeVariables  #-}
 -- | Implement XSLT transformations using xsltproc
 module HAppS.Server.XSLT
     (xsltFile, xsltString, xsltElem, xsltFPS, xsltFPSIO, XSLPath,

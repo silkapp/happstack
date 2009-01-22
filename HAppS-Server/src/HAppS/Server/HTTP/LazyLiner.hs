@@ -1,4 +1,4 @@
-{-# OPTIONS -ffi #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 module HAppS.Server.HTTP.LazyLiner
     (Lazy, newLinerHandle, headerLines, getBytes, getBytesStrict, getRest, L.toChunks
     ) where

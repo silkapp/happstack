@@ -1,4 +1,6 @@
-{-# OPTIONS_GHC  -fglasgow-exts -fallow-undecidable-instances -fallow-overlapping-instances -XPatternSignatures #-}
+{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, FlexibleInstances, TypeSynonymInstances,
+    MultiParamTypeClasses #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  HAppS.Server.SimpleHTTP
