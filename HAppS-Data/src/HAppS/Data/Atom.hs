@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -fth -fglasgow-exts -fallow-undecidable-instances -cpp #-}
+{-# LANGUAGE CPP, TemplateHaskell, UndecidableInstances, DeriveDataTypeable #-}
 module HAppS.Data.Atom 
     (
      Entry(..)

@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts -fallow-undecidable-instances -fallow-overlapping-instances #-}
+{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs,
+    GeneralizedNewtypeDeriving, DeriveDataTypeable#-}
 module HAppS.Data.Serialize
     ( Serialize(..), Version(..), Migrate(..), Mode(..), Contained, contain, extension,
       safeGet, safePut, serialize, deserialize, collectVersions,
