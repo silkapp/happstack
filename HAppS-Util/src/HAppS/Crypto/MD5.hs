@@ -1,4 +1,5 @@
-{-# OPTIONS_GHC -fbang-patterns -funbox-strict-fields -fvia-c -optc-funroll-all-loops -optc-O3 #-}
+{-# LANGUAGE BangPatterns #-}
+{-# OPTIONS_GHC -funbox-strict-fields -fvia-c -optc-funroll-all-loops -optc-O3 #-}
 --
 -- Module      : HAppS.Crypto.MD5
 -- License     : BSD3
@@ -91,7 +92,7 @@ md5Update ctx bsLazy =
 block :: L.ByteString -> [ByteString]
 block bs = case L.toChunks bs of
              []		-> []
-             otherwise 	-> (B.concat . L.toChunks) top : block rest
+             _ 	        -> (B.concat . L.toChunks) top : block rest
     where
       (top,rest) = L.splitAt blockSizeBytesW64 bs
 {-# INLINE block #-}

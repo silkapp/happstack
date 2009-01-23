@@ -41,7 +41,6 @@ Library
                        RecursiveDo,
                        RankNTypes, FlexibleInstances,
                        TypeSynonymInstances
-  cpp-options:         -DUNIX
   ghc-options:         -W -fno-warn-incomplete-patterns
   GHC-Prof-Options:    -auto-all
   if flag(base4)

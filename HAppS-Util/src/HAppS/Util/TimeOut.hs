@@ -47,7 +47,6 @@ module HAppS.Util.TimeOut
 
 import Control.Concurrent
 import Control.Exception as E
-import Data.Dynamic(toDyn)
 import Data.Typeable(Typeable)
 import Data.IORef
 import Data.Maybe

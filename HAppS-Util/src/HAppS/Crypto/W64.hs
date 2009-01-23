@@ -1,4 +1,4 @@
-{-# OPTIONS -cpp -fglasgow-exts -fallow-undecidable-instances #-}
+{-# LANGUAGE CPP, UndecidableInstances #-}
 module HAppS.Crypto.W64 where
 
 import HAppS.Crypto.DES

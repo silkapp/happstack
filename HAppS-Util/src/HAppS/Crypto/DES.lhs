@@ -1,4 +1,5 @@
-> {-# OPTIONS -fglasgow-exts -fallow-undecidable-instances -fno-warn-missing-methods #-}
+> {-# LANGUAGE FlexibleInstances  #-}
+> {-# OPTIONS -fno-warn-missing-methods #-}
 
 
 {--
@@ -121,7 +122,7 @@ added by alex
 
 <ADDED BY ALEX>
 
-> instance Num [Bool]
+> instance Num [Bool] where {}
 
 </ADDED>
 
