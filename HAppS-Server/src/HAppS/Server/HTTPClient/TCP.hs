@@ -76,7 +76,7 @@ openTCPPort uri port =
     do { s <- socket AF_INET Stream 6
        ; setSocketOption s KeepAlive 1
        ; host <- Exception.catch (inet_addr uri)    -- handles ascii IP numbers
-                       (\(_::EXCEPTION_TYPE) -> getHostByName uri >>= \host -> -- *shrug* this will catch *any* exception FIXME
+                       (\(_::EXCEPTION_TYPE) -> getHostByName uri >>= \host -> -- _shrug_ this will catch _any_ exception FIXME
                             case hostAddresses host of
                                 [] -> return (error "no addresses in host entry")
                                 (h:_) -> return h)
