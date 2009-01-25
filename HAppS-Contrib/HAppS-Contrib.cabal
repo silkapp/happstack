@@ -1,5 +1,5 @@
-Name:                HAppS-Contrib
-Version:             0.9.3.1
+Name:                happstack-contrib
+Version:             0.1
 Synopsis:            Web related tools and services.
 Description:         Collection of standalone applications
 License:             BSD3
@@ -21,10 +21,10 @@ Library
                        HAppS.Store.HelpReqs
 
   Build-Depends:       base, HaXml >= 1.13 && < 1.14, parsec<3, mtl, network,
-                       hslogger >= 1.0.2, HAppS-Data>=0.9.2, HAppS-Util>=0.9.2,
-                       HAppS-State>=0.9.2, HAppS-IxSet>=0.9.2, HTTP, template-haskell, xhtml, html,
+                       hslogger >= 1.0.2, happstack-data, happstack-util,
+                       happstack-state, happstack-ixset, HTTP, template-haskell, xhtml, html,
                        bytestring, random, containers, old-time, old-locale, directory, process,
-                       HAppS-Server>=0.9.2
+                       happstack-server
   hs-source-dirs:      src
 
   if !os(windows)

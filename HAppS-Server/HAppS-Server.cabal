@@ -1,11 +1,11 @@
-Name:                HAppS-Server
-Version:             0.9.3.1
+Name:                happstack-server
+Version:             0.1
 Synopsis:            Web related tools and services.
 Description:         Web framework
 License:             BSD3
 License-file:        COPYING
-Author:              HAppS LLC
-Maintainer:          AlexJacobson@HAppS.org
+Author:              Happstack team
+Maintainer:          happs@googlegroups.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-Version:       >= 1.2
@@ -45,8 +45,8 @@ Library
                        HAppS.Server.SURI.ParseURI
 
   Build-Depends:       base, HaXml >= 1.13 && < 1.14, parsec<3, mtl, network,
-                       hslogger >= 1.0.2, HAppS-Data>=0.9.2, HAppS-Util>=0.9.2,
-                       HAppS-State>=0.9.2, HAppS-IxSet>=0.9.2, HTTP, template-haskell, xhtml, html,
+                       hslogger >= 1.0.2, happstack-data, happstack-util,
+                       happstack-state, happstack-ixset, HTTP, template-haskell, xhtml, html,
                        bytestring, random, containers, old-time, old-locale, directory, process
   hs-source-dirs:      src
 

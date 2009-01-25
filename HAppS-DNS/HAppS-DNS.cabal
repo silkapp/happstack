@@ -1,5 +1,5 @@
-Name:                HAppS-DNS
-Version:             0.9.3.1
+Name:                happstack-dns
+Version:             0.1
 Synopsis:            Web related tools and services.
 Description:         Web framework
 License:             BSD3
@@ -19,7 +19,7 @@ Library
                        HAppS.Network.DNS
 
   Build-Depends:       base, network, bytestring, containers,
-                       old-time,hslogger,HAppS-Util,random,
+                       old-time,hslogger,happstack-util,random,
                        mtl
   hs-source-dirs:      src
 

@@ -1,12 +1,11 @@
-Name:                HAppS-State
-Version:             0.9.3
+Name:                happstack-state
+Version:             0.1
 Synopsis:            Event-based distributed state.
 Description:         Web framework
 License:             BSD3
 License-file:        COPYING
-Copyright:           2007-2008 HAppS LLC
-Author:              HAppS LLC
-Maintainer:          AlexJacobson@HAppS.org
+Author:              Happstack team
+Maintainer:          happs@googlegroups.com
 Category:            Web, Distributed Computing
 Cabal-Version:       >= 1.2
 Build-Type:          Simple
@@ -36,8 +35,8 @@ Library
                        HAppS.State.Util
                        HAppS.State.TxControl
   Build-Depends:       HaXml >= 1.13 && < 1.14, mtl, network,
-                       stm, template-haskell, hslogger >= 1.0.2, HAppS-Util>=0.9.3,
-                       HAppS-Data>=0.9.3, bytestring, containers, random, old-time,
+                       stm, template-haskell, hslogger >= 1.0.2, happstack-util,
+                       happstack-data, bytestring, containers, random, old-time,
                        old-locale, directory, binary, filepath, hspread >=0.3
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb

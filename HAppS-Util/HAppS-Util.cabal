@@ -1,13 +1,12 @@
 Cabal-version:       >=1.2
-Name:                HAppS-Util
-Version:             0.9.3
+Name:                happstack-util
+Version:             0.1
 Synopsis:            Web framework
 License:             BSD3
 License-file:        COPYING
-Copyright:           2007 HAppS LLC
-Author:              HAppS LLC
+Author:              Happstack team
 Category:            Web, Distributed Computing
-Maintainer:          AlexJacobson@HAppS.org
+Maintainer:          happs@googlegroups.com
 Build-type:          Simple
 
 Flag base4

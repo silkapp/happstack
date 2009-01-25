@@ -1,10 +1,9 @@
-Name:                HAppS-IxSet
-Version:             0.9.3
+Name:                happstack-ixset
+Version:             0.1
 Description:         Web framework
 License:             BSD3
-Copyright:           2007 HAppS LLC
-Author:              Alex Jacobson, Einar Karttunen
-Maintainer:          AlexJacobson@HAppS.org
+Author:              Happstack team
+Maintainer:          happs@googlegroups.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-version:       >=1.2
@@ -16,8 +15,8 @@ Library
     Build-Depends:     base >=4 && < 5, syb
   else
     Build-Depends:     base < 4
-  Build-Depends:       base, mtl, hslogger >= 1.0.2, HAppS-Util >=0.9.3,
-                       HAppS-State >=0.9.3, HAppS-Data >=0.9.3, template-haskell,
+  Build-Depends:       base, mtl, hslogger >= 1.0.2, happstack-util,
+                       happstack-state, happstack-data, template-haskell,
                        syb-with-class, containers
   hs-source-dirs:      src
   Exposed-modules:     

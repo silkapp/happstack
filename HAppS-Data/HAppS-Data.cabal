@@ -1,10 +1,9 @@
-Name:               HAppS-Data
-Version:            0.9.3
+Name:               happstack-data
+Version:            0.1
 License:            BSD3
 License-File:       COPYING
-Copyright:          2007 HAppS LLC
-Author:             HAppS LLC
-Maintainer:         AlexJacobson@HAppS.org
+Author:             Happstack team
+Maintainer:         happs@googlegroups.com
 Stability:          experimental
 Category:           Web, Distributed Computing
 Synopsis:           HAppS data manipulation libraries
@@ -33,7 +32,7 @@ Library
     Build-Depends:    base < 4
 
   Build-Depends:      mtl, template-haskell, syb-with-class >= 0.4, HaXml >= 1.13 && < 1.14,
-                      HAppS-Util>=0.9.3, bytestring, pretty, binary, containers
+                      happstack-util, bytestring, pretty, binary, containers
   hs-source-dirs:     src
   Exposed-modules:
     HAppS.Data
