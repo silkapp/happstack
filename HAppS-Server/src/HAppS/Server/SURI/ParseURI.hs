@@ -26,16 +26,24 @@ parseURIRef fs =
              '#' -> pfragment rrest $ URI "" Nothing ui ""
              _   -> error "parseURIRef: Can't happen"
 
+pabsuri :: ByteString
+           -> (Maybe URIAuth -> String -> String -> String -> b)
+           -> b
 pabsuri fs cont =
   if length fs >= 2 && unsafeHead fs == '/' && unsafeIndex fs 1 == '/'
      then pauthority (drop 2 fs) cont
      else puriref fs $ cont Nothing
+pauthority :: ByteString
+              -> (Maybe URIAuth -> String -> String -> String -> b)
+              -> b
 pauthority fs cont =
   let (auth,rest) = breakChar '/' fs
   in puriref rest $! cont (Just $! pauthinner auth)
+pauthinner :: ByteString -> URIAuth
 pauthinner fs =
   case breakChar '@' fs of
     (a,b) -> pauthport b  $ URIAuth (unpack a)
+pauthport :: ByteString -> (String -> String -> t) -> t
 pauthport fs cont =
   let spl idx = splitAt (idx+1) fs
   in case unsafeHead fs of
@@ -46,21 +54,27 @@ pauthport fs cont =
                        x                                -> error ("Parsing uri failed (pauthport):"++show x)
       _           -> case breakCharEnd ':' fs of
                        (a,b) -> cont (unpack a) (unpack b)
+puriref :: ByteString -> (String -> String -> String -> b) -> b
 puriref fs cont =
   let (u,r) = break (\c -> '#' == c || '?' == c) fs
   in case unsafeHead r of
       _ | null r -> cont (unpack u) "" ""
       '?'        -> pquery    (unsafeTail r) $ cont (unpack u)
       '#'        -> pfragment (unsafeTail r) $ cont (unpack u) ""
+pquery :: ByteString -> (String -> String -> t) -> t
 pquery fs cont =
   case breakChar '#' fs of
     (a,b) -> cont ('?':unpack a) (unpack b)
+pfragment :: ByteString -> (String -> b) -> b
 pfragment fs cont =
   cont $ unpack fs
 
 
 
+unsafeTail :: ByteString -> ByteString
 unsafeTail = BB.unsafeTail
+unsafeHead :: ByteString -> Char
 unsafeHead = BB.w2c . BB.unsafeHead
+unsafeIndex :: ByteString -> Int -> Char
 unsafeIndex s = BB.w2c . BB.unsafeIndex s
 

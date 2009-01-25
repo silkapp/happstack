@@ -23,11 +23,9 @@ import Data.ByteString.Char8 (ByteString,pack)
 import qualified Data.ByteString.Lazy.Char8 as L
 import HAppS.Server.SURI
 import Data.Char (toLower)
-import Network.URI
 
 import HAppS.Server.HTTP.Multipart ( ContentType(..) )
 import HAppS.Server.Cookie
-import HAppS.Util.Common (Seconds)
 import Data.List
 import Text.Show.Functions ()
 
@@ -38,7 +36,9 @@ import Text.Show.Functions ()
 data Version = Version Int Int
              deriving(Show,Read,Eq)
 
+isHTTP1_1 :: Request -> Bool
 isHTTP1_1 rq = case rqVersion rq of Version 1 1 -> True; _ -> False
+isHTTP1_0 :: Request -> Bool
 isHTTP1_0 rq = case rqVersion rq of Version 1 0 -> True; _ -> False
 
 -- | Should the connection be used for further messages after this.
@@ -52,6 +52,7 @@ continueHTTP rq res = (isHTTP1_0 rq && checkHeaderBS connectionC keepaliveC rq) 
 data Conf = Conf { port      :: Int -- ^ Port for the server to listen on.
                  , validator  :: Maybe (Response -> IO Response)
                  } -- deriving(Show)
+nullConf :: Conf
 nullConf = Conf { port      = 8000
                 , validator  = Nothing
                 }
@@ -72,6 +73,7 @@ type Headers = M.Map ByteString HeaderPair -- lowercased name -> (realname, valu
 data RsFlags = RsFlags 
     { rsfContentLength :: Bool -- ^ whether a content-length header will be added to the result.
     } deriving(Show,Read,Typeable)
+nullRsFlags :: RsFlags
 nullRsFlags = RsFlags { rsfContentLength = True }
 -- | Don't display a Content-Lenght field for the 'Result'.
 noContentLength :: Response -> Response
@@ -107,6 +109,7 @@ data Request = Request { rqMethod  :: Method,
 
 
 --rqURL=rq = '/':(concat $ intersperse "/" $ rqPaths rq) ++ rqQuery rq
+rqURL :: Request -> String
 rqURL rq = '/':intercalate "/" (rqPaths rq) ++ (rqQuery rq)
 {-
 instance Serialize Request where
@@ -136,6 +139,7 @@ instance HasHeaders Headers where updateHeaders f hs = f hs
 newtype RqBody = Body L.ByteString deriving (Read,Show,Typeable)
 
 
+setRsCode :: (Monad m) => Int -> Response -> m Response
 setRsCode code rs = return rs {rsCode = code}
 
 mkHeaders :: [(String,String)] -> Headers
@@ -163,6 +167,7 @@ getHeaderUnsafe key var = listToMaybe =<< fmap hValue (getHeaderUnsafe' key var)
 getHeaderUnsafe' :: HasHeaders r => ByteString -> r -> Maybe HeaderPair
 getHeaderUnsafe' key r = M.lookup key (headers r)
 
+getContentType :: (HasHeaders r) => r -> Maybe ByteString
 getContentType x = getHeader "content-type" x
 
 
@@ -241,9 +246,14 @@ redirect c s resp = setHeaderBS locationC (pack (render (toSURI s))) resp{rsCode
 
 
 -- constants here
+locationC :: ByteString
 locationC   = P.pack "Location"
+commaSpaceC :: ByteString
 commaSpaceC = P.pack ", "
+closeC :: ByteString
 closeC      = P.pack "close"
+connectionC :: ByteString
 connectionC = P.pack "Connection"
+keepaliveC :: ByteString
 keepaliveC  = P.pack "Keep-Alive"
 

@@ -6,12 +6,14 @@ data JSON = JBool Bool | JString String | JInt Int | JFloat Float |
             JObj [(String,JSON)] | JList [JSON] | JNull
 
 
+jInt :: Integral a => a -> JSON
 jInt = JInt . fromIntegral
 
 class ToJSON a where
     toJSON::a->JSON
 instance ToJSON JSON where toJSON=id
 
+jsonToString :: JSON -> String
 jsonToString (JBool bool) = map toLower $ show bool
 jsonToString (JString string) = show string
 jsonToString (JInt int) = show int

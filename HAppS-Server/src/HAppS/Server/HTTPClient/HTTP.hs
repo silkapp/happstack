@@ -181,7 +181,9 @@ split delim list = case delim `elemIndex` list of
     
 
 
+crlf :: String
 crlf = "\r\n"
+sp :: String
 sp   = " "
 
 -----------------------------------------------------------------
@@ -412,7 +414,7 @@ insertHeaderIfMissing name value x = setHeaders x (newHeaders $ getHeaders x)
 -- | Removes old headers with duplicate name.
 replaceHeader name value x = setHeaders x newHeaders
     where
-        newHeaders = Header name value : [ x | x@(Header n v) <- getHeaders x, name /= n ]
+        newHeaders = Header name value : [ x | x@(Header n _) <- getHeaders x, name /= n ]
           
 
 -- | Inserts multiple headers.
@@ -465,6 +467,7 @@ httpVersion = "HTTP/1.1"
 data RequestMethod = HEAD | PUT | GET | POST | OPTIONS | TRACE | DELETE
     deriving(Show,Eq)
 
+rqMethodMap :: [(String, RequestMethod)]
 rqMethodMap = [("HEAD",    HEAD),
 	       ("PUT",     PUT),
 	       ("GET",     GET),
@@ -592,16 +595,16 @@ parseHeaders = catRslts [] . map (parseHeader . clean) . joinExtended ""
 parseRequestHead :: [String] -> Result RequestData
 parseRequestHead [] = Left ErrorClosed
 parseRequestHead (com:hdrs) =
-    requestCommand com `bindE` \(version,rqm,uri) ->
+    requestCommand com `bindE` \(_version,rqm,uri) ->
     parseHeaders hdrs `bindE` \hdrs' ->
     Right (rqm,uri,hdrs')
     where
         requestCommand line
 	    =  case words line of
-                yes@(rqm:uri:version) -> case (parseURIReference uri, lookup rqm rqMethodMap) of
+                _yes@(rqm:uri:version) -> case (parseURIReference uri, lookup rqm rqMethodMap) of
 					  (Just u, Just r) -> Right (version,r,u)
 					  _                -> Left (ErrorParse $ "Request command line parse failure: " ++ line)
-		no -> if null line
+		_no -> if null line
 			       then Left ErrorClosed
 			       else Left (ErrorParse $ "Request command line parse failure: " ++ line)  
 
@@ -609,15 +612,15 @@ parseRequestHead (com:hdrs) =
 parseResponseHead :: [String] -> Result ResponseData
 parseResponseHead [] = Left ErrorClosed
 parseResponseHead (sts:hdrs) = 
-    responseStatus sts `bindE` \(version,code,reason) ->
+    responseStatus sts `bindE` \(_version,code,reason) ->
     parseHeaders hdrs `bindE` \hdrs' ->
     Right (code,reason,hdrs')
     where
 
         responseStatus line
             =  case words line of
-                yes@(version:code:reason) -> Right (version,match code,concatMap (++" ") reason)
-                no -> if null line 
+                _yes@(version:code:reason) -> Right (version,match code,concatMap (++" ") reason)
+                _no -> if null line 
                     then Left ErrorClosed  -- an assumption
                     else Left (ErrorParse $ "Response status line parse failure: " ++ line)
 
@@ -763,7 +766,7 @@ sendHTTPPipelined conn rqs =
         sequenceResponses = worker []
             where worker acc [] = (reverse acc, Nothing)
                   worker acc (Right x:xs) = worker (x:acc) xs
-                  worker acc (Left x:xs) = (reverse acc,Just x)
+                  worker acc (Left x:_) = (reverse acc,Just x)
 
         -- reads and parses headers
         getResponseHead :: IO (Result ResponseData)
@@ -949,7 +952,7 @@ chunkedTransferC conn n
 --   to do here, at that time we might want to change
 --   the name.
 uglyDeathTransfer :: Stream s => s -> IO (Result ([Header],String))
-uglyDeathTransfer conn
+uglyDeathTransfer _
     = return $ Left $ ErrorParse "Unknown Transfer-Encoding"
 
 -- | Remove leading crlfs then call readTillEmpty2 (not required by RFC)

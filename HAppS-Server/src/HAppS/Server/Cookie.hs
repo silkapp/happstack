@@ -10,14 +10,12 @@ module HAppS.Server.Cookie
 --     getCookies, getCookie, getCookieValue
     ) where
 -}
-import Control.Monad(when, zipWithM_)
+import Control.Monad (when, zipWithM_)
 import qualified Data.ByteString.Char8 as C
 import Data.Char
 import Data.List
 import Data.Generics
 import HAppS.Util.Common (Seconds)
---import HAppS.Server.HTTP.Types
---import HAppS.State
 import Text.ParserCombinators.ReadP
 
 data Cookie = Cookie
@@ -104,31 +102,45 @@ delSesCookie' key = setCookieEx' 0 (Cookie "1" "/" "" key "")
    word            =       token | quoted-string
 -}
 
+gmany :: ReadP a -> ReadP [a]
 gmany  p = gmany1 p <++ return []
+gmany1 :: ReadP a -> ReadP [a]
 gmany1 p = do x  <- p
               xs <- gmany1 p <++ return []
               return (x:xs)
+gskipMany1 :: ReadP a -> ReadP ()
 gskipMany1 p = p >> (gskipMany p <++ return ())
+gskipMany :: ReadP a -> ReadP ()
 gskipMany  p = gskipMany1 p <++ return ()
 
+fctl :: Char -> Bool
 fctl         = \ch -> ch == chr 127 || ch <= chr 31
+fseparator :: Char -> Bool
 fseparator   = \ch -> ch `elem` "()<>@,;:\\\"[]?={} \t" -- ignore '/' here
+fchar :: Char -> Bool
 fchar        = \ch -> ch <= chr 127
+ftoken :: Char -> Bool
 ftoken       = \ch -> fchar ch && not (fctl ch || fseparator ch)
+lws :: ReadP ()
 lws          = ((char '\r' >> char '\n') <++ return ' ') >> gskipMany (satisfy (\ch -> ch == ' ' || ch == '\t'))
+token :: ReadP [Char]
 token        = gmany $ satisfy ftoken
+quotedString :: ReadP [Char]
 quotedString = do char '"'  -- " stupid emacs syntax highlighting
                   x <- many ((char '\\' >> satisfy fchar) <++ (satisfy $ \ch -> ch /= '"' && fchar ch && (ch == ' ' || ch == '\t' || not (fctl ch))))
                   char '"' -- " stupid emacs syntax highlighting
                   return x
+word :: ReadP [Char]
 word = quotedString <++ token
 
+avPair :: ReadP (String, [Char])
 avPair = do
   k <- token
   lws >> char '=' >> lws
   v <- word
   return (low k,v)
 
+sep :: ReadP ()
 sep = lws >> satisfy (\ch -> ch == ',' || ch == ';') >> lws
 
 cookies :: ReadP [Cookie]

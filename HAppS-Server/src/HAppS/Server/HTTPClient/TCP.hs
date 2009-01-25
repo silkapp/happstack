@@ -90,7 +90,7 @@ instance Stream Connection where
     readBlock ref n = 
         readIORef (getRef ref) >>= \conn -> case conn of
             ConnClosed -> return (Left ErrorClosed)
-            (MkConn sk addr bfr hst)
+            (MkConn sk _addr bfr _hst)
                 | length bfr >= n ->
                     do { modifyIORef (getRef ref) (\c -> c { connBffr=(drop n bfr) })
                        ; return (Right $ take n bfr)
@@ -108,7 +108,7 @@ instance Stream Connection where
     readLine ref =
         readIORef (getRef ref) >>= \conn -> case conn of
              ConnClosed -> return (Left ErrorClosed)
-             (MkConn sk addr bfr _)
+             (MkConn sk _addr bfr _)
                  | null bfr ->  {- read in buffer -}
                       do { str <- myrecv sk 1000  -- DON'T use "readBlock sk 1000" !!
                                                 -- ... since that call will loop.
@@ -164,7 +164,7 @@ instance Stream Connection where
         where
             -- Be kind to peer & close gracefully.
             closeConn (ConnClosed) = return ()
-            closeConn (MkConn sk addr [] _) =
+            closeConn (MkConn sk _addr [] _) =
                 do { shutdown sk ShutdownSend
                    ; suck ref
                    ; shutdown sk ShutdownReceive

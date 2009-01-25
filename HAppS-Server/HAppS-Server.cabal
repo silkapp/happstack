@@ -65,5 +65,5 @@ Library
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
   Extensions:          CPP, UndecidableInstances
-  ghc-options:         -W -fno-warn-incomplete-patterns
+  ghc-options:         -Wall -fno-warn-name-shadowing
   GHC-Prof-Options:    -auto-all

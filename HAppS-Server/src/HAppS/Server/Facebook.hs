@@ -1,6 +1,6 @@
-{-# OPTIONS -fcontext-stack=25 -fglasgow-exts -fth -fallow-overlapping-instances -fallow-undecidable-instances -cpp #-}
--- LANGUAGE TemplateHaskell, FlexibleInstances,
---             OverlappingInstances, UndecidableInstances 
+{-# OPTIONS -fcontext-stack=25 #-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, CPP, ImplicitParams, RecursiveDo, DeriveDataTypeable,
+             ScopedTypeVariables, MultiParamTypeClasses, FunctionalDependencies, OverlappingInstances, UndecidableInstances #-}
 module HAppS.Server.Facebook where
 import Control.Monad.Reader
 
@@ -10,12 +10,11 @@ import Data.Maybe
 
 import HAppS.Data
 import HAppS.Data.Atom (Email(..))
-import HAppS.Util.Common
 import HAppS.Server.SURI
+import Network.URI (URI)
 import HAppS.Server.SimpleHTTP hiding (escape,Method)
 
 import HAppS.Crypto.MD5 ( md5, stringMD5)
-import Text.Printf
 import System.Directory
 
 import Data.Generics
@@ -166,6 +165,7 @@ $(deriveSerializeFor [ ''Uid
 
 #endif
 
+(.$) :: a -> (a -> b) -> b
 a .$ b = b a
 fb'::(?fb::Int)=>Int
 fb' = ?fb
@@ -177,6 +177,7 @@ friends_getAppUsers =
     Friends_getAppUsers_response uids <- fb (?fbSession::FBSession) ()--(?fbInfo::FBInfo) ()
     return $ AppUsers $ gFind uids
 
+users_getInfo :: (?fbSession::FBSession, Data a) => a -> [String] -> IO [User]
 users_getInfo uids fields = 
     do
     Users_getInfo_response users <- fb (?fbSession::FBSession) $ (Uids $ gFind uids) .&. (Fields fields)
@@ -188,6 +189,14 @@ getNetworks = return . gFind =<< users_getInfo [uid] ["affiliations"]
 
 
 --now we want to shift this so that the stuff is rendered in the present layer
+notifications_send :: (ToMessage b,
+                       Xml b,
+                       ToMessage c,
+                       Xml c,
+                       ?fbSession::FBSession,
+                       Data a,
+                       Show a) =>
+                      a -> b -> c -> IO String
 notifications_send uids notifObj emailObj =
     do
     print "UIDS="
@@ -218,6 +227,16 @@ notifications_send uids notifObj emailObj =
 
 --data Nofitications_send_response = Nofitications_send_response confirm 
 
+profile_setFBML :: (?fbSession::FBSession,
+                    Xml a,
+                    Xml b,
+                    Show a,
+                    Show b,
+                    Data a,
+                    Data b,
+                    Eq a,
+                    Eq b) =>
+                   a -> b -> IO Bool
 profile_setFBML uid markup =
     do
     --can markup be passed as straight string of fbml?
@@ -225,19 +244,29 @@ profile_setFBML uid markup =
     Profile_setFBML_response x <- fb (?fbSession::FBSession) $ uid .&. markup
     return x
 
+profile_getFBML :: (?fbSession::FBSession,
+                    Xml a,
+                    Show a,
+                    Data a,
+                    Eq a) =>
+                   a -> IO String
 profile_getFBML uid  =
     do
     Profile_getFBML_response markup <- fb (?fbSession::FBSession) $ uid
     --does this need decoding?
     return markup
 
+friends_areFriends :: (?fbInfo::FBInfo, Data a, Data b) =>
+                      a -> b -> IO [Friend_info]
 friends_areFriends uids1 uids2 =
     do
     Friends_areFriends_response friendInfos <- 
         fb (?fbInfo::FBInfo) $ (Uids1 $ gFind uids1) .&. (Uids2 $ gFind uids2)
     return friendInfos
                                                
+getMbUid :: (?fbSession::FBSession, Monad m) => () -> m (Maybe Uid)
 getMbUid () = return mbUid
+getUid :: (?fbSession::FBSession, Monad m) => () -> m Uid
 getUid () = getMbUid () >>= return . fromJust
 mbUid::(?fbSession::FBSession) => (Maybe Uid)
 mbUid = fmap toUid $ gFind ?fbSession
@@ -252,6 +281,7 @@ numFriends = let (Friends fs) = friends in length fs
 --time::(?fbSession::FBSession) => Integer
 --time = let (Fb_sig_time t) = gFind' ?fbSession in t
 
+getAppURLs :: IO (BaseURL, InstallURL)
 getAppURLs = 
     do
     config <- getConfig
@@ -270,6 +300,7 @@ getInstallURL (next) =
     return $ InstallURL $ "http://www.facebook.com/install.php?api_key="++key++
            if null next then "" else "&next="++escape next
 
+getBaseURL :: IO BaseURL
 getBaseURL = do
              config <- getConfig
              let (Canvas_id cid) = gFind' config
@@ -294,6 +325,7 @@ isAppAdded = maybe (error "no fb_sig_added") (const appAdded) mbAdded
     Fb_sig_added appAdded = fromJust mbAdded
 --fakeEmail (Uid uid) = show uid ++ "@facebook.com"
 
+getConfig :: IO Fb_config
 getConfig = --yes reading a file is bad but roundtripping to fb sucks too
     do
     let path = "config/facebook.xml"
@@ -312,6 +344,16 @@ getIsAdmin::(?fbSession::FBSession) => IO Bool
 getIsAdmin = getAdmins >>= return . elem uid
          
 
+fb :: (Show a,
+       FromString a,
+       Xml b,
+       Show b,
+       Data b,
+       Eq b,
+       Data a,
+       Default a,
+       Data t) =>
+      t -> b -> IO a
 fb fbSession a = 
     mdo
     fb_config <- getConfig
@@ -334,13 +376,26 @@ fb fbSession a =
     print "resp returned"
     return resp
 
+fbserver :: Network.URI.URI
 fbserver=suri $ fromJust $ parse "http://api.facebook.com/restserver.php"
 
 
+toUid :: Fb_sig_user -> Uid
 toUid (Fb_sig_user uid) = Uid uid
+toFriends :: Fb_sig_friends -> Friends
 toFriends (Fb_sig_friends friends) = Friends friends
+toSesKey :: Fb_sig_session_key -> Session_key
 toSesKey (Fb_sig_session_key s) = Session_key s
 
+makeReq :: (Xml b,
+            Show b,
+            Data b,
+            Eq b,
+            Show a,
+            Data t,
+            Default t,
+            Data a1) =>
+           a -> a1 -> b -> t -> [([Char], [Char])]
 makeReq t fbInfo a resp= req
     where
      [example,_] = [defaultValue,resp]
@@ -366,13 +421,20 @@ hex::[Integer]->String
 hex = concatMap (printf "%02x") 
 -}
 
+
 spost u q = Browser.browse $ Browser.request $ Browser.formToRequest $ 
             Browser.Form HTTP.POST u q
 
 
-consIf False x list = list
+consIf :: Bool -> a -> [a] -> [a]
+consIf False _ list = list
 consIf _ x list = x:list
 
+fbApp :: (MonadIO m, ToMessage r) =>
+         XSLTCmd
+         -> XSLPath
+         -> (FBSession -> [ServerPartT m r])
+         -> ServerPartT m Response
 fbApp xslproc stylesheet app -- api_key secret app  
     = 
     xslt xslproc stylesheet [ withData fun]
@@ -381,6 +443,8 @@ fbApp xslproc stylesheet app -- api_key secret app
         --where
         --fbInfo = (api_key,secret,fbSes)::FBInfo 
 
+onlyInstalled :: (?fbSession::FBSession, MonadIO m) =>
+                 [ServerPartT m [Char]] -> [ServerPartT m [Char]]
 onlyInstalled app = 
     if isAppAdded then app else 
            [uriRest $ \uri ->
@@ -392,6 +456,7 @@ postAdd :: Monad m => [ServerPartT m String]
 postAdd = [uriRest $ \uri -> anyRequest $ fbSeeOther uri]
 --     = 
 
+fbSeeOther :: (Monad m) => [Char] -> WebT m [Char]
 fbSeeOther s = ok $ "<fb:redirect url=\""++s++"\"/>"
 
 --ssh_forward host port = unsafePerformIO $ print "hello"
@@ -413,7 +478,8 @@ fbapp fbconf handle =
 class HasArgs a b | a -> b 
 instance (HasT args Uid,HasT args Title) => HasArgs Friends_get_response args
 f::(Default r,HasArgs r args) => args -> r
-f a = defaultValue
+f _ = defaultValue
+tf :: [Uid]
 Friends_get_response tf = f (Uid 123 .&. Title "abc" .&. Secret "abc")
 
 {--

@@ -12,7 +12,6 @@ import Control.Monad (liftM,foldM)
 import Data.Typeable
 import Foreign
 import Foreign.Marshal
-import HAppS.State
 import HAppS.Util.Common ( readM )
 import Network.Socket hiding (listen)
 import System.IO ( IOMode(WriteMode),hClose )

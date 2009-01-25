@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternGuards #-}
 module HAppS.Server.S3
     ( newS3        -- :: AccessKey -> SecretKey -> URI -> IO S3
     , closeS3      -- :: S3 -> IO ()
@@ -19,7 +20,7 @@ import HAppS.Server.HTTPClient.HTTP
 import qualified HAppS.Server.HTTPClient.Stream as Stream
 
 import Network.URI
-import Control.Concurrent               ( newMVar, modifyMVar, swapMVar, forkIO
+import Control.Concurrent               ( newMVar, modifyMVar, swapMVar
                                         , modifyMVar_, MVar )
 import Data.Maybe                       ( fromJust, fromMaybe )
 import Data.List                        ( intersperse )
@@ -99,7 +100,7 @@ getConnection s3
     where auth = fromJust (parseURIAuthority (authority (s3URI s3)))
 
 createRequest :: S3 -> RequestMethod -> String -> String -> Request
-createRequest s3 method path body
+createRequest _s3 method path body
     = Request uri method [] body
     where uri = localhost { uriPath = '/':escapeURIString isAllowedInURI path }
 
@@ -267,6 +268,8 @@ listObjects s3 bucket
 
 
 
+amazonURI :: URI
 amazonURI = fromJust $ parseURI "http://s3.amazonaws.com/"
+localhost :: URI
 localhost = fromJust $ parseURI "http://localhost/"
 

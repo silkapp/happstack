@@ -6,20 +6,16 @@ module HAppS.Server.HTTP.Handler(request-- version,required
 --    ,fsepC,crlfC,pversion
 import Control.Exception as E
 import Control.Monad
-import Data.List(foldl',unfoldr,elemIndex)
+import Data.List(elemIndex, unfoldr, foldl')
 import Data.Char(toLower)
-import Data.Maybe ( fromMaybe, fromJust )
+import Data.Maybe ( fromMaybe, fromJust, isJust, isNothing )
 import qualified Data.List as List
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.ByteString.Unsafe as U
 import qualified Data.Map as M
 import System.IO
-import System.Locale(defaultTimeLocale)
-import System.Time
 import Numeric
-import Data.Maybe
 import Data.Int (Int64)
 import HAppS.Server.Cookie
 import HAppS.Server.HTTP.Clock
@@ -27,7 +23,6 @@ import HAppS.Server.HTTP.LazyLiner
 import HAppS.Server.HTTP.Types
 import HAppS.Server.HTTP.Multipart
 import HAppS.Server.HTTP.RFC822Headers
---import HAppS.Server.HTTP.RFC822HeadersBinary
 import HAppS.Server.MessageWrap
 import HAppS.Server.SURI(SURI(..),path,query)
 import HAppS.Server.SURI.ParseURI
@@ -36,7 +31,7 @@ import HAppS.Util.TimeOut
 
 import System.Log.Logger hiding (debugM)
 
-pack = L.pack
+logMH :: String -> IO ()
 logMH = logM "HAppS.Server.HTTP.Handler" DEBUG
 
 request :: Conf -> Handle -> Host -> (Request -> IO Response) -> IO ()
@@ -46,7 +41,14 @@ required :: String -> Maybe a -> Either String a
 required err Nothing  = Left err
 required _   (Just a) = Right a
 
+transferEncodingC :: [Char]
 transferEncodingC = "transfer-encoding"
+rloop :: t
+         -> Handle
+         -> Host
+         -> (Request -> IO Response)
+         -> L.ByteString
+         -> IO ()
 rloop conf h host handler inputStr
     | L.null inputStr = return ()
     | otherwise
@@ -79,6 +81,7 @@ rloop conf h host handler inputStr
                      putAugmentedResult h req res
                      when (continueHTTP req res) $ rloop conf h host handler rest
 
+parseResponse :: L.ByteString -> Either String Response
 parseResponse inputStr =
     do (topStr,restStr) <- required "failed to separate response" $ 
                            splitAtEmptyLine inputStr
@@ -96,8 +99,10 @@ parseResponse inputStr =
                  (\cl->return (L.splitAt (fromIntegral cl) restStr))
                  mbCL
        return $ Response {rsCode=code,rsHeaders=headers,rsBody=body,rsFlags=RsFlags True,rsValidator=Nothing}
+val :: String
 val =  "71 \r\n\n<title> i2x.com </title>\n\n\n<H1> This is i2x.com </H1>\n\nContact <a href=\"mailto:contact20020212@i2x.com\">us.</a>\n\r\n0\r\n\r\n"
 
+testChunk :: String -> Bool
 testChunk x = x ==  (L.unpack $ fst $ consumeChunks $ L.pack x)
 -- http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
 -- note this does NOT handle extenions
@@ -135,6 +140,7 @@ unchunk bs = let (parts,tr,rest) = consumeChunksImpl bs
     where clean (sz,bs) = L.take sz . L.drop 1 . snd . L.break (== '\n') $ bs
 
 
+crlfLC :: L.ByteString
 crlfLC = L.pack "\r\n"
 
 -- Properly lazy version of 'lines' for lazy bytestrings
@@ -167,6 +173,9 @@ presult h = do
     return $ Result c hh nullRsFlags body
 -}
 
+headers :: [B.ByteString]
+           -> [(B.ByteString, B.ByteString)]
+           -> [(B.ByteString, B.ByteString)]
 headers []          acc = acc
 headers (line:rest) acc =
   let space = let x = P.head line in x == ' ' || x == '\t' in
@@ -177,16 +186,19 @@ headers (line:rest) acc =
                                  v       = dropSpaceEnd $ dropSpace $ P.tail raw
                                  in headers rest ((k,v):acc)
   
+requestLine :: L.ByteString -> (Method, SURI, Version)
 requestLine l = case P.words ((P.concat . L.toChunks) l) of
                   [rq,uri,ver] -> (method rq, SURI $ parseURIRef uri, version ver)
                   [rq,uri] -> (method rq, SURI $ parseURIRef uri,Version 0 9)
 
 --responseLine l = case P.words l of (v:c:_) -> version v `seq` fst (fromJust (P.readInt c))
 
+responseLine :: L.ByteString -> (B.ByteString, Int)
 responseLine l = case B.words ((B.concat . L.toChunks) l) of 
                    (v:c:_) -> version v `seq` (v,fst (fromJust (B.readInt c)))
 
 
+method :: B.ByteString -> Method
 method r = fj $ lookup r mtable
     where fj (Just x) = x
           fj Nothing  = error "invalid request method"
@@ -238,6 +250,7 @@ putAugmentedResult h req res = do
   hFlush h
 
 
+putRequest :: Handle -> Request -> IO ()
 putRequest h rq = do 
     let put x = B.hPut h x
         ph (HeaderPair k vs) = map (\v -> B.concat [k, fsepC, v, crlfC]) vs
@@ -257,40 +270,60 @@ putRequest h rq = do
 
 -- Version
 
+pversion :: Version -> [B.ByteString]
 pversion (Version 1 1) = [http11]
 pversion (Version 1 0) = [http10]
 pversion (Version x y) = [P.pack "HTTP/", P.pack (show x), P.pack ".", P.pack (show y)]
 
+version :: B.ByteString -> Version
 version x | x == http09 = Version 0 9
           | x == http10 = Version 1 0
           | x == http11 = Version 1 1
           | otherwise   = error "Invalid HTTP version"
 
+http09 :: B.ByteString
 http09 = P.pack "HTTP/0.9"
+http10 :: B.ByteString
 http10 = P.pack "HTTP/1.0"
+http11 :: B.ByteString
 http11 = P.pack "HTTP/1.1"
 
 -- Constants
 
+connectionC :: B.ByteString
 connectionC      = P.pack "Connection"
+connectionCLower :: B.ByteString
 connectionCLower = P.map toLower connectionC
+closeC :: B.ByteString
 closeC           = P.pack "close"
+keepAliveC :: B.ByteString
 keepAliveC       = P.pack "Keep-Alive"
 --connectionCloseC = P.pack "Connection: close\r\n"
 --connectionKeepC  = P.pack "Connection: keep-alive\r\n"
+crlfC :: B.ByteString
 crlfC            = P.pack "\r\n"
+fsepC :: B.ByteString
 fsepC            = P.pack ": "
+contentTypeC :: B.ByteString
 contentTypeC     = P.pack "Content-Type"
+contentLengthC :: B.ByteString
 contentLengthC   = P.pack "Content-Length"
+contentlengthC :: B.ByteString
 contentlengthC   = P.pack "content-length"
+dateC :: B.ByteString
 dateC            = P.pack "Date"
+dateCLower :: B.ByteString
 dateCLower       = P.map toLower dateC
+serverC :: B.ByteString
 serverC          = P.pack "Server"
+happsC :: B.ByteString
 happsC           = P.pack "HAppS/0.9.2"
+textHtmlC :: B.ByteString
 textHtmlC        = P.pack "text/html; charset=utf-8"
 
 -- Response code names
 
+responseMessage :: (Num t) => t -> B.ByteString
 responseMessage 100 = P.pack " 100 Continue\r\n"
 responseMessage 101 = P.pack " 101 Switching Protocols\r\n"
 responseMessage 200 = P.pack " 200 OK\r\n"

@@ -21,40 +21,65 @@ type StyleURL=String
 data StyleSheet = NoStyle
                 | CSS {styleURL::StyleURL} 
                 | XSL {styleURL::StyleURL} deriving (Read,Show)
+hasStyleURL :: StyleSheet -> Bool
 hasStyleURL NoStyle = False
 hasStyleURL _ = True 
 type Element = Types.Element
 
 	
 
+isCSS :: StyleSheet -> Bool
 isCSS (CSS _)=True
 isCSS _ = False
+isXSL :: StyleSheet -> Bool
 isXSL = not.isCSS
 
+t :: Name -> [(Name, String)] -> CharData -> Types.Element
 t=textElem
+l :: Name -> [(Name, String)] -> [Types.Element] -> Types.Element
 l=listElem
+e :: Name -> [(Name, String)] -> Types.Element
 e=emptyElem
+(</<) :: Name
+         -> [(Name, String)]
+         -> [Types.Element]
+         -> Types.Element
 (</<)=l
+(<>) :: Name -> [(Name, String)] -> CharData -> Types.Element
 (<>)=t
 
 
 
+xmlElem :: (t -> [Content])
+           -> Name
+           -> [(Name, String)]
+           -> t
+           -> Types.Element
 xmlElem f = \name attrs val -> xmlelem name attrs (f val)
 	where 
 	xmlelem name attrs = Types.Elem name (map (uncurry attr) attrs)
 	attr name val= (name,AttValue [Left val])
 
+textElem :: Name -> [(Name, String)] -> CharData -> Types.Element
 textElem = xmlElem (return.CString True)
+emptyElem :: Name -> [(Name, String)] -> Types.Element
 emptyElem = \n a->xmlElem id n a []
+listElem :: Name
+            -> [(Name, String)]
+            -> [Types.Element]
+            -> Types.Element
 listElem = xmlElem $ map CElem
 
+cdataElem :: CharData -> Content
 cdataElem = CString  False
 
 --simpleDoc xsl root = show $ document $ 
 --	     Document (simpleProlog xsl) [] $ xmlEscape stdXmlEscaper root
+simpleDocOld :: StyleSheet -> Types.Element -> String
 simpleDocOld xsl = show . document . 
                 flip (Document (simpleProlog xsl) []) [] . xmlStdEscape
 
+simpleDoc :: StyleSheet -> Types.Element -> String
 simpleDoc style elem = ("<?xml version='1.0' encoding='UTF-8' ?>\n"++
                       if hasStyleURL style then pi else "") ++
                      (verbatim $ xmlStdEscape elem)
@@ -63,6 +88,7 @@ simpleDoc style elem = ("<?xml version='1.0' encoding='UTF-8' ?>\n"++
               "\" href=\""++styleURL style++"\" ?>\n"
 
 
+simpleDoc' :: StyleSheet -> Types.Element -> String
 simpleDoc' style elem = (if hasStyleURL style then pi else "") ++
                         (verbatim $ xmlStdEscape elem)
     where typeText=if isCSS style then "text/css" else "text/xsl"
@@ -71,10 +97,14 @@ simpleDoc' style elem = (if hasStyleURL style then pi else "") ++
 
 
 
+xmlEscaper :: XmlEscaper
 xmlEscaper=stdXmlEscaper
+xmlStdEscape :: Types.Element -> Types.Element
 xmlStdEscape = xmlEscape stdXmlEscaper
+verbim :: (Verbatim a) => a -> String
 verbim x =verbatim x
 
+simpleProlog :: StyleSheet -> Prolog
 simpleProlog style = 
     Prolog 
     (Just (XMLDecl "1.0" 
@@ -88,9 +118,11 @@ simpleProlog style =
 	typeText = if isCSS style then "text/css" else "text/xsl"
 	url=if hasStyleURL style then styleURL style else ""
 
+nonEmpty :: Name -> String -> Maybe Types.Element
 nonEmpty name val = if val=="" then Nothing
 					else Just $ textElem name [] val
 
+getRoot :: Document -> Types.Element
 getRoot (Document _ _ root _) = root
 
 --toXML .< "App" attrs ./>
@@ -139,11 +171,20 @@ instance (Xml a) => ToElement a where
 
 
 
+wrapElem :: (ToElement x) => Name -> x -> Types.Element
 wrapElem tag x= listElem tag [] [toElement x]
+elF :: (ToElement b) => Name -> (a -> b) -> a -> Types.Element
 elF tag f = wrapElem tag.f 
 -- label !<=! field = wrapField label field
+attrF :: t1 -> (t -> String) -> t -> (t1, String)
 attrF name f rec = (name,quoteEsc $ f rec)
+attrFS :: (Show a) => t1 -> (t -> a) -> t -> (t1, String)
 attrFS name f rec = (name,quoteEsc $ show $ f rec)
+attrFMb :: (a -> String)
+           -> String
+           -> (a1 -> Maybe a)
+           -> a1
+           -> (String, String)
 attrFMb r name f = maybe ("","") (\x->(name,quoteEsc $ r x)) . f 
 
 --attrFMb r name f list= maybe list ((attrF name (r . fromJust . f)):list)
@@ -151,6 +192,7 @@ attrFMb r name f = maybe ("","") (\x->(name,quoteEsc $ r x)) . f
 --(\x->(name,quoteEsc $ r x)) . f 
 --(name,quoteEsc $ show $ f rec)
 
+quoteEsc :: String -> String
 quoteEsc [] = []
 quoteEsc ('"':list) = "&quot;" ++ quoteEsc list
 quoteEsc (x:xs) = x:quoteEsc xs
@@ -164,9 +206,16 @@ quoteEsc (x:xs) = x:quoteEsc xs
 
 --quotescape \\ and " \"
 
+recToEl :: Name
+           -> [a -> (String, String)]
+           -> [a -> Types.Element]
+           -> a
+           -> Types.Element
 recToEl name attrs els rec = listElem name attrs' (revmap rec els)
     where
     attrs' = filter (\ (x,_)->not $ null x) (revmap rec attrs)
+listToEl :: (ToElement a) =>
+            Name -> [(Name, String)] -> [a] -> Types.Element
 listToEl name attrs = listElem name attrs . map toElement 
 
 --listToEl list = listElem "List" [] $ map toElement list
@@ -176,6 +225,7 @@ listToEl name attrs = listElem name attrs . map toElement
 
 --data NELL = NELL
 
+toAttrs :: t -> [(t1, t -> t2)] -> [(t1, t2)]
 toAttrs x = map (\ (s,f)->(s, f x)) 
 
 {--

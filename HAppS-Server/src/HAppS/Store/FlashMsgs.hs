@@ -10,7 +10,7 @@ module HAppS.Store.FlashMsgs where
 
 import Control.Monad.State hiding (State)
 import Control.Monad.Reader
--- import GHC.Conc
+
 
 import HAppS.Data
 import Data.Generics.Basics
@@ -106,7 +106,13 @@ instance (Serialize (FlashMsgs a), Ord a, Data a) => Component (FlashMsgs a) whe
 
 -- Controls
 --insFlashMsg:: Xml a => Uid -> a -> IO ()
+insFlashMsg :: (Xml a, MonadIO m) => Uid -> a -> m ()
 insFlashMsg uid msg = update $ SetFlashMsg uid $ toXml msg
+extFlashMsg :: (Data msg,
+                Serialize msg,
+                Ord msg,
+                MonadIO m) =>
+               Uid -> m (Maybe msg)
 extFlashMsg uid = do
                   msg <- query $ GetFlashMsg uid
                   let mkProxy :: Maybe msg -> Proxy (FlashMsgs msg)

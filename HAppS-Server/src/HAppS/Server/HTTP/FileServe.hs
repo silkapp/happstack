@@ -12,6 +12,7 @@ import Control.Monad.Reader
 import Control.Monad.Trans
 import Data.List
 import Data.Maybe
+import Data.Int
 import HAppS.Server.SimpleHTTP
 import System.Directory
 import System.IO
@@ -42,6 +43,8 @@ errorwrapper binarylocation loglocation
 
 type MimeMap = Map.Map String String
 
+doIndex :: (MonadIO m) =>
+           [String] -> Map.Map String String -> Request -> String -> WebT m Response
 doIndex [] _mime _rq _fp = do setResponseCode 403
                               return $ toResponse "Directory index forbidden"
 doIndex (index:rest) mime rq fp =
@@ -51,6 +54,7 @@ doIndex (index:rest) mime rq fp =
     fe <- liftIO $ doesFileExist path
     if fe then retFile path else doIndex rest mime rq fp
     where retFile = returnFile mime rq
+defaultIxFiles :: [String]
 defaultIxFiles= ["index.html","index.xml","index.gif"]
 
 fileServe :: MonadIO m => [FilePath] -> FilePath -> ServerPartT m Response
@@ -59,6 +63,12 @@ fileServe ixFiles localpath  =
 
 -- | Serve files with a mime type map under a directory.
 --   Uses the function to transform URIs to FilePaths.
+fileServe' :: (MonadIO m) =>
+              String
+              -> (Map.Map String String -> Request -> String -> WebT m Response)
+              -> Map.Map String String
+              -> Request
+              -> WebT m Response
 fileServe' localpath fdir mime rq = do
     let fp2 = takeWhile (/=',') fp
         fp = filepath
@@ -66,7 +76,7 @@ fileServe' localpath fdir mime rq = do
         filepath = intercalate "/"  (localpath:safepath)
         fp' = if null safepath then "" else last safepath
     if "TESTH" `isPrefixOf` fp'
-        then renderResponse mime rq $ fakeFile $ read $ drop 5 $ fp' 
+        then renderResponse mime rq $ fakeFile $ (read $ drop 5 $ fp' :: Integer)
         else do
     fe <- liftIO $ doesFileExist fp
     fe2 <- liftIO $ doesFileExist fp2
@@ -81,14 +91,20 @@ fileServe' localpath fdir mime rq = do
     getFile mime fp >>= flip either (renderResponse mime rq) 
                 (const $ returnGroup localpath mime rq safepath)
 
+returnFile :: (MonadIO m) =>
+              Map.Map String String -> Request -> String -> WebT m Response
 returnFile mime rq fp =  
     getFile mime fp >>=  either fileNotFound (renderResponse mime rq)
 
 -- if fp has , separated then return concatenation with content-type of last
 -- and last modified of latest
+tr :: (Eq a) => a -> a -> [a] -> [a]
 tr a b list = map (\x->if x==a then b else x) list
+ltrim :: String -> String
 ltrim = dropWhile (flip elem " \t\r")   
 
+returnGroup :: (MonadIO m) =>
+               String -> Map.Map String String -> Request -> [String] -> WebT m Response
 returnGroup localPath mime rq fp = do
   let fps0 = map ((:[]). ltrim) $ lines $ tr ',' '\n' $ last fp
       fps = map (intercalate "/" . ((localPath:init fp) ++)) fps0
@@ -108,14 +124,21 @@ returnGroup localPath mime rq fp = do
 
 
 
+fileNotFound :: (Monad m) => String -> WebT m Response
 fileNotFound fp = do setResponseCode 404 
                      return $ toResponse $ "File not found "++ fp
 --fakeLen = 71* 1024
+fakeFile :: (Integral a) =>
+            a -> ((ClockTime, Int64), (String, L.ByteString))
 fakeFile fakeLen = ((TOD 0 0,L.length body),("text/javascript",body))
     where
       body = L.pack $ (("//"++(show len)++" ") ++ ) $ (take len $ repeat '0') ++ "\n"
       len = fromIntegral fakeLen
 
+getFile :: (MonadIO m) =>
+           Map.Map String String
+           -> String
+           -> m (Either String ((ClockTime, Integer), (String, L.ByteString)))
 getFile mime fp = do
   let ct = Map.findWithDefault "text/plain" (getExt fp) mime
   fe <- liftIO $ doesFileExist fp
@@ -129,6 +152,12 @@ getFile mime fp = do
 
 
 
+renderResponse :: (Monad m,
+                   Show t1) =>
+                  t
+                  -> Request
+                  -> ((ClockTime, t1), (String, L.ByteString))
+                  -> WebT m Response
 renderResponse mime rq ((modtime,size),(ct,body)) = do
 
   let notmodified = getHeader "if-modified-since" rq == Just (P.pack $ repr)
@@ -148,6 +177,7 @@ renderResponse mime rq ((modtime,size),(ct,body)) = do
               
 
 
+getExt :: String -> String
 getExt fPath = reverse $ takeWhile (/='.') $ reverse fPath
 
 -- | Ready collection of common mime types.
@@ -179,6 +209,7 @@ blockDotFiles fn rq
     | isDot (intercalate "/" (rqPaths rq)) = return $ result 403 "Dot files not allowed."
     | otherwise = fn rq
 
+isDot :: String -> Bool
 isDot = isD . reverse
     where
     isD ('.':'/':_) = True

@@ -21,6 +21,7 @@ import System.IO.Unsafe(unsafePerformIO)
 import Text.XML.HaXml.Verbatim(verbatim)
 import HAppS.Data hiding (Element)
 
+logMX :: Priority -> String -> IO ()
 logMX = logM "HAppS.Server.XSLT"
 
 type XSLPath = FilePath
@@ -31,6 +32,11 @@ $(deriveAll [''Show,''Read,''Default, ''Eq, ''Ord]
     |]
    )
 #endif
+xsltCmd :: XSLTCmd
+           -> XSLPath
+           -> FilePath
+           -> FilePath
+           -> (FilePath, [String])
 xsltCmd XSLTProc = xsltproc'
 xsltCmd Saxon = saxon'
 
@@ -38,6 +44,7 @@ xsltElem :: XSLPath -> Element -> String
 xsltElem xsl = xsltString xsl . verbatim
 
 
+procLBSIO :: XSLTCmd -> XSLPath -> L.ByteString -> IO L.ByteString
 procLBSIO xsltproc' xsl inp = 
     withTempFile "happs-src.xml" $ \sfp sh -> do
     withTempFile "happs-dst.xml" $ \dfp dh -> do
@@ -51,6 +58,10 @@ procLBSIO xsltproc' xsl inp =
     return s
 
 
+procFPSIO :: XSLTCommand
+             -> XSLPath
+             -> [P.ByteString]
+             -> IO [P.ByteString]
 procFPSIO xsltproc xsl inp = 
     withTempFile "happs-src.xml" $ \sfp sh -> do
     withTempFile "happs-dst.xml" $ \dfp dh -> do
@@ -65,6 +76,7 @@ procFPSIO xsltproc xsl inp =
 xsltFPS :: XSLPath -> [P.ByteString] -> [P.ByteString]
 xsltFPS xsl inp = unsafePerformIO $ xsltFPSIO xsl inp
 
+xsltFPSIO :: XSLPath -> [P.ByteString] -> IO [P.ByteString]
 xsltFPSIO xsl inp = 
     withTempFile "happs-src.xml" $ \sfp sh -> do
     withTempFile "happs-dst.xml" $ \dfp dh -> do
@@ -95,9 +107,11 @@ xsltFile = xsltFileEx xsltproc'
 -- | Use @xsltproc@ to transform XML.
 xsltproc' :: XSLTCommand
 xsltproc' dst xsl src = ("xsltproc",["-o",dst,xsl,src])
+xsltproc :: XSLTCmd
 xsltproc = XSLTProc
 
 -- | Use @saxon@ to transform XML.
+saxon :: XSLTCmd
 saxon = Saxon
 saxon' :: XSLTCommand
 saxon' dst xsl src = ("java -classpath /usr/share/java/saxon.jar",

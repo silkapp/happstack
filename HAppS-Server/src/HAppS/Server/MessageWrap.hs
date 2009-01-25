@@ -15,16 +15,11 @@ import Control.Monad.Identity
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.List as List
-import qualified Data.Map as M
 import Data.Maybe
 import HAppS.Server.HTTP.Types as H
-import HAppS.Server.JSON
-import HAppS.Server.MinHaXML
 import HAppS.Server.HTTP.Multipart
 import HAppS.Server.SURI as SURI
 import HAppS.Util.Common
-import qualified Text.XML.HaXml.Types as HaXml
-import Data.Generics
 
 {-
 class ToMessage x where

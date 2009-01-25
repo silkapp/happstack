@@ -5,12 +5,12 @@ import HAppS.Server.HTTP.Handler
 import HAppS.Server.HTTP.Types
 import Data.Maybe
 import qualified Data.ByteString.Lazy.Char8 as L 
---import HAppS.Server.AlternativeHTTP
 
 import System.IO
 import qualified Data.ByteString.Char8 as B 
 import Network
 
+getResponse :: Request -> IO (Either String Response)
 getResponse rq = withSocketsDo $ do
   let (hostName,port) = span (/=':') $ fromJust $ fmap B.unpack $ getHeader "host" rq 
       portInt = if null port then 80 else read $ tail port
@@ -28,6 +28,7 @@ getResponse rq = withSocketsDo $ do
   --print $ L.take 200 inputStr
   return $ parseResponse inputStr
 
+unproxify :: Request -> Request
 unproxify rq = rq {rqPaths = tail $ rqPaths rq,
                    rqHeaders = 
                        forwardedFor $ forwardedHost $ 
@@ -45,6 +46,7 @@ unproxify rq = rq {rqPaths = tail $ rqPaths rq,
   csv v "" = v
   csv v x = x++", " ++ v
 
+unrproxify :: String -> [(String, String)] -> Request -> Request
 unrproxify defaultHost list rq = unproxify rq {rqPaths = host: rqPaths rq}
   where
   host::String

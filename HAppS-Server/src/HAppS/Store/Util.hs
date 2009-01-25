@@ -18,7 +18,6 @@ import HAppS.Data.Atom
 import Language.Haskell.TH
 
 import Control.Monad.State 
-import Control.Monad.Reader
 
 
 
@@ -35,16 +34,19 @@ type With st' st a = Ev (StateT st' STM) a -> Ev (StateT st STM) a
 
 
 byTime::(Typeable a) => IxSet a -> [a]
-byTime = concat . map (\(Published t,es)->es) . groupBy
-byRevTime = concat . map (\(Published t,es)->es) . rGroupBy
+byTime = concat . map (\(Published _,es)->es) . groupBy
 byRevTime::(Typeable a) => IxSet a -> [a]
+byRevTime = concat . map (\(Published _,es)->es) . rGroupBy
 
+
+fun0_1 :: String -> String -> String -> Dec
 fun0_1 name fun arg = 
     FunD (mkName name)  
              [Clause [] (NormalB (AppE (VarE $ mkName fun) 
                                            (ConE $ mkName arg))) 
               []
              ]
+fun0_2 :: String -> String -> String -> String -> Dec
 fun0_2 name fun arg1 arg2 = 
     FunD (mkName name)  
              [Clause [] (NormalB 

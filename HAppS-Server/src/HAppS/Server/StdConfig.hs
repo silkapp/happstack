@@ -3,10 +3,7 @@ module HAppS.Server.StdConfig where
 
 import Control.Monad.Trans
 import HAppS.Server.SimpleHTTP
-import HAppS.Util.Daemonize
 import HAppS.Server.HTTP.FileServe
-import HAppS.State
---import HAppS.State.EventTH
 
 {-
 data StdConfig a = StdConfig {http::[ServerPart IO]
@@ -45,7 +42,9 @@ to go to the shell and do it yourself.
 --}
 -}
 
+binarylocation :: String
 binarylocation = "haskell/Main"
+loglocation :: String
 loglocation = "public/log"
 
 

@@ -1,5 +1,5 @@
 {-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, FlexibleInstances, TypeSynonymInstances,
-    MultiParamTypeClasses #-}
+    MultiParamTypeClasses, PatternGuards #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -120,7 +120,6 @@ import Control.Exception (evaluate)
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Error
---import Control.Concurrent
 import Data.Maybe
 import Data.Monoid
 import qualified Data.ByteString.Char8 as B
@@ -133,7 +132,6 @@ import qualified HAppS.Crypto.Base64 as Base64
 import Data.Char
 import Data.List
 import System.IO
-import System.Environment
 import System.Console.GetOpt
 import System.Process (runInteractiveProcess, waitForProcess)
 import System.Exit
@@ -161,9 +159,9 @@ data Result a = NoHandle
                 deriving Show
 
 instance Functor Result where
-    fmap fn NoHandle = NoHandle
+    fmap _ NoHandle = NoHandle
     fmap fn (Ok out a) = Ok out (fn a)
-    fmap fn (Escape resp) = Escape resp
+    fmap _ (Escape resp) = Escape resp
 
 instance Monad m => Monad (WebT m) where
     f >>= g = WebT $ do r <- unWebT f
@@ -178,7 +176,7 @@ instance Monad m => Monad (WebT m) where
     return x = WebT $ return (Ok id x)
 
 instance (Monad m) => Monoid (ServerPartT m a)
- where mempty = ServerPartT $ \rq -> noHandle
+ where mempty = ServerPartT $ \_ -> noHandle
        mappend a b = ServerPartT $ \rq -> (unServerPartT a rq)
                      `mappend` (unServerPartT b rq)
 
@@ -403,7 +401,9 @@ uriRest handle = withRequest $ \rq ->
                   unServerPartT (handle (rqURL rq)) rq
 
 
+anyPath :: (Monad m) => [ServerPartT m r] -> ServerPartT m r
 anyPath x = path $ (\(_::String) -> x)
+anyPath' :: (Monad m) => ServerPartT m r -> ServerPartT m r
 anyPath' x = path $ (\(_::String) -> [x])
 
 -- | Retrieve date from the input query or the cookies.
@@ -431,6 +431,7 @@ proxyServe allowed = withRequest $ \rq ->
      superdomain = tail $ snd $ break (=='.') domain
      wildcards = (map (drop 2) $ filter ("*." `isPrefixOf`) allowed)                                                                           
 
+proxyServe' :: (MonadIO m) => Request -> WebT m Response
 proxyServe' rq = liftIO (getResponse (unproxify rq)) >>=
                 either (badGateway . toResponse . show) (escape . return)
 
@@ -466,6 +467,7 @@ requireM fn handle
                                 Nothing -> noHandle
                                 Just a  -> unServerPartT (multi $ handle a) rq
 
+showRequest :: Reader Request (IO ())
 showRequest 
     = Reader $ \rq -> print (rq::Request)
 
@@ -484,6 +486,8 @@ xslt cmd xslPath parts =
               then liftM toResponse (doXslt cmd xslPath (toResponse res))
               else return (toResponse res)
 
+doXslt :: (MonadIO m) =>
+          XSLTCmd -> XSLPath -> Response -> m Response
 doXslt cmd xslPath res = 
     do new <- liftIO $ procLBSIO cmd xslPath $ rsBody res
 {-
@@ -519,6 +523,7 @@ addCookies = mapM_ (uncurry addCookie)
 delCookie :: String -> WebT m ()
 delCookie name = 
 -}
+resp :: (Monad m) => Int -> b -> WebT m b
 resp status val = setResponseCode status >> return val
 {--    do bs <- toMessageM val
        liftM (setHeaderBS (B.pack "Content-Type") (toContentType val)) $ 
@@ -596,6 +601,9 @@ debugFilter handle = [
 
 anyRequest :: Monad m => WebT m a -> ServerPartT m a
 anyRequest x = withRequest $ \_ -> x
+
+applyRequest :: (ToMessage a, Monad m) =>
+                [ServerPartT m a] -> Request -> Either (m Response) b
 applyRequest hs = simpleHTTP' hs >>= return . Left
 
 basicAuth :: (MonadIO m) => String -> M.Map String String -> [ServerPartT m a] -> ServerPartT m a
@@ -804,6 +812,6 @@ lazyProcValidator exec args wd env mimeTypePred response
                                                showLines (rsBody response)))
     | otherwise = return response
     where
-      column = "  " ++ (take 120 $ concatMap  (\n -> "         " ++ show n) (drop 1 $ cycle [0..9]))
+      column = "  " ++ (take 120 $ concatMap  (\n -> "         " ++ show n) (drop 1 $ cycle [0..9::Int]))
       showLines :: L.ByteString -> [String]
-      showLines string = column : zipWith (\n -> \l  -> show n ++ " " ++ (L.unpack l)) [1..] (L.lines string)
+      showLines string = column : zipWith (\n -> \l  -> show n ++ " " ++ (L.unpack l)) [1::Integer ..] (L.lines string)
