@@ -4,7 +4,7 @@ module HAppS.Network.DNS.MXClient
 import HAppS.Network.DNS.NSTree
 import HAppS.Network.DNS.Type
 
-import Control.Exception as E
+import Control.OldException as E
 import Control.Monad
 import Data.List
 import Foreign
