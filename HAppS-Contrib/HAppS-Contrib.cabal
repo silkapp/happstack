@@ -1,0 +1,43 @@
+Name:                HAppS-Contrib
+Version:             0.9.3.1
+Synopsis:            Web related tools and services.
+Description:         Collection of standalone applications
+License:             BSD3
+License-file:        COPYING
+Author:              HAppS LLC, Happstack team
+Maintainer:          happs@googlegroups.com
+Category:            Web, Distributed Computing
+Build-Type:          Simple
+Cabal-Version:       >= 1.2
+
+Flag base4
+    Description: Choose the even newer, even smaller, split-up base package.
+
+Library
+
+  Exposed-modules:
+                       HAppS.Server.Facebook
+                       HAppS.Store.FlashMsgs
+                       HAppS.Store.HelpReqs
+
+  Build-Depends:       base, HaXml >= 1.13 && < 1.14, parsec<3, mtl, network,
+                       hslogger >= 1.0.2, HAppS-Data>=0.9.2, HAppS-Util>=0.9.2,
+                       HAppS-State>=0.9.2, HAppS-IxSet>=0.9.2, HTTP, template-haskell, xhtml, html,
+                       bytestring, random, containers, old-time, old-locale, directory, process,
+                       HAppS-Server>=0.9.2
+  hs-source-dirs:      src
+
+  if !os(windows)
+     Build-Depends:    unix
+     cpp-options:      -DUNIX
+  if flag(base4)
+    Build-Depends:     base >= 4 && < 5, syb
+    cpp-options:      -DEXCEPTION_TYPE=SomeException -DEXTENSIBLE_EXCEPTIONS
+  else
+    Build-Depends:     base >= 3 && < 4
+    cpp-options:      -DEXCEPTION_TYPE=Exception
+
+  -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
+  Extensions:          CPP, UndecidableInstances
+  ghc-options:         -Wall -fno-warn-name-shadowing
+  GHC-Prof-Options:    -auto-all

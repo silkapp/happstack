@@ -28,12 +28,9 @@ Library
                        HAppS.Server.MinHaXML,
                        HAppS.Server.SURI,
                        HAppS.Server.XSLT,
-                       HAppS.Server.Facebook
-                       HAppS.Server.Cron
-                       HAppS.Server.StdConfig
+                       HAppS.Server.Cron,
+                       HAppS.Server.StdConfig,
                        HAppS.Store.Util
-                       HAppS.Store.FlashMsgs
-                       HAppS.Store.HelpReqs
   Other-modules:       
                        HAppS.Server.S3,
                        HAppS.Server.HTTPClient.HTTP,
