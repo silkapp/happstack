@@ -46,8 +46,7 @@ Library
                        HAppS.Server.HTTP.Multipart,
                        HAppS.Server.HTTP.RFC822Headers,
                        HAppS.Server.SURI.ParseURI
-  if impl(ghc >= 6.10)
-    Build-Depends:     syb
+
   Build-Depends:       base, HaXml >= 1.13 && < 1.14, parsec<3, mtl, network,
                        hslogger >= 1.0.2, HAppS-Data>=0.9.2, HAppS-Util>=0.9.2,
                        HAppS-State>=0.9.2, HAppS-IxSet>=0.9.2, HTTP, template-haskell, xhtml, html,
@@ -58,9 +57,10 @@ Library
      Build-Depends:    unix
      cpp-options:      -DUNIX
   if flag(base4)
-    Build-Depends: base >=4
+    Build-Depends:     base >= 4 && < 5, syb
     cpp-options:      -DEXCEPTION_TYPE=SomeException -DEXTENSIBLE_EXCEPTIONS
   else
+    Build-Depends:     base >= 3 && < 4
     cpp-options:      -DEXCEPTION_TYPE=Exception
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
