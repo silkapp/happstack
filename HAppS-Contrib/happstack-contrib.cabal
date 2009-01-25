@@ -4,8 +4,9 @@ Synopsis:            Web related tools and services.
 Description:         Collection of standalone applications
 License:             BSD3
 License-file:        COPYING
-Author:              HAppS LLC, Happstack team
-Maintainer:          happs@googlegroups.com
+Author:              Happstack team, HAppS LLC
+Maintainer:          Happstack Team <happs@googlegroups.com>
+homepage:            http://happstack.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-Version:       >= 1.2
