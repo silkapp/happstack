@@ -45,6 +45,8 @@ fromHaXml (H.CRef (H.RefEntity "apos")) = CData "'"
 fromHaXml (H.CRef (H.RefEntity "quot")) = CData "\""
 fromHaXml (H.CRef (H.RefEntity x)) = 
     error $ "fromHaXml: Not implemented ref:" ++ x
+fromHaXml (H.CRef (H.RefChar x)) = 
+    error $ "fromHaXml: Not implemented ref:" ++ (show x)
 fromHaXml (H.CMisc (H.Comment _)) = CData ""
 fromHaXml (H.CMisc (H.PI (_,_))) = CData ""
 

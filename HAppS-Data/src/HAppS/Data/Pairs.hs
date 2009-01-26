@@ -13,21 +13,24 @@ import Data.Maybe
 ---stuff for examples
 import HAppS.Data.DeriveAll
 import HAppS.Util.Common
-import Data.Typeable
+-- import Data.Typeable
 
 import Data.Generics as G
 import HAppS.Data.Default -- for pairs
 import HAppS.Data.Xml
 import Control.Monad.Identity
 
+type Pairs = [(String,String)]
+
+pairsToXml :: Pairs -> [Element]
 pairsToXml pairs = fst $ formIntoEls "" $ map slash pairs
-slash p@('/':n,v) = p
+
+slash :: (String,t) -> (String,t)
+slash p@('/':_,_) = p
 slash (n,v) = ('/':n,v)
 
-
-type Pairs = [(String,String)]
 formIntoEls :: String -> Pairs -> ([Element], Pairs)
-formIntoEls ctx [] = ([],[])
+formIntoEls _ [] = ([],[])
 formIntoEls ctx pairs@((name,val):rest)
     | not $ isPrefixOf ctx name = ([],pairs)
     | isAttr = moreCtx $ Attr elName val
@@ -46,16 +49,18 @@ formIntoEls ctx pairs@((name,val):rest)
     isAttr = head top == '@'
     moreCtx el = let (restCtx,restPairs) = formIntoEls ctx rest
                  in (el:restCtx,restPairs)
-
+xmlToPairs :: [Element] -> Pairs
 xmlToPairs =
     map (\(x,y)->(tail x,y)) .
     xmlIntoPairs 0 ""
 --    where stripInitialSlashes = map (\(x,y)->(tail x,y))
 
-xmlIntoPairs x ctx [] = []
-xmlIntoPairs x ctx (Elem n []:xs) = xmlIntoPairs x ctx xs
+xmlIntoPairs :: Int -> String -> [Element] -> Pairs
+xmlIntoPairs _ _ [] = []
+xmlIntoPairs x ctx (Elem _ []:xs) = xmlIntoPairs x ctx xs
 xmlIntoPairs x ctx (Attr n v:xs) = (ctx++"/"++n,v):xmlIntoPairs x ctx xs
-xmlIntoPairs x ctx (CData v:[]) = [(ctx,v)]
+xmlIntoPairs _ ctx (CData v:[]) = [(ctx,v)]
+xmlIntoPairs _ _ (CData _:_) = []
 xmlIntoPairs i ctx ((Elem n xs):xs') =
     thisElPairs ++ restPairs
     where
@@ -70,19 +75,26 @@ xmlIntoPairs i ctx ((Elem n xs):xs') =
     thisElPairs = (xmlIntoPairs 0 (ctx++"/"++nName) xs)
     restPairs = (xmlIntoPairs iNext ctx xs')
 
+pairsToHTMLForm :: String -> String -> String -> Pairs -> [Element]
 pairsToHTMLForm iden action method pairs
  = [Elem "form" (Attr "action" action :
                 Attr "id" iden :
                 Attr "method" method :
                 map pToInput pairs ++
                 [submitButton])]
+
+submitButton :: Element
 submitButton = Elem "input" [Attr "type" "submit"]
+
+pToInput :: (String,String) -> Element
 pToInput (n,v)=
     Elem "div" [Attr "class" "formEl",
                 Elem "span" [Attr "class" "name"
                             ,CData $ map (\x->if x=='/' then ' ' else x) n]
                ,Elem "input" [Attr "name" n,Attr "value" v]]
 
+xmlToHTMLForm :: (Xml a, Show a, Data a, Eq a) =>
+                 String -> String -> String -> a -> [Element]
 xmlToHTMLForm iden method action
  = pairsToHTMLForm iden method action  . toPairsX -- xmlToPairs
 
@@ -110,7 +122,7 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
                   else (cons++('/':name))
             where
             name = trimSlash n
-            (parent,child) = break (=='/') name
+            (parent,_) = break (=='/') name
         trimSlash n = if head n=='/' then tail n else n
 {--
     fromPairs pairs = res
@@ -142,10 +154,12 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
 --    fromPairs x = fromXml $ pairsToXml x
 
 
-toPairsX x = map (\(n,v)->let (par,child)=break (=='/') n in
-                              if null child then (n,v) else (tail child,v)) $ toPairs x
+toPairsX :: (Xml a, Show a, Data a, Eq a) => a -> Pairs
+toPairsX x = map (\(n,v)->let (_,child)=break (=='/') n in
+                            if null child then (n,v) else (tail child,v)) $ toPairs x
 
-
+toHTMLForm :: (Xml a, Show a, Data a, Eq a) =>
+              String -> String -> String -> a -> [Element]
 toHTMLForm iden method action = xmlToHTMLForm iden method action 
 
 
@@ -160,34 +174,4 @@ $( deriveAll [''Show,''Default,''Eq]
     |]
  )
 #endif
-
-x = toPairs (defaultValue::UserInfo)
-
---  It would be nice if every Xml type was fromData
---instance FromData UserInfo
-
-v = toHTMLForm "defForm" "GET" "method" $ (defaultValue::UserInfo)
-
-t1 = toPairs $ UserInfo (User "alex") (Pass "pass")
-
-t2pairs = [("userInfo/user","alex"),("userInfo/pass","pass")]
-t2 = fromPairs t2pairs ::Maybe UserInfo
-
-t3pairs = [("user","alex"),("pass","pass")]
-t3 = fromPairs t3pairs  ::Maybe UserInfo
-
-t4 = toPairsX $ UserInfo (User "alex") (Pass "pass")
-t5 = fromPairs t4::Maybe UserInfo
-
-t6pairs = [("/userInfo/user","alex"),("/userInfo/pass","pass")]
-t6 = fromPairs t6pairs ::Maybe UserInfo
-
--- these are nothing because if there is no information in the pairs then 
--- it is a defaultValue and that is bogus
-t7 = (fromPairs [("/blag","alex"),("hbli","mypass")]::Maybe UserInfo)  ==  Nothing
-t8 = (fromPairs [("/blag","alex"),("/hbli","mypass")]::Maybe UserInfo) == Nothing
-
-t9 = (fromPairs [("pass","alex"),("/hbli","mypass")]::Maybe UserInfo) == 
-     (Just $ UserInfo defaultValue (Pass "alex"))
-
 

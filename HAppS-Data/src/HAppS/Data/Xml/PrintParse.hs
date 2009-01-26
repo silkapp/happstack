@@ -10,9 +10,7 @@ import Text.XML.HaXml.Parse
 import Text.XML.HaXml.Pretty
 import Text.XML.HaXml.Types (Document(Document), Content(CElem))
 import HAppS.Data.Xml.Base
-import HAppS.Data.Xml.Instances
 import HAppS.Data.Xml.HaXml
-import Data.Maybe
 import Data.Generics as G
 import HAppS.Data.DeriveAll
 import HAppS.Data.Default

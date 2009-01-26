@@ -2,7 +2,7 @@
 module HAppS.Data.Proxy where
 
 import HAppS.Data.DeriveAll
-import HAppS.Data.Xml
+-- import HAppS.Data.Xml
 import HAppS.Data.Default
 
 #ifndef __HADDOCK__

@@ -10,17 +10,14 @@ module HAppS.Data.HList (HasT, hlextract, hlupdate, (.&.),
                          Couple(..),Nil(..),CoupleClass,hMap,trans) where
 -- HList useful with generic
 
-import HAppS.Data.DeriveAll
-import Data.Typeable
 import HAppS.Data.Xml
 import HAppS.Data.Pairs
-import HAppS.Data.Default
 import Data.Generics as G
 import HAppS.Data.HListBase
 
 infixr 6 .&.
 (.&.) :: a -> b -> Couple a b
-x .&. y = Couple x y
+(.&.) = Couple
 #ifndef __HADDOCK__
 type a :&: b = Couple b a
 #endif

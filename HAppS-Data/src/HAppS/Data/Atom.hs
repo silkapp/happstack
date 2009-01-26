@@ -93,7 +93,6 @@ $( deriveAll [''Ord,''Eq,''Read,''Show,''Default]
     newtype Updated = Updated DateConstruct
     newtype Published = Published DateConstruct
 
-    type XHTML = String -- XXX This should really be an XHTML structured type
     type Text = String
     type TextConstruct = Text
 

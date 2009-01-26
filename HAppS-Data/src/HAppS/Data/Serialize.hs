@@ -41,7 +41,7 @@ mkPrevious :: forall a b. (Serialize b, Migrate b a) => Proxy b -> Previous a
 mkPrevious Proxy = Previous (Proxy :: Proxy b)
 
 extension :: forall a b. (Serialize b, Migrate b a) => VersionId a -> Proxy b -> Mode a
-extension vs proxy = Versioned vs (Just (mkPrevious proxy))
+extension vs prox = Versioned vs (Just (mkPrevious prox))
 
 newtype VersionId a = VersionId {unVersion :: Int} deriving (Num,Read,Show,Eq)
 instance Binary (VersionId a) where
@@ -96,8 +96,8 @@ safeGetVersioned wantedVersion mbPrevious storedVersion
                 Just (Previous (_ :: Proxy f) :: Previous b)
                     -> case mode of
                          Primitive -> error $ "Previous version marked as a Primitive (" ++ tStr ++ ")"
-                         Versioned wantedVersion mbPrevious
-                             -> do old <- safeGetVersioned wantedVersion mbPrevious storedVersion :: B.Get f
+                         Versioned wantedVersion' mbPrevious'
+                             -> do old <- safeGetVersioned wantedVersion' mbPrevious' storedVersion :: B.Get f
                                    return $ migrate old
     where tStr = show (typeOf (error "huh?" :: b))
 
@@ -114,12 +114,12 @@ deserialize bs = case runGetState safeGet bs 0 of
 
 -- Version lookups
 collectVersions :: forall a . (Typeable a, Version a) => Proxy a -> [L.ByteString]
-collectVersions proxy
+collectVersions prox
     = case mode :: Mode a of
         Primitive                          -> [thisType]
         Versioned _ Nothing                -> [thisType]
         Versioned _ (Just (Previous prev)) -> thisType : (collectVersions prev)
-    where thisType = (L.pack . show . typeOf . unProxy) proxy
+    where thisType = (L.pack . show . typeOf . unProxy) prox
 
 --------------------------------------------------------------
 -- Instances

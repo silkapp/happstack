@@ -17,8 +17,8 @@ deriveSerialize :: Name -> Q [Dec]
 deriveSerialize name
     = do c <- parseInfo name
          case c of
-           Tagged cons cxt keys ->
-               do let context = [ mkType ''Serialize [varT key] | key <- keys ] ++ map return cxt
+           Tagged cons cx keys ->
+               do let context = [ mkType ''Serialize [varT key] | key <- keys ] ++ map return cx
                   i <- instanceD (sequence context) (mkType ''Serialize [mkType name (map varT keys)])
                        [ putCopyFn cons
                        , getCopyFn cons
@@ -56,16 +56,17 @@ deriveSerializeFor names
     = liftM concat $ mapM deriveSerialize names
 
 
+mkType :: Name -> [TypeQ] -> TypeQ
 mkType con = foldl appT (conT con)
 
 parseInfo :: Name -> Q Class
 parseInfo name
     = do info <- reify name
          case info of
-           TyConI (DataD cxt _ keys cs _)    -> return $ Tagged (map conInfo cs) cxt keys
-           TyConI (NewtypeD cxt _ keys con _)-> return $ Tagged [conInfo con] cxt keys
+           TyConI (DataD cx _ keys cs _)    -> return $ Tagged (map conInfo cs) cx keys
+           TyConI (NewtypeD cx _ keys con _)-> return $ Tagged [conInfo con] cx keys
            _                            -> error "Invalid input"
-    where conInfo (NormalC name args) = (name, length args)
-          conInfo (RecC name args) = (name, length args)
-          conInfo (InfixC _ name _) = (name, 2)
+    where conInfo (NormalC n args) = (n, length args)
+          conInfo (RecC n args) = (n, length args)
+          conInfo (InfixC _ n _) = (n, 2)
           conInfo (ForallC _ _ con) = conInfo con

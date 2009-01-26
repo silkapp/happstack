@@ -15,7 +15,6 @@ import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as BS
 
 import HAppS.Data.Default
-import HAppS.Util.Common
 
 
 
@@ -79,7 +78,7 @@ instance Xml [String] where
     toXml xs = [CData $ concat $ intersperse "," xs]
     readXml = readXmlWith f
         where f _ (CData x) = Just $ words $ noCommas x
-
+              f _ _ = Nothing
 #ifndef __HADDOCK__
 $( xmlShowCDatas [''Int, ''Integer, ''Float, ''Double] )
 $( xmlCDataLists [''Int, ''Integer, ''Float, ''Double] )

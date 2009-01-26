@@ -23,5 +23,5 @@ import HAppS.Data.Migrate
 import HAppS.Data.Normalize
 import HAppS.Data.Pairs
 import HAppS.Data.Xml
-import HAppS.Data.Serialize
+import HAppS.Data.Serialize hiding (migrate, Migrate)
 import HAppS.Data.SerializeTH
