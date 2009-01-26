@@ -48,7 +48,8 @@ Library
   Build-Depends:       base, HaXml >= 1.13 && < 1.14, parsec<3, mtl, network,
                        hslogger >= 1.0.2, happstack-data, happstack-util,
                        happstack-state, happstack-ixset, HTTP, template-haskell, xhtml, html,
-                       bytestring, random, containers, old-time, old-locale, directory, process
+                       bytestring, random, containers, old-time, old-locale, directory, 
+                       process, extensible-exceptions
   hs-source-dirs:      src
 
   if !os(windows)
@@ -56,10 +57,6 @@ Library
      cpp-options:      -DUNIX
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
-    cpp-options:      -DEXCEPTION_TYPE=SomeException -DEXTENSIBLE_EXCEPTIONS
-  else
-    Build-Depends:     base >= 3 && < 4
-    cpp-options:      -DEXCEPTION_TYPE=Exception
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
   Extensions:          CPP, UndecidableInstances

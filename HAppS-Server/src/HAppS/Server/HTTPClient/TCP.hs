@@ -25,7 +25,7 @@ module HAppS.Server.HTTPClient.TCP (
     isConnectedTo
 ) where
 
-import Control.Exception as Exception
+import Control.Exception.Extensible as Exception
 
 -- Networking
 import Network.BSD
@@ -76,12 +76,12 @@ openTCPPort uri port =
     do { s <- socket AF_INET Stream 6
        ; setSocketOption s KeepAlive 1
        ; host <- Exception.catch (inet_addr uri)    -- handles ascii IP numbers
-                       (\(_::EXCEPTION_TYPE) -> getHostByName uri >>= \host -> -- _shrug_ this will catch _any_ exception FIXME
+                       (\(_::SomeException) -> getHostByName uri >>= \host -> -- _shrug_ this will catch _any_ exception FIXME
                             case hostAddresses host of
                                 [] -> return (error "no addresses in host entry")
                                 (h:_) -> return h)
        ; let a = SockAddrInet (toEnum port) host
-       ; Exception.catch (connect s a) (\(e::EXCEPTION_TYPE) -> sClose s >> throw e)
+       ; Exception.catch (connect s a) (\(e::SomeException) -> sClose s >> throw e)
        ; v <- newIORef (MkConn s a [] uri)
        ; return (ConnRef v)
        }
@@ -158,7 +158,7 @@ instance Stream Connection where
     -- (I think the behaviour here is TCP specific)
     close ref = 
         do { c <- readIORef (getRef ref)
-           ; closeConn c `Exception.catch` (\(_::EXCEPTION_TYPE) -> return ()) -- FIXME see above
+           ; closeConn c `Exception.catch` (\(_::SomeException) -> return ()) -- FIXME see above
            ; writeIORef (getRef ref) ConnClosed
            }
         where

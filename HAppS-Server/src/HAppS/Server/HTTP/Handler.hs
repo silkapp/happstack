@@ -4,7 +4,7 @@ module HAppS.Server.HTTP.Handler(request-- version,required
 -- ,unchunkBody,val,testChunk,pack
 ) where
 --    ,fsepC,crlfC,pversion
-import Control.Exception as E
+import Control.Exception.Extensible as E
 import Control.Monad
 import Data.List(elemIndex, unfoldr, foldl')
 import Data.Char(toLower)
@@ -77,7 +77,7 @@ rloop conf h host handler inputStr
            Right (req, rest)
                -> return $ -- logMH (show req) >>
                   do let ioseq act = act >>= \x -> x `seq` return x
-                     res <- ioseq (handler req) `E.catch` \(e::E.EXCEPTION_TYPE) -> return $ result 500 $ "Server error: " ++ show e
+                     res <- ioseq (handler req) `E.catch` \(e::E.SomeException) -> return $ result 500 $ "Server error: " ++ show e
                      putAugmentedResult h req res
                      when (continueHTTP req res) $ rloop conf h host handler rest
 

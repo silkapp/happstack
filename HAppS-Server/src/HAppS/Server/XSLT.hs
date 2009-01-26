@@ -11,7 +11,7 @@ import System.Log.Logger
 
 import HAppS.Server.MinHaXML
 import HAppS.Util.Common(runCommand)
-import Control.Exception(bracket,try,EXCEPTION_TYPE)
+import Control.Exception.Extensible(bracket,try,SomeException)
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Lazy.Char8 as L
 import System.Directory(removeFile)
@@ -152,4 +152,4 @@ tempDir = unsafePerformIO $ tryAny [getEnv "TEMP",getEnv "TMP"] err
 
 tryAny :: [IO a] -> IO a -> IO a
 tryAny [] c     = c
-tryAny (x:xs) c = either (\(_::EXCEPTION_TYPE) -> tryAny xs c) return =<< try x
+tryAny (x:xs) c = either (\(_::SomeException) -> tryAny xs c) return =<< try x

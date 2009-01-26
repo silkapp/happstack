@@ -132,7 +132,7 @@ module HAppS.Server.HTTPClient.HTTP (
 ------------------ Imports --------------------------------------
 -----------------------------------------------------------------
 
-import Control.Exception as Exception
+import Control.Exception.Extensible as Exception
 
 -- Networking
 import Network.URI
@@ -732,7 +732,7 @@ sendHTTP conn rq
 sendHTTPPipelined :: Stream s => s -> [Request] -> IO ([Response],Maybe ConnError)
 sendHTTPPipelined conn rqs = 
     do { (ok,rsp) <- Exception.catch (main (map fixHostHeader rqs))
-                      (\(e::EXCEPTION_TYPE) -> do { close conn; throw e })
+                      (\(e::SomeException) -> do { close conn; throw e })
        ; let fn list = when (or $ map findConnClose list)
                             (close conn)
        ; fn (map rqHeaders rqs ++ map rspHeaders ok)

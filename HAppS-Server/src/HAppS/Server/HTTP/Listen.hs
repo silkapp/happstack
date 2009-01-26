@@ -6,7 +6,7 @@ import System.Log.Logger
 import HAppS.Server.HTTP.Types
 import HAppS.Server.HTTP.Handler
 
-import Control.Exception as E
+import Control.Exception.Extensible as E
 import Control.Concurrent
 import Network
 import System.IO
@@ -30,7 +30,7 @@ listen conf hand = do
 -}
   s <- listenOn $ PortNumber $ toEnum $ port conf
   let work (h,hn,p) = do -- hSetBuffering h NoBuffering
-                         let eh (x::EXCEPTION_TYPE) = logM "HAppS.Server.HTTP.Listen" ERROR ("HTTP request failed with: "++show x)
+                         let eh (x::SomeException) = logM "HAppS.Server.HTTP.Listen" ERROR ("HTTP request failed with: "++show x)
                          request conf h (hn,fromIntegral p) hand `E.catch` eh
                          hClose h
   let msg = "\nIPV6 is not supported yet. \nLikely you made a localhost request \n"++
@@ -52,15 +52,9 @@ listen conf hand = do
 #endif
 -}
   where  -- why are these handlers needed?
-#ifdef EXTENSIBLE_EXCEPTIONS
-    -- catchSome op h :: IO () -> (E.SomeExcpetion -> IO () ) -> IO ()
+
+    -- catchSome op h :: IO () -> (SomeException -> IO () ) -> IO ()
     catchSome op h = op `E.catches` [
             Handler $ \(e :: ArithException) -> h (toException e),
             Handler $ \(e :: ArrayException) -> h (toException e)
           ]
-#else
-    catchSome = E.catchJust interestingExceptions
-    interestingExceptions x@(ArithException _) = Just x
-    interestingExceptions x@(ArrayException _) = Just x
-    interestingExceptions _                    = Nothing
-#endif

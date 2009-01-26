@@ -4,10 +4,8 @@ module HAppS.Server.HTTP.FileServe
      MimeMap,fileServe, mimeTypes,isDot, blockDotFiles,doIndex,errorwrapper
     ) where
 
-import Control.Exception
-#ifdef EXTENSIBLE_EXCEPTIONS
-import Control.OldException (ioErrors)
-#endif
+import Control.Exception.Extensible
+
 import Control.Monad.Reader
 import Control.Monad.Trans
 import Data.List
@@ -26,6 +24,9 @@ import qualified HAppS.Server.SimpleHTTP as SH
 
 -- mapResult :: (IO Result -> IO Result) -> [ServerPart] -> ServerPart
 -- mapResult fn parts = ReaderT $ \rq -> fmap fn (runReaderT (multi parts) rq
+
+ioErrors :: SomeException -> Maybe IOException
+ioErrors = fromException
 
 errorwrapper :: MonadIO m => String -> String -> ServerPartT m Response
 errorwrapper binarylocation loglocation

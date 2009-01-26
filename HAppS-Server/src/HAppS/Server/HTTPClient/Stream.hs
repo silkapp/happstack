@@ -30,7 +30,7 @@ module HAppS.Server.HTTPClient.Stream (
 
 ) where
 
-import Control.Exception as Exception
+import Control.Exception.Extensible as Exception
 import System.IO.Error
 
 -- Networking
@@ -80,7 +80,7 @@ class Stream x where
 
 
 -- Exception handler for socket operations
-handleSocketError :: Socket -> Exception.EXCEPTION_TYPE -> IO (Result a)
+handleSocketError :: Socket -> Exception.SomeException -> IO (Result a)
 handleSocketError sk e =
     do { se <- getSocketOption sk SoError
        ; if se == 0
