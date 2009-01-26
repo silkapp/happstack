@@ -5,4 +5,5 @@ cd ../HAppS-Data   && cabal sdist --builddir=../dist && \
 cd ../HAppS-State  && cabal sdist --builddir=../dist && \
 cd ../HAppS-IxSet  && cabal sdist --builddir=../dist && \
 cd ../HAppS-Server && cabal sdist --builddir=../dist && \
+cd ../HAppS-DNS    && cabal sdist --builddir=../dist && \
 echo "Done"
