@@ -70,12 +70,6 @@ validateCookie cookie
          return ()
     where key = cookieName cookie
 
-{-
--- | Deprecated. This will be deleted in future.
-delSesCookie' :: (Monad m) => String -> m Result -> m Result
-delSesCookie' key res = setCookieEx 0 (Cookie "1" "/" "" key "") =<< res
--}
-
 {--setCookieEx' sec cook r0 = 
   let key = cookieName cook
       w = concat $ intersperse ";" ((key++"="++s cookieValue):[ (k++v) | (k,v) <- l, "" /= v ])
@@ -204,8 +198,4 @@ getCookie s h = do cs <- getCookies h
 
 low :: String -> String
 low = map toLower
-{-
--- | Get the value of the cookie that would be returned by 'getCookie'.
-getCookieValue :: Monad m => String -> Request -> m String
-getCookieValue s r = return . cookieValue =<< getCookie s r
--}
+

@@ -179,26 +179,6 @@ class (Data b) => Indexable a b | a->b where
 noCalcs :: t -> ()
 noCalcs _ = ()
 
-{--
-inferIndexable :: TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
-inferIndexable aType calName entryPoints
-    = do calInfo <- reify calName
-         case calInfo of
-           VarI _ t _ _ ->
-               let calType = getCalType t
-                   getCalType (AppT (AppT ArrowT _) t) = t
-                   getCalType (ForallT _ _ t) = getCalType t
-                   getCalType t = error ("Unexpected type: " ++ pprint t)
-                   mkEntryPoint n = appE (conE 'Ix) (sigE (varE 'Map.empty) (appT (appT (conT ''Map) (conT n)) (appT (conT ''Set) (conT aType))))
-               in do i <- instanceD (cxt []) (appT (appT (conT ''Indexable) (conT aType)) (return calType))
-                          [ liftM head [d| empty = IxSet $(listE (map mkEntryPoint entryPoints)) |]
-                          , liftM head [d| calcs = $(varE calName) |]
-                          ]
---                     runIO (putStrLn (pprint i))
-                     return [i]
---}
-
-
 inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
 #ifndef __HADDOCK__
 inferIxSet ixset typeName calName entryPoints
@@ -222,12 +202,8 @@ inferIxSet ixset typeName calName entryPoints
                               empty = IxSet $(listE (map mkEntryPoint entryPoints))
                               calcs :: a -> b
                               calcs = $(varE calName) |]
---                     runIO (putStrLn (pprint i))
                      let ixType = appT (conT ''IxSet) typeCon
                      ixType' <- tySynD (mkName ixset) names ixType
-                     -- runIO (putStrLn (pprint t))
-                     --d <- return $ deriveDefault' True [aType] ''IxSet
-                     --runIO (putStrLn (pprint d))
                      return $ [i, ixType']  -- ++ d
 #endif
 
@@ -312,18 +288,6 @@ getOne ixset = case toList ixset of
 getOneOr :: Ord a => a -> IxSet a -> a
 getOneOr def = fromMaybe def . getOne
 
-{--
-split es = (e1',e2')
-    where
-    set = toSet es
-    num = Set.size set
-    (e1,e2) = splitAt (num `div` 2) $ Set.toList set
-    (e1',e2') = (fromSet $ Set.fromList e1,fromSet $ Set.fromList e2)
-merge (e1,e2) = fromList $ (e1' ++ e2')
-    where
-    (e1',e2') = (toList e1,toList e2)
---}
-
 -- set operations
 (&&&) :: (Ord a, Data a, Indexable a b) => IxSet a -> IxSet a -> IxSet a
 x1 &&& x2 = intersection x1 x2
@@ -401,8 +365,6 @@ groupBy (IxSet indices) = collect indices
 
 rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
 rGroupBy x = reverse $ groupBy x
---rOrderBy x = reverse $ orderBy x
-
     
 --query impl function
 getOrd :: (Indexable a b, Ord a, Data a, Typeable k)
