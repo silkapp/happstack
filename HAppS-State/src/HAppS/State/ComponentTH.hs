@@ -39,8 +39,6 @@ mkMethods componentName componentMethods
          ds1 <- genEventInstances methodInfos
          let handlers = genComponentHandlers methodInfos
              stType = mkType componentName keys
-             mkArrowType [x] = x
-             mkArrowType (x:xs) = appT (appT arrowT x) (mkArrowType xs)
              context' = mkKeyConstraints keys ++
                         concatMap (mkMethodConstraints keys) methodInfos
          ds2 <- instanceD (nubCxt context') (appT (conT ''Methods) stType) [ funD 'methods [clause [wildP] (normalB handlers) []] ]

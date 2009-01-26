@@ -14,7 +14,6 @@ import Control.Monad.Reader
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import Data.IORef
-import Data.Maybe
 import System.IO.Unsafe
 import System.Random
 import System.Time(getClockTime,ClockTime(TOD))

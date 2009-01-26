@@ -14,7 +14,6 @@ import HAppS.State.Checkpoint
 import HAppS.State.Saver
 import HAppS.State.Transaction
 import HAppS.State.Spread
-import HAppS.State.Types
 import HAppS.State.ComponentSystem
 import HAppS.Data.Proxy
 

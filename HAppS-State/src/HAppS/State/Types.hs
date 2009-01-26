@@ -11,7 +11,6 @@ import System.Random -- (StdGen)
 import Control.Monad.State
 import Control.Monad.Reader
 import Control.Monad.Trans
-import HAppS.Data
 import Data.Generics
 -- Monad things
 

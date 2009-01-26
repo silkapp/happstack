@@ -5,7 +5,6 @@ module HAppS.State.Spread
     ) where
 
 import HAppS.State.Transaction
-import HAppS.State.Types
 import HAppS.Data.Serialize
 import HAppS.Data.SerializeTH
 

@@ -12,7 +12,6 @@ import HAppS.State.Saver
 import HAppS.Data.Serialize
 import HAppS.Data.SerializeTH
 import HAppS.State.Transaction
-import HAppS.State.Types
 import HAppS.State.ComponentSystem
 
 import Data.Typeable
