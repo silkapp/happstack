@@ -32,6 +32,9 @@ $(deriveAll [''Default, ''Eq,''Read,''Ord] [d|
  |])
 #endif
 
+insEl :: (Data XmlD a, Default a, Data NormalizeD a,
+          Data XmlD b, Default b, Data NormalizeD b) =>
+         a -> b -> Element
 insEl a b = case toXml b  of
             (Elem n xs:_) -> Elem n $ toPublicXml a ++ xs
             --(Attr n v:_) -> error $ "attr!" ++ (show a) ++ "" ++ (show b)
@@ -285,7 +288,7 @@ readElement r (Elem n es) = res
                        Flexible -> case runIdentity m of
                                        -- We ignore left over elements
                                        (_, x) -> Just x
-          endsWithNum n = head (reverse n) `elem` "0123456789"
+          endsWithNum m = head (reverse m) `elem` "0123456789"
           noNum  = reverse . dropWhile (`elem` "012344566789") . reverse 
 
 readElement _ _ = Nothing

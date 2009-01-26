@@ -14,6 +14,7 @@ isAttr _ = False
 toHaXmls :: [Element] -> [H.Content]
 toHaXmls = map toHaXml
 
+toHaXmlEl :: Element -> H.Element
 toHaXmlEl el = let H.CElem el' = toHaXml el in el'
 
 
@@ -44,8 +45,8 @@ fromHaXml (H.CRef (H.RefEntity "apos")) = CData "'"
 fromHaXml (H.CRef (H.RefEntity "quot")) = CData "\""
 fromHaXml (H.CRef (H.RefEntity x)) = 
     error $ "fromHaXml: Not implemented ref:" ++ x
-fromHaXml (H.CMisc (H.Comment c)) = CData ""
-fromHaXml (H.CMisc (H.PI (targ,string))) = CData ""
+fromHaXml (H.CMisc (H.Comment _)) = CData ""
+fromHaXml (H.CMisc (H.PI (_,_))) = CData ""
 
 
 
