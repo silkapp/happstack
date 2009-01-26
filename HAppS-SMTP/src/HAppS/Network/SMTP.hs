@@ -34,7 +34,7 @@ import System.Environment(getEnv)
 import Control.Concurrent
 import Control.Concurrent.MVar
 import Control.Monad
-import Control.Exception as E
+import Control.OldException as E
 import System.IO
 import Data.Typeable
 import System.Directory
@@ -42,7 +42,7 @@ import System.FilePath
 import System.Time
 import Data.List
 import Data.Char
-import HAppS.Network.DNS.MXClient
+import HAppS.Network.DNS
 import System.Cmd (rawSystem)
 import System.Random
 

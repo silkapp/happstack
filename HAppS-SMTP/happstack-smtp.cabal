@@ -1,11 +1,11 @@
-Name:                happstack-dns
+Name:                happstack-smtp
 Version:             0.1
 Synopsis:            Web related tools and services.
 Description:         Web framework
 License:             BSD3
 License-file:        COPYING
 Author:              Happstack team, HAppS LLC
-Maintainer:          Happstack team <happs@googlegroups.com>
+Maintainer:          happs@googlegroups.com
 homepage:            http://happstack.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
@@ -17,23 +17,12 @@ Flag base4
 Library
 
   Exposed-modules:
-                       HAppS.Network.DNS
-  Other-modules: 
-                       HAppS.Network.DNS.Cache
-                       HAppS.Network.DNS.ChooseMethod
-                       HAppS.Network.DNS.HiWire
-                       HAppS.Network.DNS.LoWire
-                       HAppS.Network.DNS.MutableEnv
-                       HAppS.Network.DNS.MXClient
-                       HAppS.Network.DNS.Name
-                       HAppS.Network.DNS.NSTree
-                       HAppS.Network.DNS.RR
-                       HAppS.Network.DNS.Type
-                       HAppS.Network.DNS.Util
+                       HAppS.Network.SMTP
+                       HAppS.Network.XSLTSMTP
 
-  Build-Depends:       base, network, bytestring, containers,
-                       old-time,hslogger,happstack-util,random,
-                       mtl
+  Build-Depends:       base, happstack-dns==0.1, random,
+                       process, old-time, filepath,
+                       directory, network
   hs-source-dirs:      src
 
   if !os(windows)
