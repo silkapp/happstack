@@ -15,7 +15,7 @@ Flag base4
 
 Library
   Build-Depends:       mtl, hslogger >= 1.0.2, template-haskell, array,
-                       bytestring, old-time, process, directory
+                       bytestring, old-time, process, directory, extensible-exceptions
   if flag(base4)
     Build-Depends:       base >= 4
   else
@@ -43,5 +43,3 @@ Library
                        TypeSynonymInstances
   ghc-options:         -W -fno-warn-incomplete-patterns
   GHC-Prof-Options:    -auto-all
-  if flag(base4)
-    cpp-options:         -DEXTENSIBLE_EXCEPTIONS

@@ -5,7 +5,7 @@ import System.Environment
 import System.Exit
 import System.Time
 import Control.Concurrent
-import Control.Exception
+import Control.Exception.Extensible
 import Control.Monad.Error
 import HAppS.Crypto.SHA1
 import HAppS.Util.Common
@@ -47,9 +47,6 @@ daemonize binarylocation main =
         appModTime <- getModificationTime bl
         if startTime < appModTime then 
              throwTo mId $ 
-#ifndef EXTENSIBLE_EXCEPTIONS
-                            ExitException 
-#endif
                               ExitSuccess -- throws to the main thread
 --           raiseSignal softwareTermination -- can we eliminate posix dependency?
            else do

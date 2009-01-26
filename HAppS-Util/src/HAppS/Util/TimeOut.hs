@@ -46,7 +46,7 @@ module HAppS.Util.TimeOut
     ) where
 
 import Control.Concurrent
-import Control.Exception as E
+import Control.Exception.Extensible as E
 import Data.Typeable(Typeable)
 import Data.IORef
 import Data.Maybe
@@ -71,7 +71,7 @@ data TimeOutExceptionI = TimeOutExceptionI TimeOutTId -- internal exception, sho
 
 data TimeOutException = TimeOutException -- that's the exception the user may catch 
   deriving(Typeable)
-#ifdef EXTENSIBLE_EXCEPTIONS
+
 instance Show TimeOutExceptionI where show _ = error "this TimeOutExceptionI should have been caught within this module"
 instance E.Exception TimeOutExceptionI
 
@@ -85,26 +85,17 @@ catch' = E.catch
 
 try' :: IO a -> IO (Either SomeException a) -- give a type signature for try 
 try' = E.try
-#else
-throw' :: Typeable exception => exception -> b
-throw' = throwDyn
-throwTo' = throwDynTo
-try' = E.try
-catch' = catchDyn
-#endif
+
 
 -- module internal function 
 catchTimeOutI :: TimeOutTId -> IO a -> IO a -> IO a
 catchTimeOutI id op handler =
   op `catch'` (\e@(TimeOutExceptionI i) -> if i == id then handler  else throw' e)
 
-#ifdef EXTENSIBLE_EXCEPTIONS
+
 -- | This is the normal timeout handler. It throws a TimeOutException exception,
 -- if the timeout occurs.
-#else
--- | This is the normal timeout handler. It throws a dynamic exception (TimeOutException),
--- if the timeout occurs.
-#endif
+
 withTimeOutMaybe :: Int -> IO a -> IO (Maybe a)
 withTimeOutMaybe tout op = do 
   id <- nextTimeOutId
