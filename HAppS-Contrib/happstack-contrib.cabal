@@ -22,7 +22,7 @@ Library
                        HAppS.Store.HelpReqs
 
   Build-Depends:       base, network, old-time, bytestring, happstack-server,
-                       mtl, HTTP, directory, happstack-util, happstack-data,
+                       mtl, HTTP >= 4000, directory, happstack-util, happstack-data,
                        happstack-state, happstack-ixset
 
   hs-source-dirs:      src
