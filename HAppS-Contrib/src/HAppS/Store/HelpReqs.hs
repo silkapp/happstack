@@ -41,7 +41,7 @@ $( deriveAll [''Show,''Default,''Read,''Eq,''Ord]
        data Status = Open | Closed Published
        newtype HelpFeed = HelpFeed [HelpReq] -- provide a help feed
        data HelpMsgReceived = HelpMsgReceived
-       --data Status = Open | Assigned FB.Uid Published | Closed FB.Uid Published
+       
      |])
 
 instance Version HelpReq
@@ -57,11 +57,6 @@ $(deriveSerialize ''HelpMsgReceived)
 
 $(inferIxSet "HelpReqs" ''HelpReq 'noCalcs [''FB.Uid,''Published,''Status] )
 #endif
-{-
-$(deriveAll [''Show,''Default,''Read]
-  [d| data HelpReqs = HelpReqs {unHelpReqs :: HelpReqs_ } |]
- )
--}
 
 --Command functions
 addHelpReq :: HelpReq -> Update HelpReqs ()
@@ -115,69 +110,3 @@ http =
                      take 1000) helpReqs 
                  ]
       ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---controls
---addHelpReq = update . AddHelpReq'
-{--
-
---addHelpReq' adr = update . adr 
-
-controls::Q [Dec]
-controls = return  
-           [
---            fun0_1 "addHelpReq" "addHelpReq'" "AddHelpReq"
-           fun0_1 "getHelpReqs" "query" "GetHelpReqs"
-           ]
---}                    
--- $(return 
---  [fun0_1 "addHelpReq" "addHelpReq'" "AddHelpReq"])           
-
-
---OBSOLETE? ---
--- Control functions that need some help
-{--
-addHelpMsg help@(HelpMsg uid (Published t) msg) = 
-    do
-    TOD eTime _ <- getClockTime
-    if t > eTime || t < eTime - 3600000 then return () else do
-    update $ AddHelpMsg help
-
-getHelpMsgs = query GetHelpMsgs
---}

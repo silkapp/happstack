@@ -75,7 +75,7 @@ setFlashMsg :: (Ord msg,Data msg) => Uid -> msg -> Update (FlashMsgs msg) ()
 setFlashMsg uid msg =
     do
     t <- getTime
-    let f = FlashMsg uid (Published t) msg -- (FlashContent msg)
+    let f = FlashMsg uid (Published t) msg
     modify (updateIx uid f)
     --delete old messages
     expired <-gets (toList . (@< (Updated $ t-maxAge)))
@@ -84,9 +84,8 @@ setFlashMsg uid msg =
     where maxAge = 3600
 
 
-getFlashMsg :: (Ord msg, Data msg) => Uid -> Query (FlashMsgs msg) (Maybe msg) -- FlashMsg)
+getFlashMsg :: (Ord msg, Data msg) => Uid -> Query (FlashMsgs msg) (Maybe msg) 
 getFlashMsg uid = 
---    (return . maybe "" id . gFind . getOne . (@=uid) . flashMsgs) =<< ask
     (return . gFind . getOne . (@=uid)) =<< ask
 
 delFlashMsg :: (Ord msg, Data msg) => Uid -> Proxy (FlashMsgs msg) -> Update (FlashMsgs msg) ()
@@ -105,7 +104,6 @@ instance (Serialize (FlashMsgs a), Ord a, Data a) => Component (FlashMsgs a) whe
 #endif
 
 -- Controls
---insFlashMsg:: Xml a => Uid -> a -> IO ()
 insFlashMsg :: (Xml a, MonadIO m) => Uid -> a -> m ()
 insFlashMsg uid msg = update $ SetFlashMsg uid $ toXml msg
 extFlashMsg :: (Data msg,

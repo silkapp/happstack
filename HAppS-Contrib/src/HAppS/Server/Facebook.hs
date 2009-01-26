@@ -63,10 +63,6 @@ $(deriveAll [''Show,''Read,''Default, ''Eq, ''Ord]
    [d|
 
 
-    -- data FBSes = FBSes Uid SessionId AppAdded
-
-    --  newtype SessionId = SessionId String
-    -- newtype AppAdded = AppAdded Bool
     data Friends_getAppUsers_response = Friends_getAppUsers_response [Uid] 
     data Friends_get_response = Friends_get_response [Uid] 
 
@@ -126,9 +122,7 @@ $(deriveAll [''Show,''Read,''Default, ''Eq, ''Ord]
     newtype Notification = Notification String
     data Error_response = Error_response Error_code
     newtype Error_code=Error_code Int
-    --newtype Email = Email String
-
-
+    
     newtype Fb_sig_in_canvas = Fb_sig_in_canvas Bool 
     newtype Fb_sig_added = Fb_sig_added Bool
     newtype Fb_sig_time = Fb_sig_time Integer
@@ -174,7 +168,7 @@ type FBInfo = (Api_key,Secret,FBSession)
 friends_getAppUsers::(?fbSession::FBSession) => IO AppUsers
 friends_getAppUsers = 
     do
-    Friends_getAppUsers_response uids <- fb (?fbSession::FBSession) ()--(?fbInfo::FBInfo) ()
+    Friends_getAppUsers_response uids <- fb (?fbSession::FBSession) ()
     return $ AppUsers $ gFind uids
 
 users_getInfo :: (?fbSession::FBSession, Data a) => a -> [String] -> IO [User]
@@ -183,7 +177,6 @@ users_getInfo uids fields =
     Users_getInfo_response users <- fb (?fbSession::FBSession) $ (Uids $ gFind uids) .&. (Fields fields)
     return users
 
---(networks::Maybe Affiliations) <- 
 getNetworks::(?fbSession::FBSession)=>IO (Maybe Affiliations)
 getNetworks = return . gFind =<< users_getInfo [uid] ["affiliations"]
 
@@ -221,12 +214,8 @@ notifications_send uids notifObj emailObj =
                .&. (if null email then Nothing else Just $ Email email)
     print "CONFIRM"
     print confirm
-    --error "abc"
     return confirm
     
-
---data Nofitications_send_response = Nofitications_send_response confirm 
-
 profile_setFBML :: (?fbSession::FBSession,
                     Xml a,
                     Xml b,
@@ -277,10 +266,6 @@ friends = fromJust $ fmap toFriends $ gFind (?fbSession::FBSession)
 numFriends::(?fbSession::FBSession) => Int
 numFriends = let (Friends fs) = friends in length fs
 
---mbFriends = fmap toUid $ gFind ?fbSession
---time::(?fbSession::FBSession) => Integer
---time = let (Fb_sig_time t) = gFind' ?fbSession in t
-
 getAppURLs :: IO (BaseURL, InstallURL)
 getAppURLs = 
     do
@@ -315,15 +300,11 @@ getInviteInfo = do
                 return . Just . InviteInfo uid appUsers =<< getBaseURL
 
 
-                   
-
-
 isAppAdded::(?fbSession::FBSession) => Bool
 isAppAdded = maybe (error "no fb_sig_added") (const appAdded) mbAdded
     where 
     mbAdded = gFind ?fbSession 
     Fb_sig_added appAdded = fromJust mbAdded
---fakeEmail (Uid uid) = show uid ++ "@facebook.com"
 
 getConfig :: IO Fb_config
 getConfig = --yes reading a file is bad but roundtripping to fb sucks too
@@ -365,13 +346,7 @@ fb fbSession a =
     let body = HTTP.rspBody $ snd res
     print (body::String)
     print "body printed"
-    let --mbResp = fromString Rigid body
-        --resp = fromJust mbResp
-        -- err =  runIdentity $ fromString Flexible body
-        resp = runIdentity $ fromString Flexible body
-        -- Just (Error_code errCode) = gFind (err::Error_response)
-    -- if errCode >0 then error $ show err else do
-    --when (isNothing mbResp) $ error "BAD BODY" ++ body
+    let resp = runIdentity $ fromString Flexible body
     print resp
     print "resp returned"
     return resp
@@ -440,8 +415,6 @@ fbApp xslproc stylesheet app -- api_key secret app
     xslt xslproc stylesheet [ withData fun]
     where
     fun (fbSes::FBSession) = app $ gSet (Just (xslproc,stylesheet)) fbSes
-        --where
-        --fbInfo = (api_key,secret,fbSes)::FBInfo 
 
 onlyInstalled :: (?fbSession::FBSession, MonadIO m) =>
                  [ServerPartT m [Char]] -> [ServerPartT m [Char]]
@@ -449,7 +422,6 @@ onlyInstalled app =
     if isAppAdded then app else 
            [uriRest $ \uri ->
                 anyRequest $ fbSeeOther . gFind' =<< liftIO (getInstallURL uri)
-           -- anyRequest $ fbSeeOther . gFind' =<< getInstallURL ""
            ]
 
 postAdd :: Monad m => [ServerPartT m String]
@@ -459,21 +431,6 @@ postAdd = [uriRest $ \uri -> anyRequest $ fbSeeOther uri]
 fbSeeOther :: (Monad m) => [Char] -> WebT m [Char]
 fbSeeOther s = ok $ "<fb:redirect url=\""++s++"\"/>"
 
---ssh_forward host port = unsafePerformIO $ print "hello"
-{--
-fbapp fbconf handle =
-    ReaderT $ \rq -> 
-    do 
-    
-    return "12"
---}
-
-
-
---require args
--- fb (Session_key "abc" .&. Secret "abc") (Uid 123 .&. Title "abc")::IO Friends_get_response
--- Friends_get_response [Uid] <- fb fbInfo ()
-
 --can make it typesafe.  now we just need to deal with response
 class HasArgs a b | a -> b 
 instance (HasT args Uid,HasT args Title) => HasArgs Friends_get_response args
@@ -481,26 +438,3 @@ f::(Default r,HasArgs r args) => args -> r
 f _ = defaultValue
 tf :: [Uid]
 Friends_get_response tf = f (Uid 123 .&. Title "abc" .&. Secret "abc")
-
-{--
-class HasTs targs args 
-instance HasTs Nil args
-instance (HasTs targs args,HasT args t) =>HasTs (Couple t targs) args
---}
-
-    --data FbInfo = FbInfo Fb_sig_in_canvas Fb_sig_user Fb_sig_session_key
-{--
-    newtype In_canvas=Fb_sig_in_canvas Bool
-    newtype Time=Time Float
-    newtype User=User Uid
-    newtype Profile_update_time=Profile_update_time Integer
-
---}
-
-{--    
-    newtype Fb_sig_friends=Fb_sig_friends [Uid]
-    newtype Fb_sig_api_key=Fb_sig_api_key String
-    newtype Fb_sig_added=Fb_sig_added Bool
-    newtype Fb_sig=Fb_sig String
---}
-
