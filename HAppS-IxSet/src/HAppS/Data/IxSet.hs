@@ -106,7 +106,6 @@ import Control.Monad.Reader
 import Language.Haskell.TH as TH
 
 import HAppS.Util.TH
-import HAppS.State
 import HAppS.Data
 import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
 
@@ -176,8 +175,9 @@ class (Data b) => Indexable a b | a->b where
     calcs :: a->b -- adds indexable values not found in the type
            -- if you don't want calculated values use DB a ()
            --should this be a fromDyn so we can provide a default impl?
-
-noCalcs x = ()
+           
+noCalcs :: t -> ()
+noCalcs _ = ()
 
 {--
 inferIndexable :: TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
@@ -205,14 +205,14 @@ inferIxSet ixset typeName calName entryPoints
     = do calInfo <- reify calName
          typeInfo <- reify typeName
          let (context,names) = case typeInfo of
-                                 TyConI (DataD context _ names _ _) -> (context,names)
-                                 TyConI (NewtypeD context _ names _ _) -> (context,names)
-                                 TyConI (TySynD _ names _) -> ([],names)
+                                 TyConI (DataD ctxt _ nms _ _) -> (ctxt,nms)
+                                 TyConI (NewtypeD ctxt _ nms _ _) -> (ctxt,nms)
+                                 TyConI (TySynD _ nms _) -> ([],nms)
              typeCon = foldl appT (conT typeName) (map varT names)
          case calInfo of
            VarI _ t _ _ ->
                let calType = getCalType t
-                   getCalType (ForallT names _ t') = getCalType t'
+                   getCalType (ForallT _names _ t') = getCalType t'
                    getCalType (AppT (AppT ArrowT _) t') = t'
                    getCalType t' = error ("Unexpected type: " ++ pprint t')
                    mkEntryPoint n = appE (conE 'Ix) (sigE (varE 'Map.empty) (forallT names (return context) $
@@ -398,6 +398,8 @@ groupBy (IxSet indices) = collect indices
     collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
     f = mapSnd Set.toList . Map.toList
 
+
+rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
 rGroupBy x = reverse $ groupBy x
 --rOrderBy x = reverse $ orderBy x
 
