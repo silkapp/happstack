@@ -756,7 +756,7 @@ runValidator defaultValidator resp =
 wdgHTMLValidator :: (MonadIO m, ToMessage r) => r -> m Response
 wdgHTMLValidator = liftIO . lazyProcValidator "validate" ["-w","--verbose"] Nothing Nothing handledContentTypes . toResponse
     where
-      handledContentTypes (Just ct) = elem (B.unpack ct) [ "text/html", "application/xhtml+xml" ]
+      handledContentTypes (Just ct) = elem (takeWhile (\c -> c /= ';' && c /= ' ') (B.unpack ct)) [ "text/html", "application/xhtml+xml" ]
       handledContentTypes Nothing = False
 
 -- |A validator which always succeeds.
