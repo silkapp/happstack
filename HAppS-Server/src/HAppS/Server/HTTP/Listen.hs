@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, ScopedTypeVariables #-}
+{-# LANGUAGE CPP, ScopedTypeVariables, PatternSignatures #-}
 module HAppS.Server.HTTP.Listen(listen) where
 
 import System.Log.Logger

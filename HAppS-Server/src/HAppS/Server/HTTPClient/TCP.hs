@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSignatures #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  HAppS.Server.HTTPClient.TCP

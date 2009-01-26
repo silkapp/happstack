@@ -1,5 +1,5 @@
 {-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs,
-    GeneralizedNewtypeDeriving, DeriveDataTypeable#-}
+    GeneralizedNewtypeDeriving, DeriveDataTypeable, PatternSignatures #-}
 module HAppS.Data.Serialize
     ( Serialize(..), Version(..), Migrate(..), Mode(..), Contained, contain, extension,
       safeGet, safePut, serialize, deserialize, collectVersions,

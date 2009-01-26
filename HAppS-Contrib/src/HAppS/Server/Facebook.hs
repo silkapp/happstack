@@ -1,5 +1,5 @@
 {-# OPTIONS -fcontext-stack=25 #-}
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, CPP, ImplicitParams, RecursiveDo, DeriveDataTypeable,
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, CPP, ImplicitParams, RecursiveDo, DeriveDataTypeable, PatternSignatures,
              ScopedTypeVariables, MultiParamTypeClasses, FunctionalDependencies, OverlappingInstances, UndecidableInstances #-}
 module HAppS.Server.Facebook where
 import Control.Monad.Reader
