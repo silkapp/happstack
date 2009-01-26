@@ -23,10 +23,6 @@ type a :&: b = Couple b a
 #endif
 
 
---instance Xml (Couple a b) where
---    toXml (Couple a b) = (toXml a) ++ (toXml b)
---    fromXml xml = Couple (fromXml xml) (fromXml xml)
-
 class CoupleClass a where
     toPairs' :: a -> Pairs
     fromPairs' :: Pairs -> Maybe a
@@ -94,30 +90,6 @@ instance Trans' ft a => Trans ft a where
 instance (Trans ft b) => Trans' ft (Couple a b) where
     trans' f (Couple a b) = Couple a (trans f b)
 
-
-{--
-class TransT ft a b where
-    transT :: ft -> a -> b
-
-instance TransT (a->b) (Couple a c) (Couple b c) where
-    transT f (Couple a c) = Couple (f a) c
-
-instance TransT (a->b) (Couple c a) (Couple c b) where
-    transT f (Couple c a) = Couple c (f a) 
-
-class TransT' ft a b where
-    transT' :: ft -> a -> b
-
-instance TransT' ft a b => TransT ft a b where
-    transT f a = transT' f a 
-
-instance (TransT (c->d) b' d) => 
-    TransT' ft (Couple a b) (Couple a b') where
-    transT' f (Couple a b) = Couple a (transT f b)
---}
-          
-
-
 class HMap a b | a -> b where
     hMap::a->b
 
@@ -126,10 +98,3 @@ instance (HMap b d,CoupleClass b) => HMap (Couple a b) (Couple [a] d) where
 
 instance HMap (Couple a Nil) (Couple [a] Nil) where
     hMap (Couple a Nil) = Couple [a] Nil
-
--- hMap ("acdd" .&. Just "acd" .&. ("acb","def") .&. Nil)
-
-
-    
-
-

@@ -124,12 +124,7 @@ collectVersions prox
 --------------------------------------------------------------
 -- Instances
 --------------------------------------------------------------
-{-
-instance (ToString a,FromString a, Typeable a) => Version a
-instance (ToString a,FromString a, Typeable a,Version a) => Serialize a where
-    getCopy = contain (defaultDecodeXmlStringM =<< get)
-    putCopy = contain . put . defaultEncodeXmlString
--}
+
 instance Version Int where mode = Primitive
 instance Serialize Int where
     getCopy = contain $ get; putCopy = contain . put
@@ -279,23 +274,3 @@ instance Serialize Object where
     getCopy = contain $
               do (objType, objData) <- get
                  return (Object objType objData)
-
-
---------------------------------------------------------------
--- Xml serialization
---------------------------------------------------------------
-
-{-
-defaultEncodeXmlString :: ToString a => a -> String
-defaultEncodeXmlString x = toString x
-
-defaultDecodeXmlStringM :: forall a. (FromString a,Typeable a) => String -> Get a
-defaultDecodeXmlStringM str
-    = case fromString Flexible str of
-        Identity v -> return v
-{-
-        Nothing -> fail ("defaultDecodeXmlStringM: parsing failed "++show (typeOf (undefined::a))++" @ "++
-                         show (take 256 str))
-        Just v  -> return v
--}
--}

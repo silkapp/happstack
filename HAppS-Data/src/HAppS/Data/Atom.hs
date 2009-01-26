@@ -64,14 +64,10 @@ $( deriveAll [''Ord,''Eq,''Read,''Show,''Default]
         Maybe Content -- We choose to always have content
         --}
 
-    --data PersonConstruct = PersonConstruct Name (Maybe URI) (Maybe Email)
     type PersonConstruct = (Name, Maybe Uri, Maybe Email)
     data Author = Author PersonConstruct
     data Contributor = Contributor PersonConstruct
     newtype Name = Name Text 
-    --type MbRefs = Maybe Refs
-
-    --newtype Owner = Owner String
 
     data Category = Category Term (Maybe Scheme) (Maybe Label) 
     newtype Term = Term String 
@@ -79,7 +75,6 @@ $( deriveAll [''Ord,''Eq,''Read,''Show,''Default]
     newtype Label = Label String 
 
     newtype Id = Id Integer 
-    --newtype Refs = Refs Integer
 
     type DateConstruct = Integer
 

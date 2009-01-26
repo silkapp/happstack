@@ -13,7 +13,6 @@ import Data.Maybe
 ---stuff for examples
 import HAppS.Data.DeriveAll
 import HAppS.Util.Common
--- import Data.Typeable
 
 import Data.Generics as G
 import HAppS.Data.Default -- for pairs
@@ -53,7 +52,6 @@ xmlToPairs :: [Element] -> Pairs
 xmlToPairs =
     map (\(x,y)->(tail x,y)) .
     xmlIntoPairs 0 ""
---    where stripInitialSlashes = map (\(x,y)->(tail x,y))
 
 xmlIntoPairs :: Int -> String -> [Element] -> Pairs
 xmlIntoPairs _ _ [] = []
@@ -105,8 +103,7 @@ class (Xml x,Show x, G.Data x) => AsPairs x where
 instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
     toPairs x = xmlToPairs $ toPublicXml x
     fromPairs [] = Nothing
-    fromPairs pairs = --if res == Just defaultValue then Nothing else res
-                      if res == dv && notRigidMatch then Nothing else Just res
+    fromPairs pairs = if res == dv && notRigidMatch then Nothing else Just res
         where
         xml = pairsToXml $ mapFst clean pairs
         res = runIdentity $ fromXml Flexible xml
@@ -115,7 +112,6 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
         isRigidMatch = isJust mbRigidMatch
         notRigidMatch = not isRigidMatch
         dv = defaultValue
-        --fromJust $ head [Just defaultValue,res]
         (cons,_) = break (==' ') $ show dv
         clean n = if (map toLower parent)==(map toLower cons) then n
                   else if head n =='/' then n
@@ -124,35 +120,6 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
             name = trimSlash n
             (parent,_) = break (=='/') name
         trimSlash n = if head n=='/' then tail n else n
-{--
-    fromPairs pairs = res
-        where
-        res = if (map toLower parent)==(map toLower cons)
-              then fromXml $ pairsToXml pairs
-              else fromPairs $ 
-                   --(error . ((show (parent,cons,name))++) . show) $ 
-                   map (\(n,v)-> if head n=='/' then (n,v) 
-                                 else (cons++('/':trimSlash n),v))
-                   pairs
-        dv = fromJust $ head [Just defaultValue,res]
-        (n,_) = head pairs
-        name = trimSlash n
-
-        (parent,child) = break (=='/') name
-        (cons,_) = break (==' ') $ show dv
---}
-
-
---    fromPairs ps = fromPairs' ps
---fromPairs' :: (Xml b, Show b) => [([Char], String)] -> Maybe b
-
-
---instance AsPairs Element where
---    toPairs x = xmlToPairs [x]
---    fromPairs = head . pairsToXml
-
---    fromPairs x = fromXml $ pairsToXml x
-
 
 toPairsX :: (Xml a, Show a, Data a, Eq a) => a -> Pairs
 toPairsX x = map (\(n,v)->let (_,child)=break (=='/') n in

@@ -35,13 +35,6 @@ instance (Xml a, Xml [a]) => Xml [a] where
                                                f (x:acc_xs) acc_vs xs
 
 
---data List'  a = Nil' | Cons a (List' a)
-
-
-
-
-
-
 instance Xml Bool where
     toXml True = [CData "1"]
     toXml False = [CData "0"]

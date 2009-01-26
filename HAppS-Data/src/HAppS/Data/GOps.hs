@@ -11,10 +11,10 @@ gSet v = gReplace (const v)
 
 gReplace :: (Typeable a, Data b) => (a -> a) -> b -> b
 gReplace f x = everywhere (mkT f) x
---gFind1 x = let res = gFind x in if null res then Nothing else head res
+
 gFind :: (MonadPlus m, Data a, Typeable b) => a -> m b
 gFind x = msum $ map return $ listify (const True) x
---gFindMb x = gFind x::(Typeable a) => Maybe a
+
 gFind' :: (Data a, Typeable b) => a -> b
 gFind' x = fromJust $ gFind x
 --Monad versions

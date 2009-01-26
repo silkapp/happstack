@@ -37,9 +37,6 @@ insEl :: (Data XmlD a, Default a, Data NormalizeD a,
          a -> b -> Element
 insEl a b = case toXml b  of
             (Elem n xs:_) -> Elem n $ toPublicXml a ++ xs
-            --(Attr n v:_) -> error $ "attr!" ++ (show a) ++ "" ++ (show b)
-            --[] -> error $ "empty" ++ show b
-            --(CData s:_) -> error $ "cdata " ++ (show a) ++ " " ++ (show b)
             _ -> error "can't insert a into b"
 
 
@@ -47,7 +44,6 @@ insEl a b = case toXml b  of
 -- Haskell syntax
 instance Show Element where
     show (Elem s es) = "Elem " ++ show s ++ " ["
-                   --   ++ (fiddle (unlines (indent (concatMap (lines . show) es))))
                        ++ fiddle (unlines (indent (concatMap lines $ comma $ map show es)))
                        
                       ++ "]"
@@ -378,7 +374,6 @@ xmlAttr newTypeName
             do let x = mkName "x"
                    f = mkName "f"
                    cstr = stringL $ first toLower $ nameBase c
-                   -- toXml (c x) = [Attr "c" $ BS.unpack x]
                    toFun = funD
                              'toXml
                              [clause
@@ -386,16 +381,14 @@ xmlAttr newTypeName
                                  (normalB [| [Attr $(litE cstr)
                                                    $ BS.unpack $(varE x)] |])
                                  []]
-                   -- readXml = readXmlWith f
-                   --     where <readHelper>
+
                    readFun = funD
                              'readXml
                              [clause
                                  []
                                  (normalB [| readXmlWith $(varE f) |])
                                  [readHelper]]
-                   -- f (Attr "c" x) = Just $ c $ BS.pack x
-                   -- f _ = Nothing
+
                    readHelper
                     = funD f
                            [
