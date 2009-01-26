@@ -91,7 +91,7 @@ http =
                                admins <- liftIO $ getAdmins
                                unless (null admins) $ 
                                       do
-                                      conf <- liftIO $ notifications_send admins 
+                                      liftIO $ notifications_send admins 
                                                       (Title "helpreq")
                                                       ()
                                       return ()

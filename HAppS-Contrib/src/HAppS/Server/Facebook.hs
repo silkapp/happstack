@@ -390,13 +390,7 @@ makeReq t fbInfo a resp= req
      sig = stringMD5 (md5 (L.pack raw))
      req = s_args++[("sig",sig)]
 
-{-
-md5 = hex . map fromIntegral . MD5.hash . map (fromIntegral.fromEnum) 
-hex::[Integer]->String
-hex = concatMap (printf "%02x") 
--}
-
-
+spost :: URI -> [(String,String)] -> IO (URI, HTTP.Response String)
 spost u q = Browser.browse $ Browser.request $ Browser.formToRequest $ 
             Browser.Form HTTP.POST u q
 
