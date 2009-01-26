@@ -80,7 +80,7 @@ instance E.Exception TimeOutException
 
 throw' :: Exception exception => exception -> b
 throw' = throw
-throwTo' = throwTo
+throwTo' = E.throwTo
 catch' = E.catch
 
 try' :: IO a -> IO (Either SomeException a) -- give a type signature for try 
