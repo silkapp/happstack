@@ -18,18 +18,6 @@ Library
 
   Exposed-modules:
                        HAppS.Network.DNS
-  Other-modules: 
-                       HAppS.Network.DNS.Cache
-                       HAppS.Network.DNS.ChooseMethod
-                       HAppS.Network.DNS.HiWire
-                       HAppS.Network.DNS.LoWire
-                       HAppS.Network.DNS.MutableEnv
-                       HAppS.Network.DNS.MXClient
-                       HAppS.Network.DNS.Name
-                       HAppS.Network.DNS.NSTree
-                       HAppS.Network.DNS.RR
-                       HAppS.Network.DNS.Type
-                       HAppS.Network.DNS.Util
 
   Build-Depends:       base, network, bytestring, containers,
                        old-time,hslogger,happstack-util,random,

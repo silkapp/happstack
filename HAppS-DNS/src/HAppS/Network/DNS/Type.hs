@@ -1,3 +1,4 @@
+{-# -fglasgow-exts #-}
 module HAppS.Network.DNS.Type where
 
 import qualified Data.ByteString as BS
