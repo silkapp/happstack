@@ -9,6 +9,7 @@ import HAppS.Server.HTTP.Handler
 import Control.Exception.Extensible as E
 import Control.Concurrent
 import Network
+import Network.Socket as Socket hiding (listen)
 import System.IO
 
 {-
@@ -18,6 +19,17 @@ import System.Posix.Signals
 {-
 #endif
 -}
+
+-- alternative implementation of accept to work around EAI_AGAIN errors
+acceptLite :: Socket -> IO (Handle, HostName, Socket.PortNumber)
+acceptLite sock = do
+  (sock', addr) <- Socket.accept sock
+  (Just peer, _) <- getNameInfo [NI_NUMERICHOST] True False addr
+  handle <- socketToHandle sock' ReadWriteMode
+  (PortNumber port) <- Network.socketPort sock'
+  return (handle, peer, port)
+
+
 
 listen :: Conf -> (Request -> IO Response) -> IO ()
 listen conf hand = do
@@ -36,9 +48,8 @@ listen conf hand = do
   let msg = "\nIPV6 is not supported yet. \nLikely you made a localhost request \n"++
             "and your machine resolved localhost to an IPv6 address. \n"++
             "Use http://127.0.0.1:"++(show $ port conf)++"\n"
-      loop = do accept s >>= forkIO . work
+      loop = do acceptLite s >>= forkIO . work
                 loop
-  --  let loop = accept s >>= forkIO . work >> loop
   let pe e = logM "HAppS.Server.HTTP.Listen" ERROR ("ERROR in accept thread: "++
                                                     show e)
   let infi = loop `catchSome` pe >> infi -- loop `E.catch` pe >> infi
