@@ -180,7 +180,6 @@ noCalcs :: t -> ()
 noCalcs _ = ()
 
 inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
-#ifndef __HADDOCK__
 inferIxSet ixset typeName calName entryPoints
     = do calInfo <- reify calName
          typeInfo <- reify typeName
@@ -205,11 +204,6 @@ inferIxSet ixset typeName calName entryPoints
                      let ixType = appT (conT ''IxSet) typeCon
                      ixType' <- tySynD (mkName ixset) names ixType
                      return $ [i, ixType']  -- ++ d
-#endif
-
-
-
-
 
 -- modification operations
 

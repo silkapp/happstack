@@ -22,14 +22,14 @@ import Control.Monad.State
 
 
 --interface with State
-#ifndef __HADDOCK__
+
 $( deriveAll [''Show,''Default,''Read,''Eq,''Ord]
    [d|
        newtype Context = Context String  --this belongs elsewhere!
        newtype EpochTime = EpochTime Integer       
        data Wrap a = Wrap {unwrap::a}
        |])
-#endif
+
 type With st' st a = Ev (StateT st' STM) a -> Ev (StateT st STM) a
 
 

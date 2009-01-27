@@ -25,13 +25,13 @@ logMX :: Priority -> String -> IO ()
 logMX = logM "HAppS.Server.XSLT"
 
 type XSLPath = FilePath
-#ifndef __HADDOCK__
+
 $(deriveAll [''Show,''Read,''Default, ''Eq, ''Ord]
    [d|
        data XSLTCmd = XSLTProc | Saxon 
     |]
    )
-#endif
+
 xsltCmd :: XSLTCmd
            -> XSLPath
            -> FilePath

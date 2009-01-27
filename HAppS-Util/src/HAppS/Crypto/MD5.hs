@@ -59,7 +59,6 @@ md5 :: L.ByteString -> L.ByteString
 md5 bs = md5Finalize $ md5Update md5InitialContext bs
 
 md5Finalize :: MD5Context -> L.ByteString
-#ifndef __HADDOCK__
 md5Finalize !ctx@(MD5Ctx (MD5Par _ _ _ _) rem !totLen) =
 	let totLen' = (totLen + 8*fromIntegral l) :: Word64
 	    padBS = B.pack $ 0x80 : replicate lenZeroPad 0 ++ size_split 8 totLen'
@@ -76,7 +75,6 @@ L.toChunks $ runPut ( do
 	lenZeroPad = if (l+1) <= blockSizeBytes - 8
 			then (blockSizeBytes - 8) - (l+1)
 			else (2*blockSizeBytes - 8) - (l+1)
-#endif
 
 -- size_split :: Int -> a -> [Word8]
 size_split 0 _ = []
@@ -100,7 +98,6 @@ block bs = case L.toChunks bs of
 -- Assumes ByteString length == blockSizeBytes, will fold the 
 -- context across calls to applyMD5Rounds.
 performMD5Update :: MD5Context -> ByteString -> MD5Context
-#ifndef __HADDOCK__
 performMD5Update !ctx@(MD5Ctx !par@(MD5Par !a !b !c !d) _ !len) bs =
 	let MD5Par a' b' c' d' = applyMD5Rounds par bs
 	in if B.length bs == blockSizeBytes
@@ -111,9 +108,7 @@ performMD5Update !ctx@(MD5Ctx !par@(MD5Par !a !b !c !d) _ !len) bs =
 			}
 		else ctx { mdLeftOver = bs } 
 
-#endif
 applyMD5Rounds :: MD5Partial -> ByteString -> MD5Partial
-#ifndef __HADDOCK__
 applyMD5Rounds (MD5Par a b c d) w =
 	let -- Round 1
 	    !r0 = ff   a  b  c  d   (w!!0)  7  3614090360
@@ -222,7 +217,7 @@ applyMD5Rounds (MD5Par a b c d) w =
 		peekElemOff p n
 	{-# INLINE getNthWord #-}
 {-# INLINE applyMD5Rounds #-}
-#endif
+
 stringMD5 lazy = 
 	let x = L.toChunks lazy
 	    w = B.unpack (B.concat x)
