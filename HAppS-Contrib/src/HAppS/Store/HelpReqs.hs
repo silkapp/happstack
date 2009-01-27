@@ -31,7 +31,6 @@ import HAppS.Server.HTTP.Types (Response)
   See FlashMsgs for the cannonical info, but..
 
 --}
-#ifndef __HADDOCK__
 $( deriveAll [''Show,''Default,''Read,''Eq,''Ord]
    [d|
        -- the data for the help system
@@ -56,7 +55,6 @@ $(deriveSerialize ''HelpText)
 $(deriveSerialize ''HelpMsgReceived)
 
 $(inferIxSet "HelpReqs" ''HelpReq 'noCalcs [''FB.Uid,''Published,''Status] )
-#endif
 
 --Command functions
 addHelpReq :: HelpReq -> Update HelpReqs ()
@@ -67,11 +65,9 @@ addHelpReq helpReq
 getHelpReqs :: Query HelpReqs [HelpReq]
 getHelpReqs  = liftM byRevTime ask
 
-#ifndef __HADDOCK__
 $(mkMethods ''HelpReqs ['addHelpReq,'getHelpReqs])
 instance Component HelpReqs where
     type Dependencies HelpReqs = FlashMsgs HelpMsgReceived :+: End
-#endif
 
 
 

@@ -58,7 +58,7 @@ uids1 uids2
 
 so use heterogenous list of things that are convertible 
 --}
-#ifndef __HADDOCK__
+
 $(deriveAll [''Show,''Read,''Default, ''Eq, ''Ord]
    [d|
 
@@ -157,7 +157,6 @@ instance Version Element
 $(deriveSerializeFor [ ''Uid
                      , ''Element ])
 
-#endif
 
 (.$) :: a -> (a -> b) -> b
 a .$ b = b a

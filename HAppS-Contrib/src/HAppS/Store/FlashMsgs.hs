@@ -50,7 +50,6 @@ Improvements:
 
 
 --Types
-#ifndef __HADDOCK__
 $( deriveAll [''Read,''Show,''Default,''Eq,''Ord]
    [d|
 
@@ -68,7 +67,6 @@ $(deriveSerialize ''FlashMsg)
 $(deriveSerialize ''FlashContent)
 
 $(inferIxSet "FlashMsgs" ''FlashMsg 'noCalcs [''FB.Uid,''Published])
-#endif
 
 --Command Functions
 setFlashMsg :: (Ord msg,Data msg) => Uid -> msg -> Update (FlashMsgs msg) ()
@@ -93,15 +91,12 @@ delFlashMsg uid _ = do
     mbMsg <- gets (getOne . (@=uid) ) 
     maybe (return ()) (modify . delete) mbMsg
 
-#ifndef __HADDOCK__
 $(mkMethods ''FlashMsgs [ 'setFlashMsg
                         , 'getFlashMsg
                         , 'delFlashMsg ])
 
 instance (Serialize (FlashMsgs a), Ord a, Data a) => Component (FlashMsgs a) where
     type Dependencies (FlashMsgs a) = End
-
-#endif
 
 -- Controls
 insFlashMsg :: (Xml a, MonadIO m) => Uid -> a -> m ()
