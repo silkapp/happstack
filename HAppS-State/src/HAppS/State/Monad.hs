@@ -2,10 +2,7 @@
 {-# LANGUAGE CPP #-}
 module HAppS.State.Monad where
 
-import Control.Exception
-#if __GLASGOW_HASKELL__ >= 610
---import GHC.Exception
-#endif
+import Control.Exception.Extensible
 import Control.Concurrent.STM
 import HAppS.State.Types
 import HAppS.Data.Proxy
@@ -77,11 +74,8 @@ liftSTM :: STM a -> AnyEv a
 liftSTM = unsafeSTMToEv
 
 class CatchEv m where
-#if __GLASGOW_HASKELL__ < 610
-    catchEv :: Ev m a -> (Exception -> a) -> Ev m a
-#else
     catchEv :: Ev m a -> (SomeException -> a) -> Ev m a
-#endif
+
 instance CatchEv (ReaderT st STM) where
     catchEv (Ev cmd) fun = Ev $ \s -> ReaderT $ \r -> runReaderT (cmd s) r `catchSTM` (\a -> return (fun a))
 

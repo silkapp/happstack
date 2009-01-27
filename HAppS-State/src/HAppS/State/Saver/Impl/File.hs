@@ -7,10 +7,7 @@ import HAppS.State.Saver.Types
 import HAppS.Data.Serialize
 
 import Control.Concurrent
-import Control.Exception        ( try )
-#if __GLASGOW_HASKELL__ >= 610
-import Control.Exception        ( IOException )
-#endif
+import Control.Exception.Extensible as E
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as B
 import System.Directory         ( createDirectoryIfMissing, renameFile, doesFileExist )
@@ -21,14 +18,13 @@ import Text.Printf
 import Control.Monad
 import System.FilePath
 
-logMF = logM "HAppS.State.Saver.Impl.File"
+tryE :: IO a -> IO (Either SomeException a)
+tryE = E.try
 
-#if __GLASGOW_HASKELL__ < 610
-tryE = try
-#else
-tryE :: IO a -> IO (Either IOException a)
-tryE = try
-#endif
+catchE :: IO a -> (SomeException -> IO a) -> IO a
+catchE = E.catch
+
+logMF = logM "HAppS.State.Saver.Impl.File"
 
 formatFilePath :: Int -> String -> FilePath
 formatFilePath n str = printf "%s-%010d" str n
@@ -44,7 +40,7 @@ fileReader prefix key cutoff
                                        allData <- mapM B.readFile allFiles
                                        return $ (parseAll (L.fromChunks allData), length allFiles)
                     , readerGetUncut = do logMF NOTICE "fileReader: readerGetUncut"
-                                          allData <- B.readFile file `catch` \_ -> return B.empty
+                                          allData <- B.readFile file `catchE` \_ -> return B.empty
                                           return $ parseAll (L.fromChunks [allData])
                     }
 
@@ -62,7 +58,7 @@ fileWriter prefix key cutoffInit = do
                        return $ prefix </> formatFilePath cutoff key
   file <- getFileName
   logMF NOTICE ("fileWrter: "++key++" @ "++prefix)
-  tryE $ createDirectoryIfMissing True prefix
+  tryE  $ createDirectoryIfMissing True prefix
   hmv <- newMVar =<< openBinaryFile file WriteMode
   return $ WriterStream
              { writerClose = withMVar hmv hClose

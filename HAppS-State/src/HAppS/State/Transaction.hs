@@ -4,11 +4,7 @@ module HAppS.State.Transaction where
 
 import Control.Concurrent
 import Control.Concurrent.STM
-#if __GLASGOW_HASKELL__ < 610
-import Control.Exception(handle,Exception(..),AsyncException(..),throwIO,evaluate)
-#else
-import Control.Exception
-#endif
+import Control.Exception.Extensible
 import Control.Monad.State
 import Control.Monad.Reader
 import qualified Data.Map as M
@@ -34,13 +30,7 @@ import Prelude hiding (catch)
 
 import qualified Data.Binary as Binary
 
-#if __GLASGOW_HASKELL__ < 610
-type ExceptionT = Exception
-#else
 type ExceptionT = SomeException
-#endif
-
-
 
 logMT = logM "HAppS.State.Transaction"
 
@@ -498,14 +488,7 @@ runTxLoop eventSaverVar queue st0 =
             Just st' -> do eventSaver <- readMVar eventSaverVar
                            writerAdd eventSaver (EventLogEntry context (mkObject ev)) (logMT NOTICE "> disk " >> ra)
                            loop st'
-#if __GLASGOW_HASKELL__ < 610
-  in do forkIO $ handle excHandler $ loop st0
-        return ()
-      where excHandler (AsyncException ThreadKilled) = return ()
-            excHandler BlockedIndefinitely = return ()
-            excHandler e = throwIO e
-#else
   in do forkIO $ (loop st0) `catch` (\ThreadKilled -> return ())
                             `catch` (\BlockedIndefinitely -> return ())
         return ()
-#endif
+
