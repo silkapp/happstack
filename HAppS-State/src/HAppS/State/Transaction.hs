@@ -58,11 +58,8 @@ getEventId = sel (fromIntegral . txId . evContext)
 
 
 instance Version TxContext -- Default to version 0
-#ifndef __HADDOCK__
+
 $(deriveSerialize ''TxContext)
-#else
-instance Serialize TxContext
-#endif
 
 -- Isomorphic to (), we're interested in a descriptive name.
 data GetCheckpointState = GetCheckpointState deriving (Typeable)
@@ -98,7 +95,6 @@ instance Serialize StdGen where
 
 type TypeString = String
 
-#ifndef __HADDOCK__
 data EventHandler where
     UpdateHandler :: UpdateEvent ev res =>
                      (TxContext -> ev -> IO ()) ->
@@ -109,9 +105,6 @@ data EventHandler where
                     (ev -> IO res) ->
                     (Object -> ev) ->
                     EventHandler
-#else
-data EventHandler = EventHandler
-#endif
 
 type EventMap = M.Map TypeString EventHandler
 data EmitInternal = EmitInternal EventMap

@@ -42,11 +42,7 @@ data State = State
     } deriving (Typeable,Show)
 
 instance Version State
-#ifndef __HADDOCK__
 $(deriveSerialize ''State)
-#else
-instance Serialize State
-#endif
 
 createTxControl :: (Methods state, Component state) =>
                    Saver -> Proxy state -> IO (MVar TxControl)

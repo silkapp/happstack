@@ -44,7 +44,6 @@ getRandomR z = do r <- sel evRandoms
 -- | Infer updating functions for a record @a_foo :: component -> record -> record@ and
 --   @withFoo = localState foo a_foo@.
 inferRecordUpdaters :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 inferRecordUpdaters typeName = do
     con <- decToSimpleRecord =<< nameToDec typeName
     let c name upd sel = 
@@ -56,7 +55,6 @@ inferRecordUpdaters typeName = do
                return [ud, wd]
     xs <- sequence $ zipWith3 c (fieldNames con) (updFuns con) (selFuns con)
     return $ concat xs
-#endif
 
 
 -- Utilities

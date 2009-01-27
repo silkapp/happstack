@@ -15,11 +15,9 @@ import qualified Data.ByteString.Lazy.Char8 as L
 --------------------------------------------------------------
 -- Type level list
 -------------------------------------------------------------
-#ifndef __HADDOCK__
 data End = End
 data h :+: t = h :+: t
 infixr 6 :+:
-#endif
 
 
 --------------------------------------------------------------
@@ -34,11 +32,9 @@ class (Serialize ev, Serialize res) => QueryEvent ev res | ev -> res
 -- Methods contain the query and update handlers for a component
 --------------------------------------------------------------
 
-#ifndef __HADDOCK__
 data Method st where
     Update :: (UpdateEvent ev res) => (ev -> Update st res) -> Method st
     Query  :: (QueryEvent ev res) => (ev -> Query st res) -> Method st
-#endif
 
 instance Show (Method st) where
     show method = "Method: " ++ methodType method
@@ -55,10 +51,8 @@ methodType m = case m of
 class Methods a where
     methods :: Proxy a -> [Method a]
 
-#ifndef __HADDOCK__
 data MethodMap where
     MethodMap :: (Component st) => Map String (Method st) -> MethodMap
-#endif
 
 instance Show MethodMap where
     show (MethodMap m) = show m
@@ -69,7 +63,6 @@ type ComponentTree = Map String MethodMap
 -- State type -> all versions
 type ComponentVersions = Map String [L.ByteString]
 
-#ifndef __HADDOCK__
 --------------------------------------------------------------
 -- A component consists of a list of subcomponents, some
 -- initiation code and some methods.
@@ -81,20 +74,19 @@ class (SubHandlers (Dependencies a),Serialize a) => Component a where
     initialValue :: a
     onLoad :: Proxy a -> IO ()
     onLoad _ = return ()
-#endif
 
 --------------------------------------------------------------
 -- Class for walking the component tree.
 --------------------------------------------------------------
 class SubHandlers a where
     subHandlers :: a -> Collect ()
-#ifndef __HADDOCK__
+
 instance SubHandlers End where
     subHandlers ~End = return ()
 instance (Methods a, Component a, SubHandlers b) => SubHandlers (a :+: b) where
     subHandlers ~(a :+: b) = do collectHandlers' (proxy a)
                                 subHandlers b
-#endif
+
 
 data Collection = Collection ComponentTree ComponentVersions [IO ()]
 

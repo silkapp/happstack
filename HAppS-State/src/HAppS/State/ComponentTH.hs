@@ -32,7 +32,6 @@ nubCxt tsQ
     Checked: method is not a function.
 -}
 mkMethods :: Name -> [Name] -> Q [Dec]
-#ifndef __HADDOCK__
 mkMethods componentName componentMethods
     = do keys <- liftM (requireSimpleCon componentName) $ reify componentName
          methodInfos <- getMethodInfos keys componentMethods
@@ -45,20 +44,15 @@ mkMethods componentName componentMethods
          ds4 <- genMethodStructs [''Typeable] methodInfos
          ds5 <- genSerializeInstances methodInfos
          return (ds1 ++ [ds2] ++ ds4 ++  ds5 )
-#endif
 
 mkKeyConstraints :: [Name] -> [TypeQ]
-#ifndef __HADDOCK__
 mkKeyConstraints keys
     = [ appT (conT ''Typeable) (varT key) | key <- keys ] ++
       [ appT (conT ''Serialize) (varT key) | key <- keys ]
-#endif
 
 mkMethodConstraints :: [Name] -> MethodInfo -> [TypeQ]
-#ifndef __HADDOCK__
 mkMethodConstraints keys method
     = map return (substMethodContext method keys)
-#endif
 
 substMethodContext method keys
     = let relation = zip (methodKeys method) keys
@@ -73,7 +67,6 @@ substMethodContext method keys
 mkType name args = foldl appT (conT name) (map varT args)
 
 genSerializeInstances :: [MethodInfo] -> Q [Dec]
-#ifndef __HADDOCK__
 genSerializeInstances methods
     = liftM concat $ forM methods $ \method ->
       let constraints = nubCxt $ mkKeyConstraints (methodKeys method) ++ map return (methodContext method)
@@ -91,14 +84,13 @@ genSerializeInstances methods
                    ,funD 'getCopy [clause [] (normalB [| contain $(decode) |]) []]]
             v <- instanceD constraints (appT (conT ''Version) (mkType (upperName (methodName method)) (methodKeys method))) []
             return [s,v]
-#endif
+
 
 {-
   [ Update $ \(SetComponent c) -> setComponent c
   , Query $ \GetComponent -> getComponent ]
 -}
 genComponentHandlers :: [MethodInfo] -> ExpQ
-#ifndef __HADDOCK__
 genComponentHandlers methods
     = do let localHandlers = flip map methods $ \method ->
                         let upName = upperName (methodName method)
@@ -107,7 +99,6 @@ genComponentHandlers methods
                                 lamE [conP upName (map varP args)] $ foldl appE (varE (methodName method)) $ map varE args
              handlers = listE localHandlers
          handlers
-#endif
 
 
 genEventInstances :: [MethodInfo] -> Q [Dec]
@@ -116,7 +107,6 @@ genEventInstances methodsInfo
 
 -- instance (cxt keys, Serialize keys) => QueryEvent (GetPageCurrent key) WikiRevision
 genEventInstance :: MethodInfo -> Q Dec
-#ifndef __HADDOCK__
 genEventInstance method
     = do let keys = methodKeys method
              eventType = foldl appT (conT (upperName (methodName method))) (map varT keys)
@@ -127,7 +117,7 @@ genEventInstance method
                    )
                    (appT (appT (conT (methodClass method)) eventType) (return (methodResult method)))
                    []
-#endif
+
 
 genMethodStructs :: [Name] -> [MethodInfo] -> Q [Dec]
 genMethodStructs derv methods
@@ -199,7 +189,6 @@ getTypes t = getTypes' [] t
 
 -- FIXME: only allow type variables used by the component.
 getTypes' :: Cxt -> Type -> MethodInfo
-#ifndef __HADDOCK__
 getTypes' cxt t
     = case runWriter (worker t) of
         ((keys,className, typeName, res), args) -> Method { methodName = error "Method name not set", methodKeys = keys
@@ -239,7 +228,7 @@ isAcceptableContext (AppT r r') = isAcceptableContext r && isAcceptableContext r
 isAcceptableContext (ConT con) = con `notElem` [''MonadState, ''MonadReader]
 isAcceptableContext _ = True
 
-#endif
+
 
 requireSimpleCon :: Name -> Info -> [Name]
 requireSimpleCon _ (TyConI (DataD _ _ names _ _derv)) = names

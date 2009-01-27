@@ -18,7 +18,6 @@ import qualified Data.Map as M
 instance StartState (M.Map a b) where
     startState = return $ M.empty
 
-#ifndef __HADDOCK__
 $(deriveAll [''Read,''Show]
   [d|
       type SessionKey = Integer
@@ -28,7 +27,6 @@ $(deriveAll [''Read,''Show]
       type TySynComponent key1 key2 = IxSet (key1,key2)
    |]
  )
-#endif
 
 instance StartState a => StartState (IxSet a) where
     startState = liftM IxSet startState
@@ -72,12 +70,10 @@ touchSession _key sessionKey
          modify $ Session . M.adjust (\(v,s,_) -> (v,s,now+fromIntegral s*1000)) sessionKey . unSession
 
 
-#ifndef __HADDOCK__
 $(methods_ SerializeString ''Session ['newSession,'getSession, 'setSession, 'setSessionTimeout, 'delSession, 'touchSession])
 $(atStart ''Session [])
 
 
 $(methods_ SerializeString ''UserComponent [])
 $(atStart ''UserComponent [])
-#endif
 -}
