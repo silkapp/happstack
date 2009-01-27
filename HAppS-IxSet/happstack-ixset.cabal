@@ -16,8 +16,8 @@ Library
     Build-Depends:     base >=4 && < 5, syb
   else
     Build-Depends:     base < 4
-  Build-Depends:       base, mtl, hslogger >= 1.0.2, happstack-util,
-                       happstack-state, happstack-data, template-haskell,
+  Build-Depends:       base, mtl, happstack-util,
+                       happstack-data, template-haskell,
                        syb-with-class, containers
   hs-source-dirs:      src
   Exposed-modules:     

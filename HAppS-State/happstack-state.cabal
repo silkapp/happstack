@@ -35,10 +35,9 @@ Library
                        HAppS.State.Types
                        HAppS.State.Util
                        HAppS.State.TxControl
-  Build-Depends:       HaXml >= 1.13 && < 1.14, mtl, network,
-                       stm, template-haskell, hslogger >= 1.0.2, happstack-util,
+  Build-Depends:       mtl,stm, template-haskell, hslogger >= 1.0.2, happstack-util,
                        happstack-data, bytestring, containers, random, old-time,
-                       old-locale, directory, binary, filepath, hspread >=0.3, extensible-exceptions
+                       directory, binary, filepath, hspread >=0.3, extensible-exceptions
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
   else
