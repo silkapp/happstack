@@ -22,7 +22,6 @@ module HAppS.Data.Atom
 import HAppS.Data
 
 
-#ifndef __HADDOCK__
 $( deriveAll [''Ord,''Eq,''Read,''Show,''Default] 
    [d|
     data Feed = Feed [Entry]
@@ -102,6 +101,4 @@ $(deriveSerializeFor [''Uri, ''Email, ''Updated, ''Published
                      ,''Title, ''Subtitle, ''Summary, ''Content
                      ,''Author, ''Contributor, ''Name, ''Category
                      ,''Term, ''Scheme, ''Label, ''Id])
-
-#endif
 

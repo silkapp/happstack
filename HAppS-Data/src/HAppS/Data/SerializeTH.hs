@@ -13,7 +13,6 @@ import Data.Binary
 data Class = Tagged [(Name, Int)] Cxt [Name]
 
 deriveSerialize :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 deriveSerialize name
     = do c <- parseInfo name
          case c of
@@ -49,7 +48,7 @@ deriveSerialize name
                         = doE $ [ bindS (varP arg) [| safeGet |] | arg <- args ] ++
                                 [ noBindS [| return $(foldl appE (conE conName) (map varE args)) |] ]
                 in funD 'getCopy [clause [] (normalB getCopyBody) []]
-#endif
+
 
 deriveSerializeFor :: [Name] -> Q [Dec]
 deriveSerializeFor names

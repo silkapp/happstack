@@ -3,10 +3,7 @@
              MultiParamTypeClasses, CPP, FunctionalDependencies #-}
 
 module HAppS.Data.HList (HasT, hlextract, hlupdate, (.&.),
-#ifndef __HADDOCK__
-                         -- Euch, current haddock doesn't understand this
                          (:&:),
-#endif
                          Couple(..),Nil(..),CoupleClass,hMap,trans) where
 -- HList useful with generic
 
@@ -18,9 +15,9 @@ import HAppS.Data.HListBase
 infixr 6 .&.
 (.&.) :: a -> b -> Couple a b
 (.&.) = Couple
-#ifndef __HADDOCK__
+
 type a :&: b = Couple b a
-#endif
+
 
 
 class CoupleClass a where

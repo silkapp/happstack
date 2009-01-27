@@ -56,7 +56,6 @@ mkDefaultInstance name
 -- >        data Bar = Baz | Quux
 -- >  |] )
 deriveAll :: [Name] -> Q [Dec] -> Q [Dec]
-#ifndef __HADDOCK__
 deriveAll classes0 qdecs
  = do decs <- qdecs
       derivedDecs <- deriveDec (filter isDataOrNewtype decs)
@@ -88,5 +87,4 @@ isDataOrNewtype :: Dec -> Bool
 isDataOrNewtype (DataD {}) = True
 isDataOrNewtype (NewtypeD {}) = True
 isDataOrNewtype _ = False
-#endif
 

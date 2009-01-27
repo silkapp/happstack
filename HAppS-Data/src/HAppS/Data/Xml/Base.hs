@@ -24,13 +24,11 @@ import HAppS.Util.TH
 import Language.Haskell.TH
 import qualified Data.Generics as G
 
-#ifndef __HADDOCK__
 $(deriveAll [''Default, ''Eq,''Read,''Ord] [d|
     data Element = Elem String [Element]
                  | CData String
                  | Attr String String
  |])
-#endif
 
 insEl :: (Data XmlD a, Default a, Data NormalizeD a,
           Data XmlD b, Default b, Data NormalizeD b) =>
@@ -77,13 +75,9 @@ toPublicXml x = clean $ toXml x
     clean (Attr n v:rest) = if n `elem` [typeAttr,versionAttr] then clean rest
                             else Attr n v:clean rest
 
-#ifndef __HADDOCK__
 data Rigidity m where
     Rigid :: Rigidity Maybe
     Flexible :: Rigidity Identity
-#else
-data Rigidity m = Rigid | Flexible
-#endif
 
 instance Show (Rigidity m) where
     show Rigid = "Rigid"
@@ -160,7 +154,6 @@ transparentReadXml r es
          resType = typeNotValue resType
 
 transparentXml :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 transparentXml n
  = do i <- reify n
       case i of
@@ -184,7 +177,6 @@ transparentXml n
           _ ->
               fail ("transparentXml: Not given a type constructor's name: " ++
                     show n)
-#endif
 
 -- Don't do any defaulting here, as these functions can be implemented
 -- differently by the user. We do the defaulting elsewhere instead.
@@ -362,7 +354,6 @@ readMXmlNoRootDefault r
                  return v
 
 xmlAttr :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 xmlAttr newTypeName
  = do i <- reify newTypeName
       case i of
@@ -404,13 +395,11 @@ xmlAttr newTypeName
                                  ( conT ''Xml `appT` conT n)
                                  [toFun, readFun]
                return [inst]
-#endif
 
 xmlShowCDatas :: [Name] -> Q [Dec]
 xmlShowCDatas = liftM concat . mapM xmlShowCData
 
 xmlShowCData :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 xmlShowCData newTypeName
  = do d <- instanceD' (cxt [])
                       (conT ''Xml `appT` conT newTypeName)
@@ -427,13 +416,11 @@ xmlShowCData newTypeName
                                     f _ _ = Nothing
                         |]
       return [d]
-#endif
 
 xmlCDataLists :: [Name] -> Q [Dec]
 xmlCDataLists = liftM concat . mapM xmlCDataList
 
 xmlCDataList :: Name -> Q [Dec]
-#ifndef __HADDOCK__
 xmlCDataList newTypeName
  = do d <- instanceD' (cxt [])
                       (conT ''Xml `appT` (listT `appT` conT newTypeName))
@@ -455,10 +442,6 @@ xmlCDataList newTypeName
                                   f _ _ = Nothing
                        |]
       return [d]
-
-
-
-#endif
 
 noCommas :: String -> String
 noCommas = map (\x -> if x == ',' then ' ' else x)

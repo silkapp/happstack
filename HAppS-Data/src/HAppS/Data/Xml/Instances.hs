@@ -72,10 +72,10 @@ instance Xml [String] where
     readXml = readXmlWith f
         where f _ (CData x) = Just $ words $ noCommas x
               f _ _ = Nothing
-#ifndef __HADDOCK__
+
 $( xmlShowCDatas [''Int, ''Integer, ''Float, ''Double] )
 $( xmlCDataLists [''Int, ''Integer, ''Float, ''Double] )
-#endif
+
 
 instance Xml a => Xml (Maybe a) where
     toXml = transparentToXml
@@ -84,11 +84,10 @@ instance Xml a => Xml (Maybe a) where
     readXml r = aConstrFromElements r
               $ map (toConstr xmlProxy) [Just (), Nothing]
 
-#ifndef __HADDOCK__
 $( transparentXml ''Either )
 $( transparentXml ''() )
 $( transparentXml ''(,) )
 $( transparentXml ''(,,) )
 $( transparentXml ''(,,,) )
-#endif
+
 

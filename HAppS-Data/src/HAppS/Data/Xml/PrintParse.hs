@@ -15,14 +15,12 @@ import Data.Generics as G
 import HAppS.Data.DeriveAll
 import HAppS.Data.Default
 
-#ifndef __HADDOCK__
 $(deriveAll [''Read,''Show,''Default]
   [d|
       data W = W [K]
       data K = K String
    |]
  )
-#endif
 
 
 class ToString a where toString::a->String

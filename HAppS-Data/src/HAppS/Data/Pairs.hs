@@ -131,7 +131,6 @@ toHTMLForm iden method action = xmlToHTMLForm iden method action
 
 
 
-#ifndef __HADDOCK__
 --- example usage and tests here
 $( deriveAll [''Show,''Default,''Eq]
    [d|
@@ -140,5 +139,3 @@ $( deriveAll [''Show,''Default,''Eq]
        newtype Pass = Pass String 
     |]
  )
-#endif
-
