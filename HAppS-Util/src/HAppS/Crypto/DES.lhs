@@ -38,7 +38,7 @@ SUCH DAMAGE.
 --}
 
 
-> module HAppS.Crypto.DES (des_enc, des_dec) where
+> module HAppS.Crypto.DES (des_enc, des_dec, Message, Enc) where
 
 > import Data.Bits
 > import Data.Word
@@ -51,7 +51,9 @@ more stuff just copied in
 
 > data Zord64 = W64 {lo,hi::Word32} deriving (Eq, Ord, Bounded)
 
-> w64ToInteger W64{lo=lo,hi=hi} = toInteger lo + 0x100000000 * toInteger hi
+> w64ToInteger :: Zord64 -> Integer
+> w64ToInteger W64{lo=l,hi=h} = toInteger l + 0x100000000 * toInteger h
+> integerToW64 :: Integer -> Zord64
 > integerToW64 x = case x `quotRem` 0x100000000 of
 >                  (h,l) -> W64{lo=fromInteger l, hi=fromInteger h}
 
@@ -82,10 +84,11 @@ Added by alex
 >   where lo' = lo_a .|. lo_b
 >         hi' = hi_a .|. hi_b
 >  shift w 0 = w
->  shift W64{lo=lo,hi=hi} x
+>  shift W64{lo=l,hi=h} x
 >   | x > 63 = W64{lo=0,hi=0}
->   | x > 31 = W64{lo = 0, hi = shift lo (x-32)}
->   | x > 0 = W64{lo = shift lo x, hi = shift hi x .|. shift lo (x-32)}
+>   | x > 31 = W64{lo = 0, hi = shift l (x-32)}
+>   | x > 0 = W64{lo = shift l x, hi = shift h x .|. shift l (x-32)}
+>  shift _ _ = error "Case not defined in Bits instance for Zord64"
 
 > instance Integral Zord64 where
 >  toInteger = w64ToInteger
@@ -206,6 +209,7 @@ Added by Alex
 >        numericise = (\x y -> if x then 2^y else 0)
 >        to_bool 0 _ = []
 >        to_bool n i = ((i .&. 8) == 8):to_bool (n-1) (shiftL i 1)
+> s_box _ _ = error "second arg to s_box must have length 6"
 
 > s_box_1 :: Bits6 -> Bits4
 > s_box_1 = s_box i

@@ -14,5 +14,5 @@ hmacSHA1 key str
     where b = 64
           opad = replicate b '\x5C'
           ipad = replicate b '\x36'
-          doxor a b = zipWith fn (a++repeat '\0') b
-          fn a b = chr (ord a `xor` ord b)
+          doxor a = zipWith fn (a++repeat '\0')
+          fn x y = chr (ord x `xor` ord y)

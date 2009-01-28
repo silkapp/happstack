@@ -70,7 +70,7 @@ int4_char3 [a,b] =
     in [ (chr (n `shiftR` 16 .&. 0xff)) ]
 
 int4_char3 [] = []     
-
+int4_char3 _ = error "Case not implemented in int4_char3"
 
 
 
@@ -110,16 +110,18 @@ chop72 str =  let (bgn,end) = splitAt 70 str
 
 -- Pads a base64 code to a multiple of 4 characters, using the special
 -- '=' character.
+quadruplets :: String -> String
 quadruplets (a:b:c:d:t) = a:b:c:d:quadruplets t
 quadruplets [a,b,c]     = [a,b,c,'=']      -- 16bit tail unit
 quadruplets [a,b]       = [a,b,'=','=']    -- 8bit tail unit
 quadruplets []          = []               -- 24bit tail unit
-
+quadruplets _ = error "Case not implemented in quadruplets"
 
 enc :: [Int] -> [Char]
 enc = quadruplets . map enc1
 
 
+dcd :: String -> [Int]
 dcd [] = []
 dcd (h:t)
     | h <= 'Z' && h >= 'A'  =  ord h - ord 'A'      : dcd t

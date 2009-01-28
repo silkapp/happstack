@@ -121,7 +121,8 @@ wm16 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 > sha1_add_ws n (w1:w1s, w2:w2s, w3:w3s, w4:w4s)
 >  = w:sha1_add_ws (n + 1) (w1s ++ [w], w2s ++ [w], w3s ++ [w], w4s ++ [w])
 >  where w = rotL (foldr1 xor [w1, w2, w3, w4]) 1
-
+> sha1_add_ws _ _ = error "Case not defined in sha1_add_ws"
+> 
 > get_word_32s :: String -> [Word32]
 > get_word_32s "" = []
 > get_word_32s ss = this:rest

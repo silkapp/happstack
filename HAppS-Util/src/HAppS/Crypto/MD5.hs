@@ -22,12 +22,13 @@ module HAppS.Crypto.MD5
         ,test
 	) where
 
+import Prelude hiding ((!!))
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Internal
 import Data.Bits
-import Data.List
-import Data.Int()
+import Data.List hiding ((!!))
+import Data.Int(Int64)
 import Data.Word
 import Foreign.Storable
 import Foreign.Ptr
@@ -36,10 +37,17 @@ import Numeric
 import System.Environment()
 import System.IO
 
+blockSize :: Int
 blockSize = 512		-- Block size in bits
+
+blockSizeBytes :: Int
 blockSizeBytes = blockSize `div` 8
+
+blockSizeBytesW64 :: Int64
 blockSizeBytesW64 = fromIntegral blockSizeBytes
-blockSizeBits = (fromIntegral blockSize) :: Word64
+
+blockSizeBits :: Word64
+blockSizeBits = fromIntegral blockSize
 
 data MD5Partial = MD5Par !Word32 !Word32 !Word32 !Word32
 data MD5Context = MD5Ctx { mdPartial  :: MD5Partial,
@@ -47,7 +55,9 @@ data MD5Context = MD5Ctx { mdPartial  :: MD5Partial,
 			   mdTotalLen :: Word64
 			}
 
+md5InitialContext :: MD5Context
 md5InitialContext = MD5Ctx (MD5Par h0 h1 h2 h3) B.empty 0
+h0, h1, h2, h3 :: Word32
 h0 = 0x67452301
 h1 = 0xEFCDAB89
 h2 = 0x98BADCFE
@@ -59,18 +69,19 @@ md5 :: L.ByteString -> L.ByteString
 md5 bs = md5Finalize $ md5Update md5InitialContext bs
 
 md5Finalize :: MD5Context -> L.ByteString
-md5Finalize !ctx@(MD5Ctx (MD5Par _ _ _ _) rem !totLen) =
+md5Finalize !ctx@(MD5Ctx (MD5Par _ _ _ _) r !totLen) =
 	let totLen' = (totLen + 8*fromIntegral l) :: Word64
 	    padBS = B.pack $ 0x80 : replicate lenZeroPad 0 ++ size_split 8 totLen'
 
-	    (MD5Ctx (MD5Par a' b' c' d') _ _) = md5Update ctx (L.fromChunks [rem,padBS])
+	    (MD5Ctx (MD5Par a' b' c' d') _ _) = md5Update ctx (L.fromChunks [r,padBS])
 	in L.pack $ concatMap (size_split 4) [a',b',c',d']
 	where
-	l = B.length rem
+	l = B.length r
 	lenZeroPad = if (l+1) <= blockSizeBytes - 8
 			then (blockSizeBytes - 8) - (l+1)
 			else (2*blockSizeBytes - 8) - (l+1)
 
+size_split :: (Integral t, Num a) => Int -> t -> [a]
 size_split 0 _ = []
 size_split p n = (fromIntegral d):size_split (p-1) n'
     where (n', d) = divMod n 256
@@ -182,25 +193,25 @@ applyMD5Rounds (MD5Par a b c d) w =
 	{-# INLINE h #-}
 	i !x !y !z = y `xor` (x .|. (complement z))
 	{-# INLINE i #-}
-	ff a b c d x s ac = {-# SCC "ff" #-}
-		let !a' = f b c d + x + ac + a
+	ff a_ b_ c_ d_ x s ac = {-# SCC "ff" #-}
+		let !a' = f b_ c_ d_ + x + ac + a_
 		    !a'' = rotateL a' s
-		in a'' + b
+		in a'' + b_
 	{-# INLINE ff #-}
-	gg a b c d x s ac = {-# SCC "gg" #-}
-		let !a' = g b c d + x + ac + a
+	gg a_ b_ c_ d_ x s ac = {-# SCC "gg" #-}
+		let !a' = g b_ c_ d_ + x + ac + a_
 		    !a'' = rotateL a' s
-		in a'' + b
+		in a'' + b_
 	{-# INLINE gg #-}
-	hh a b c d x s ac = {-# SCC "hh" #-}
-		let !a' = h b c d + x + ac + a
+	hh a_ b_ c_ d_ x s ac = {-# SCC "hh" #-}
+		let !a' = h b_ c_ d_ + x + ac + a_
 		    !a'' = rotateL a' s
-		    in a'' + b
+		    in a'' + b_
 	{-# INLINE hh #-}
-	ii a b c d  x s ac = {-# SCC "ii" #-}
-		let !a' = i b c d + x + ac + a
+	ii a_ b_ c_ d_  x s ac = {-# SCC "ii" #-}
+		let !a' = i b_ c_ d_ + x + ac + a_
 		    !a'' = rotateL a' s
-		in a'' + b
+		in a'' + b_
 	{-# INLINE ii #-}
 	(!!) word32s pos = getNthWord pos word32s
 	{-# INLINE (!!) #-}
@@ -212,11 +223,12 @@ applyMD5Rounds (MD5Par a b c d) w =
 	{-# INLINE getNthWord #-}
 {-# INLINE applyMD5Rounds #-}
 
+stringMD5 :: L.ByteString -> String
 stringMD5 lazy = 
 	let x = L.toChunks lazy
 	    w = B.unpack (B.concat x)
-	    s = map (\x -> showHex x "") w
-	    s' = map (\x -> if length x == 1 then '0':x else x) s
+	    s = map (\v -> showHex v "") w
+	    s' = map (\v -> if length v == 1 then '0':v else v) s
 	in concat s'
 
 test :: IO ()

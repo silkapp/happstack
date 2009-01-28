@@ -19,6 +19,7 @@ import HAppS.Util.Common
 --}
 
 -- Will placing the lock-file in the current directory work if we run the application from cron?
+daemonize :: FilePath -> IO a -> IO a
 daemonize binarylocation main = 
     do
     startTime <- getClockTime
@@ -52,7 +53,7 @@ daemonize binarylocation main =
            else do
         return ()
 
-
+getDaemonizedId :: IO String
 getDaemonizedId
     = do prog <- getProgName
          args <- getArgs
