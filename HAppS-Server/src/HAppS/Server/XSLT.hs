@@ -45,14 +45,14 @@ xsltElem xsl = xsltString xsl . verbatim
 
 
 procLBSIO :: XSLTCmd -> XSLPath -> L.ByteString -> IO L.ByteString
-procLBSIO xsltproc' xsl inp = 
+procLBSIO xsltp' xsl inp = 
     withTempFile "happs-src.xml" $ \sfp sh -> do
     withTempFile "happs-dst.xml" $ \dfp dh -> do
-    let xsltproc = xsltCmd xsltproc'
+    let xsltp = xsltCmd xsltp'
     L.hPut sh inp
     hClose sh
     hClose dh
-    xsltFileEx xsltproc xsl sfp dfp
+    xsltFileEx xsltp xsl sfp dfp
     s <- L.readFile dfp
     logMX DEBUG (">>> XSLT: result: "++ show s)
     return s
@@ -62,13 +62,13 @@ procFPSIO :: XSLTCommand
              -> XSLPath
              -> [P.ByteString]
              -> IO [P.ByteString]
-procFPSIO xsltproc xsl inp = 
+procFPSIO xsltp xsl inp = 
     withTempFile "happs-src.xml" $ \sfp sh -> do
     withTempFile "happs-dst.xml" $ \dfp dh -> do
     mapM_ (P.hPut sh) inp
     hClose sh
     hClose dh
-    xsltFileEx xsltproc xsl sfp dfp
+    xsltFileEx xsltp xsl sfp dfp
     s <- P.readFile dfp
     logMX DEBUG (">>> XSLT: result: "++ show s)
     return [s]
@@ -120,10 +120,10 @@ saxon' dst xsl src = ("java -classpath /usr/share/java/saxon.jar",
                         
 type XSLTCommand = XSLPath -> FilePath -> FilePath -> (FilePath,[String])
 xsltFileEx   :: XSLTCommand -> XSLPath -> FilePath -> FilePath -> IO ()
-xsltFileEx xsltproc xsl src dst = do
+xsltFileEx xsltp xsl src dst = do
     let msg = (">>> XSLT: Starting xsltproc " ++ unwords ["-o",dst,xsl,src])
     logMX DEBUG msg
-    uncurry runCommand $ xsltproc dst xsl src
+    uncurry runCommand $ xsltp dst xsl src
     logMX DEBUG (">>> XSLT: xsltproc done")
 
 -- Utilities

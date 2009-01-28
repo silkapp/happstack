@@ -11,7 +11,7 @@ import Control.Monad.Trans
 import Data.List
 import Data.Maybe
 import Data.Int
-import HAppS.Server.SimpleHTTP
+import HAppS.Server.SimpleHTTP hiding (path)
 import System.Directory
 import System.IO
 import System.Locale(defaultTimeLocale)

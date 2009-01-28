@@ -25,9 +25,9 @@ acceptLite :: Socket -> IO (Handle, HostName, Socket.PortNumber)
 acceptLite sock = do
   (sock', addr) <- Socket.accept sock
   (Just peer, _) <- getNameInfo [NI_NUMERICHOST] True False addr
-  handle <- socketToHandle sock' ReadWriteMode
-  (PortNumber port) <- Network.socketPort sock'
-  return (handle, peer, port)
+  h <- socketToHandle sock' ReadWriteMode
+  (PortNumber p) <- Network.socketPort sock'
+  return (h, peer, p)
 
 
 
@@ -61,7 +61,6 @@ listen conf hand = do
 -}
   where  -- why are these handlers needed?
 
-    -- catchSome op h :: IO () -> (SomeException -> IO () ) -> IO ()
     catchSome op h = op `E.catches` [
             Handler $ \(e :: ArithException) -> h (toException e),
             Handler $ \(e :: ArrayException) -> h (toException e)

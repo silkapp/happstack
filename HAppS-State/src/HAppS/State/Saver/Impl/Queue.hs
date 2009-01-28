@@ -38,7 +38,7 @@ queueWriter writer = do
         when (not (null ps)) $ writerAdd writer (Encoded $ sequence_ ps) io
         case rest of
           []           -> handler
-          (Close io:_) -> writerClose writer >> io
+          (Close io':_) -> writerClose writer >> io'
           _            -> fail "queueSaver: Invalid saver bunch!"
 
   forkIO handler
@@ -55,6 +55,7 @@ queueWriter writer = do
 
 -- Sample variables/queues
 newtype Ch a = Ch (TVar [a])
+newCh :: IO (Ch a)
 newCh = fmap Ch $ newTVarIO []
 writeCh :: Ch a -> a -> IO ()
 writeCh (Ch ch) x = atomically $ do vs <- readTVar ch

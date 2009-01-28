@@ -414,7 +414,7 @@ insertHeaderIfMissing name value x = setHeaders x (newHeaders $ getHeaders x)
 -- | Removes old headers with duplicate name.
 replaceHeader name value x = setHeaders x newHeaders
     where
-        newHeaders = Header name value : [ x | x@(Header n _) <- getHeaders x, name /= n ]
+        newHeaders = Header name value : [ h | h@(Header n _) <- getHeaders x, name /= n ]
           
 
 -- | Inserts multiple headers.
@@ -699,10 +699,10 @@ simpleHTTP_ s r =
   -- Then we make the request-URI an abs_path and make sure that there
   -- is a Host header.
              fixReq :: URIAuthority -> Request -> Request
-	     fixReq URIAuthority{host=h} r = 
+	     fixReq URIAuthority{host=h} req = 
 		 insertHeaderIfMissing HdrConnection "close" $
 		 insertHeaderIfMissing HdrHost h $
-		 r { rqURI = (rqURI r){ uriScheme = "", 
+		 req { rqURI = (rqURI req){ uriScheme = "", 
 					uriAuthority = Nothing } }	       
 
 getAuth :: Monad m => Request -> m URIAuthority
@@ -834,8 +834,8 @@ sendHTTPPipelined conn rqs =
         fixHostHeader :: Request -> Request
         fixHostHeader rq =
             let uri = rqURI rq
-                host = authority uri
-            in insertHeaderIfMissing HdrHost host rq
+                h = authority uri
+            in insertHeaderIfMissing HdrHost h rq
                                      
         -- Looks for a "Connection" header with the value "close".
         -- Returns True when this is found.
@@ -910,8 +910,8 @@ hopefulTransfer conn str
 chunkedTransfer :: Stream s => s -> IO (Result ([Header],String))
 chunkedTransfer conn
     =  chunkedTransferC conn 0 >>= \v ->
-       return $ v `bindE` \(ftrs,count,info) ->
-                let myftrs = Header HdrContentLength (show count) : ftrs              
+       return $ v `bindE` \(ftrs,c,info) ->
+                let myftrs = Header HdrContentLength (show c) : ftrs              
                 in Right (myftrs,info)
 
 chunkedTransferC :: Stream s => s -> Int -> IO (Result ([Header],Int,String))
@@ -922,7 +922,7 @@ chunkedTransferC conn n
                       let size = ( if null line || (head line) == '0'
                                      then 0
                                      else case readHex line of
-                                        (n,_):_ -> n
+                                        (n',_):_ -> n'
                                         _       -> 0
                                      )
                       in if size == 0
@@ -1008,10 +1008,10 @@ urlDecode (h:t) = h : urlDecode t
 urlDecode [] = []
 
 urlEncode (h:t) =
-    let str = if reserved (ord h) then escape h else [h]
+    let str = if reserved_ (ord h) then escape h else [h]
     in str ++ urlEncode t
     where
-        reserved x
+        reserved_ x
             | x >= ord 'a' && x <= ord 'z' = False
             | x >= ord 'A' && x <= ord 'Z' = False
             | x >= ord '0' && x <= ord '9' = False

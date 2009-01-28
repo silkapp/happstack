@@ -50,5 +50,5 @@ Library
      cpp-options:      -DUNIX
 
   Extensions:          CPP  
-  ghc-options:         -W -fno-warn-incomplete-patterns
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all

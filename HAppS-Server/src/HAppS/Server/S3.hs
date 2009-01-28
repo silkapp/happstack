@@ -19,7 +19,7 @@ import HAppS.Crypto.HMAC             ( hmacSHA1 )
 import HAppS.Server.HTTPClient.HTTP
 import qualified HAppS.Server.HTTPClient.Stream as Stream
 
-import Network.URI
+import Network.URI hiding (path)
 import Control.Concurrent               ( newMVar, modifyMVar, swapMVar
                                         , modifyMVar_, MVar )
 import Data.Maybe                       ( fromJust, fromMaybe )
@@ -168,41 +168,6 @@ sendRequest_ s3 request
        no delay option off and send as many requests per socket write call
        as is practical."
 -}
-{-
-sendRequests :: S3 -> [Request] -> [IO ()] -> IO ()
-sendRequests s3 [] io = return ()
-sendRequests s3 rqsts io
-    = do c <- getConnection s3
-         rqsts' <- mapM (signRequest s3) rqsts
-         let maxPipelineSize = 3
-             loop c [] _ = return ()
-             loop c rqs io =
-                 do (ok,rsps) <- sendHTTPPipelined c (take maxPipelineSize rqs)
-                    let nOk        = length ok
-                        (okIO,io') = splitAt nOk io
-                        rqs'       = drop nOk rqs
-                    sequence_ okIO
-                    -- forkIO $ sequence_ okIO -- FIXME: would it be OK to use forkIO here?
-                    case rsps of
-                      Just ErrorClosed
-                               -> do swapMVar (s3Conn s3) Nothing
-                                     c <- getConnection s3
-                                     loop c rqs' io'
-                      Just err -> do error ("Failed to send requests: " ++ show err)
-                      Nothing  -> do loop c rqs' io'
-         loop c rqsts' io
--}
-
-{-
--- Testing utility
-deleteAll :: BucketId -> IO ()
-deleteAll bucket
-    = do s3 <- newS3 akey skey localhost
-         objs <- listObjects s3 bucket
-         let rqs = flip map objs $ \obj -> (deleteObject s3 bucket obj)
-         sendRequests s3 rqs []
-         closeS3 s3
--}
 
 --------------------------------------------------------------
 -- Initiate
@@ -260,8 +225,8 @@ deleteObject s3 bucket object
 listObjects :: S3 -> BucketId -> IO [String]
 listObjects s3 bucket
     = do lst <- sendRequest s3 (createRequest s3 GET bucket "")
-         return $ ppContent . filter . getContent . xmlParse bucket $ lst
-    where filter = xtract "*/Key/-"
+         return $ ppContent . auxFilter . getContent . xmlParse bucket $ lst
+    where auxFilter = xtract "*/Key/-"
           getContent (Document _ _ e _) = CElem e
 
           ppContent xs  = [ s | CString _ s <- xs ]

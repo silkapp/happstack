@@ -36,7 +36,7 @@ instance Random Int64 where
 integralRandomR :: (Integral a, RandomGen g) => (a,a) -> g -> (a,g)
 integralRandomR  (a,b) g = case randomR (fromIntegral a :: Integer,
                                          fromIntegral b :: Integer) g of
-                            (x,g) -> (fromIntegral x, g)
+                            (x,g') -> (fromIntegral x, g')
 
 
 data TxContext = TxContext

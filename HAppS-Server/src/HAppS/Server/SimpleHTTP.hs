@@ -161,17 +161,17 @@ data Result a = NoHandle
 instance Functor Result where
     fmap _ NoHandle = NoHandle
     fmap fn (Ok out a) = Ok out (fn a)
-    fmap _ (Escape resp) = Escape resp
+    fmap _ (Escape r) = Escape r
 
 instance Monad m => Monad (WebT m) where
     f >>= g = WebT $ do r <- unWebT f
                         case r of
                           NoHandle    -> return NoHandle
-                          Escape resp -> return $ Escape resp
+                          Escape res -> return $ Escape res
                           Ok out a    -> do r' <- unWebT (g a)
                                             case r' of
                                               NoHandle    -> return NoHandle
-                                              Escape resp -> return $ Escape resp
+                                              Escape res -> return $ Escape res
                                               Ok out' a'  -> return $ Ok (out' . out) a'
     return x = WebT $ return (Ok id x)
 
@@ -227,7 +227,7 @@ escape :: (Monad m, ToMessage resp) => WebT m resp -> WebT m a
 escape gen = WebT $ do res <- unWebT gen
                        case res of
                          NoHandle    -> return NoHandle
-                         Escape resp -> return $ Escape resp
+                         Escape r -> return $ Escape r
                          Ok out a    -> return $ Escape $ out $ toResponse a
 
 ho :: [OptDescr (Conf -> Conf)]
@@ -252,7 +252,7 @@ simpleHTTP' hs req
     = do res <- unWebT (unServerPartT (multi hs) req)
          case res of
            NoHandle    -> return $ result 404 "No suitable handler found"
-           Escape resp -> return resp
+           Escape r -> return r
            Ok out a    -> return $ out $ toResponse a
 
 class FromReqURI a where
@@ -300,9 +300,9 @@ class ToMessage a where
     toResponse:: a -> Response
     toResponse val =
         let bs = toMessage val
-            result = Response 200 M.empty nullRsFlags bs Nothing
+            res = Response 200 M.empty nullRsFlags bs Nothing
         in setHeaderBS (B.pack "Content-Type") (toContentType val)
-           result
+           res
 
 instance ToMessage [Element] where
     toContentType _ = B.pack "application/xml"
@@ -345,7 +345,7 @@ instance (Xml a)=>ToMessage a where
 
 
 class MatchMethod m where matchMethod :: m -> Method -> Bool
-instance MatchMethod Method where matchMethod method = (== method) 
+instance MatchMethod Method where matchMethod m = (== m) 
 instance MatchMethod [Method] where matchMethod methods = (`elem` methods)
 instance MatchMethod (Method -> Bool) where matchMethod f = f 
 instance MatchMethod () where matchMethod () _ = True
@@ -368,7 +368,7 @@ localContext fn hs
 dir :: Monad m => String -> [ServerPartT m a] -> ServerPartT m a
 dir staticPath handle
     = ServerPartT $ \rq -> case rqPaths rq of
-                             (path:xs) | path == staticPath -> 
+                             (p:xs) | p == staticPath -> 
                                            unServerPartT (multi handle) rq{rqPaths = xs}
                              _ -> noHandle
 
@@ -392,7 +392,7 @@ path :: (FromReqURI a, Monad m) => (a -> [ServerPartT m r]) -> ServerPartT m r
 path handle
     = ServerPartT $ \rq -> 
       case rqPaths rq of
-               (path:xs) | Just a <- fromReqURI path
+               (p:xs) | Just a <- fromReqURI p
                                   -> unServerPartT (multi $ handle a) rq{rqPaths = xs}
                _ -> noHandle
 
@@ -486,11 +486,6 @@ doXslt :: (MonadIO m) =>
           XSLTCmd -> XSLPath -> Response -> m Response
 doXslt cmd xslPath res = 
     do new <- liftIO $ procLBSIO cmd xslPath $ rsBody res
-{-
-       liftIO $ print res          
-       liftIO $ print "##########" 
-       liftIO $ print new
--}
        return $ setHeader "Content-Type" "text/html" $ 
               setHeader "Content-Length" (show $ L.length new) $
               res { rsBody = new }
@@ -506,7 +501,7 @@ modifyResponse modFn = WebT $ return $ Ok modFn ()
 
 setResponseCode :: Monad m => Int -> WebT m ()
 setResponseCode code
-    = modifyResponse $ \resp -> resp{rsCode = code}
+    = modifyResponse $ \r -> r{rsCode = code}
 
 addCookie :: Monad m => Seconds -> Cookie -> WebT m ()
 addCookie sec cookie
@@ -515,20 +510,8 @@ addCookie sec cookie
 addCookies :: Monad m => [(Seconds, Cookie)] -> WebT m ()
 addCookies = mapM_ (uncurry addCookie)
 
-{-
-delCookie :: String -> WebT m ()
-delCookie name = 
--}
 resp :: (Monad m) => Int -> b -> WebT m b
 resp status val = setResponseCode status >> return val
-{--    do bs <- toMessageM val
-       liftM (setHeaderBS (B.pack "Content-Type") (toContentType val)) $ 
-             sresult' status bs
---}
-{-
-mbOk :: ToMessage b => (a -> b) -> Maybe a -> IO Result -> IO Result
-mbOk f val other = maybe other (ok . f) val
--}
 
 -- | Respond with @200 OK@.
 ok :: Monad m => a -> WebT m a
@@ -591,9 +574,8 @@ withRequest fn = ServerPartT $ fn
 debugFilter :: (MonadIO m, Show a) => [ServerPartT m a] -> [ServerPartT m a]
 debugFilter handle = [
     ServerPartT $ \rq -> WebT $ do
-                    resp <- unWebT (unServerPartT (multi handle) rq)
-                    -- liftIO $ print rq >> print resp
-                    return resp]
+                    r <- unWebT (unServerPartT (multi handle) rq)
+                    return r]
 
 anyRequest :: Monad m => WebT m a -> ServerPartT m a
 anyRequest x = withRequest $ \_ -> x
@@ -738,10 +720,10 @@ validateConf = nullConf { validator = Just wdgHTMLValidator }
 -- Note: This function will run validation unconditionally. You
 -- probably want 'setValidator' or 'validateConf'.
 runValidator :: (Response -> IO Response) -> Response -> IO Response
-runValidator defaultValidator resp =
-    case rsValidator resp of
-      Nothing -> defaultValidator resp
-      (Just altValidator) -> altValidator resp
+runValidator defaultValidator r =
+    case rsValidator r of
+      Nothing -> defaultValidator r
+      (Just altValidator) -> altValidator r
 
 -- |Validate @text\/html@ content with @WDG HTML Validator@.
 --

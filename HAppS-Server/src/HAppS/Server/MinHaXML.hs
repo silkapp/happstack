@@ -6,6 +6,8 @@
 module HAppS.Server.MinHaXML where
 -- Copyright (C) 2005 HAppS.org. All Rights Reserved.
 
+import Prelude hiding (elem, pi)
+
 import Text.XML.HaXml.Types as Types
 import Text.XML.HaXml.Escape
 import Text.XML.HaXml.Pretty as Pretty

@@ -200,7 +200,7 @@ addHeaderBS key val = addHeaderUnsafe (P.map toLower key) (HeaderPair key [val])
 
 addHeaderUnsafe :: HasHeaders r => ByteString -> HeaderPair -> r -> r
 addHeaderUnsafe key val = updateHeaders (M.insertWith join key val)
-    where join (HeaderPair key vs1) (HeaderPair _ vs2) = HeaderPair key (vs1++vs2)
+    where join (HeaderPair k vs1) (HeaderPair _ vs2) = HeaderPair k (vs1++vs2)
 
 
 result :: Int -> String -> Response

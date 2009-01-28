@@ -9,6 +9,7 @@ import Control.Monad
 import Data.List(elemIndex, unfoldr, foldl')
 import Data.Char(toLower)
 import Data.Maybe ( fromMaybe, fromJust, isJust, isNothing )
+import Prelude hiding (last)
 import qualified Data.List as List
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Char8 as B
@@ -55,9 +56,7 @@ rloop conf h host handler inputStr
                       (rql, headerStr) <- required "failed to separate headers/body" $ splitAtCRLF topStr
                       let (m,u,v) = requestLine rql
                       headers' <- parseHeaders "host" (L.unpack headerStr)
---                      headers' <- required "host" $ parseBHeaders headerStr
                       let headers = mkHeaders headers'
---                      let headers = M.fromList $ headers'
                       let contentLength = fromMaybe 0 $ fmap fst (P.readInt =<< getHeaderUnsafe contentlengthC headers)
                       (body, nextRequest) <- case () of
                           () | contentLength < 0               -> fail "negative content-length"
@@ -72,7 +71,7 @@ rloop conf h host handler inputStr
          case parseRequest of
            Left err -> error $ "failed to parse HTTP request: " ++ err
            Right (req, rest)
-               -> return $ -- logMH (show req) >>
+               -> return $
                   do let ioseq act = act >>= \x -> x `seq` return x
                      res <- ioseq (handler req) `E.catch` \(e::E.SomeException) -> return $ result 500 $ "Server error: " ++ show e
                      putAugmentedResult h req res
@@ -105,8 +104,8 @@ consumeChunksImpl :: L.ByteString -> ([(Int64, L.ByteString)], L.ByteString, L.B
 consumeChunksImpl str
     | L.null str = ([],L.empty,str)
     | chunkLen == 0 = let (last,rest') = L.splitAt lenLine1 str
-                          (tr,rest'') = getTrailer rest' 
-                      in ([(0,last)],tr,rest'')
+                          (tr',rest'') = getTrailer rest' 
+                      in ([(0,last)],tr',rest'')
     | otherwise = ((chunkLen,part):crest,tr,rest2)
     where
       line1 = head $ lazylines str 
@@ -115,9 +114,9 @@ consumeChunksImpl str
       len = chunkLen + lenLine1 + 2
       (part,rest) = L.splitAt len str
       (crest,tr,rest2) = consumeChunksImpl rest
-      getTrailer str = L.splitAt index str
-          where index | crlfLC `L.isPrefixOf` str = 2
-                      | otherwise = let iscrlf = L.zipWith (\a b -> a == '\r' && b == '\n') str . L.tail $ str
+      getTrailer s = L.splitAt index s
+          where index | crlfLC `L.isPrefixOf` s = 2
+                      | otherwise = let iscrlf = L.zipWith (\a b -> a == '\r' && b == '\n') s . L.tail $ s
                                         Just i = elemIndex True $ zipWith (&&) iscrlf (tail (tail iscrlf))
                                     in fromIntegral $ i+4
 
@@ -187,7 +186,6 @@ putAugmentedResult h req res = do
     , [crlfC]
     ]
   when (rqMethod req /= HEAD) $ L.hPut h $ rsBody res
---  logMH "Flushing connection"
   hFlush h
 
 
