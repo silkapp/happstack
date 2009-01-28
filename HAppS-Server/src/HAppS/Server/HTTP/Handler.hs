@@ -31,9 +31,6 @@ import HAppS.Util.TimeOut
 
 import System.Log.Logger hiding (debugM)
 
-logMH :: String -> IO ()
-logMH = logM "HAppS.Server.HTTP.Handler" DEBUG
-
 request :: Conf -> Handle -> Host -> (Request -> IO Response) -> IO ()
 request conf h host handler = rloop conf h host handler =<< L.hGetContents h
 
@@ -87,23 +84,18 @@ parseResponse inputStr =
                            splitAtEmptyLine inputStr
        (rsl,headerStr) <- required "failed to separate headers/body" $
                           splitAtCRLF topStr
-       let (v,code) = responseLine rsl
+       let (_,code) = responseLine rsl
        headers' <- parseHeaders "host" (L.unpack headerStr)
        let headers = mkHeaders headers'
        let mbCL = fmap fst (B.readInt =<< getHeader "content-length" headers)
-           rsFlags = RsFlags $ not $ isJust mbCL
-       (body,nextResp) <-
+       (body,_) <-
            maybe (if (isNothing $ getHeader "transfer-encoding" headers) 
                        then  return (restStr,L.pack "") 
                        else  return $ consumeChunks restStr)
                  (\cl->return (L.splitAt (fromIntegral cl) restStr))
                  mbCL
        return $ Response {rsCode=code,rsHeaders=headers,rsBody=body,rsFlags=RsFlags True,rsValidator=Nothing}
-val :: String
-val =  "71 \r\n\n<title> i2x.com </title>\n\n\n<H1> This is i2x.com </H1>\n\nContact <a href=\"mailto:contact20020212@i2x.com\">us.</a>\n\r\n0\r\n\r\n"
 
-testChunk :: String -> Bool
-testChunk x = x ==  (L.unpack $ fst $ consumeChunks $ L.pack x)
 -- http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html
 -- note this does NOT handle extenions
 consumeChunks::L.ByteString->(L.ByteString,L.ByteString)
@@ -128,17 +120,6 @@ consumeChunksImpl str
                       | otherwise = let iscrlf = L.zipWith (\a b -> a == '\r' && b == '\n') str . L.tail $ str
                                         Just i = elemIndex True $ zipWith (&&) iscrlf (tail (tail iscrlf))
                                     in fromIntegral $ i+4
-chunk :: Int64 -> L.ByteString -> L.ByteString
-chunk n = L.concat . concatMap (\c -> [L.pack . flip showHex "" . L.length $ c,crlfLC,c,crlfLC]) . (++ [L.empty]) . splits n
-    where 
-      splits n = unfoldr (\xs -> if L.null xs then Nothing else Just (L.splitAt n xs))
-
-unchunk :: L.ByteString -> (L.ByteString, L.ByteString -- the trailer part, unparsed, plus the final \r\n
-                           ,L.ByteString)
-unchunk bs = let (parts,tr,rest) = consumeChunksImpl bs
-             in (L.concat . map clean $ parts,tr, rest)
-    where clean (sz,bs) = L.take sz . L.drop 1 . snd . L.break (== '\n') $ bs
-
 
 crlfLC :: L.ByteString
 crlfLC = L.pack "\r\n"
@@ -150,52 +131,18 @@ lazylines s
     | otherwise =
         let (l,s') = L.break ((==) '\n') s
         in l : if L.null s' then []
-                            else lazylines (L.tail s')                      
-                            
+                            else lazylines (L.tail s')
 
-
-
-{-
-presult :: Handle -> IO Result
-presult h = do
-    liner <- newLinerHandle h
-
-    rls@(rql:hrl) <- headerLines liner
-    let c = responseLine rql
-        hh = combineHeaders $ headers hrl []
-
-    let mread k = return (fmap fst (P.readInt =<< M.lookup k hh))
-    cl   <- mread contentlengthC
-    body <- case cl of
-              Nothing               -> fmap toChunks $ getRest liner
-              Just c | c < 0        -> fail "Negative content-length"
-                     | otherwise    -> fmap toChunks $ getBytes liner c
-    return $ Result c hh nullRsFlags body
--}
-
-headers :: [B.ByteString]
-           -> [(B.ByteString, B.ByteString)]
-           -> [(B.ByteString, B.ByteString)]
-headers []          acc = acc
-headers (line:rest) acc =
-  let space = let x = P.head line in x == ' ' || x == '\t' in
-  case () of
-    _ | space && null acc -> error "Continuation header as first header"
-      | space             -> let ((k,v):r) = acc in headers rest ((k,P.append v line):r)
-      | otherwise         -> let (k,raw) = breakChar ':' line
-                                 v       = dropSpaceEnd $ dropSpace $ P.tail raw
-                                 in headers rest ((k,v):acc)
-  
 requestLine :: L.ByteString -> (Method, SURI, Version)
 requestLine l = case P.words ((P.concat . L.toChunks) l) of
                   [rq,uri,ver] -> (method rq, SURI $ parseURIRef uri, version ver)
                   [rq,uri] -> (method rq, SURI $ parseURIRef uri,Version 0 9)
-
---responseLine l = case P.words l of (v:c:_) -> version v `seq` fst (fromJust (P.readInt c))
+                  x -> error $ "requestLine cannot handle input:  " ++ (show x)
 
 responseLine :: L.ByteString -> (B.ByteString, Int)
 responseLine l = case B.words ((B.concat . L.toChunks) l) of 
                    (v:c:_) -> version v `seq` (v,fst (fromJust (B.readInt c)))
+                   x -> error $ "responseLine cannot handle input: " ++ (show x)
 
 
 method :: B.ByteString -> Method
@@ -210,12 +157,6 @@ method r = fj $ lookup r mtable
                     (P.pack "TRACE",   TRACE),
                     (P.pack "OPTIONS", OPTIONS),
                     (P.pack "CONNECT", CONNECT)]
-
-
-combineHeaders :: [(P.ByteString,P.ByteString)] -> M.Map P.ByteString P.ByteString
-combineHeaders = foldl' w M.empty
-    where w m (k,v) = M.insertWith (\n o -> P.concat [o, P.pack ", ", n])
-                                   (P.map toLower k) v m
 
 -- Result side
 
@@ -298,8 +239,6 @@ closeC :: B.ByteString
 closeC           = P.pack "close"
 keepAliveC :: B.ByteString
 keepAliveC       = P.pack "Keep-Alive"
---connectionCloseC = P.pack "Connection: close\r\n"
---connectionKeepC  = P.pack "Connection: keep-alive\r\n"
 crlfC :: B.ByteString
 crlfC            = P.pack "\r\n"
 fsepC :: B.ByteString

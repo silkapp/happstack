@@ -73,7 +73,6 @@ listElem = xmlElem $ map CElem
 cdataElem :: CharData -> Content
 cdataElem = CString  False
 
---simpleDoc xsl root = show $ document $ 
 --	     Document (simpleProlog xsl) [] $ xmlEscape stdXmlEscaper root
 simpleDocOld :: StyleSheet -> Types.Element -> String
 simpleDocOld xsl = show . document . 
@@ -109,9 +108,9 @@ simpleProlog style =
     Prolog 
     (Just (XMLDecl "1.0" 
 	   (Just $ EncodingDecl "UTF-8") 
-	   Nothing -- (Just True) -- standalone declaration
+	   Nothing -- standalone declaration
 	  ))
-    [] Nothing -- (Just docType)
+    [] Nothing
            (if url=="" then [] else [pi])
 	where
 	pi = PI ("xml-stylesheet", "type=\""++typeText++"\" href=\""++url++"\"")
@@ -128,15 +127,9 @@ getRoot (Document _ _ root _) = root
 --toXML .< "App" attrs ./>
 --toXML .< "App" attrs .> []
 data XML a = XML StyleSheet a
---class HasStyle x where getStyle::x->StyleSheet
+
 class ToElement x where toElement::x->Types.Element
 		
-{--
-instance (ToElement x) => ToElement (Maybe x) where 
-    toElement = maybe (emptyElem "Nothing" []) 
-                (\x->listElem "Just" [] [toElement x])
---}
-
 instance (ToElement x) => ToElement (Maybe x) where 
     toElement = maybe (emptyElem "Nothing" []) toElement
 
@@ -164,12 +157,7 @@ instance (Xml a) => ToElement a where
     toElement = un . head . map toHaXml . toXml
         where
         un (CElem el) = el
-
-
---let TOD sec pico = toClockTime ct in sec*1000  
---class (Show x)=>ToAttr x where toAttr::x->String; toAttr=show
-
-
+        un _ = error "Case not handled in Xml toElement instance"
 
 wrapElem :: (ToElement x) => Name -> x -> Types.Element
 wrapElem tag x= listElem tag [] [toElement x]
@@ -187,8 +175,6 @@ attrFMb :: (a -> String)
            -> (String, String)
 attrFMb r name f = maybe ("","") (\x->(name,quoteEsc $ r x)) . f 
 
---attrFMb r name f list= maybe list ((attrF name (r . fromJust . f)):list)
-
 --(\x->(name,quoteEsc $ r x)) . f 
 --(name,quoteEsc $ show $ f rec)
 
@@ -196,13 +182,6 @@ quoteEsc :: String -> String
 quoteEsc [] = []
 quoteEsc ('"':list) = "&quot;" ++ quoteEsc list
 quoteEsc (x:xs) = x:quoteEsc xs
-
---hexToInt
-
---hexToAlphaNum [] = []
---hexToAlphaNum (x:xs) = 
-
---attrShowF name f rec = (name,show $ f rec)
 
 --quotescape \\ and " \"
 
@@ -218,13 +197,6 @@ listToEl :: (ToElement a) =>
             Name -> [(Name, String)] -> [a] -> Types.Element
 listToEl name attrs = listElem name attrs . map toElement 
 
---listToEl list = listElem "List" [] $ map toElement list
-
-
---instance ToElement NELL where toElement s = e "x" []
-
---data NELL = NELL
-
 toAttrs :: t -> [(t1, t -> t2)] -> [(t1, t2)]
 toAttrs x = map (\ (s,f)->(s, f x)) 
 
@@ -239,12 +211,3 @@ toElement rules:
 
 
 newtype ElString = ElString {elString::String} deriving (Eq,Ord,Read,Show)
-
-
-{--
-store thing as XML or do multiple parse passes?
-
---}
-{--
-elstring
---}

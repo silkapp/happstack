@@ -159,7 +159,7 @@ renderResponse :: (Monad m,
                   -> Request
                   -> ((ClockTime, t1), (String, L.ByteString))
                   -> WebT m Response
-renderResponse mime rq ((modtime,size),(ct,body)) = do
+renderResponse _ rq ((modtime,size),(ct,body)) = do
 
   let notmodified = getHeader "if-modified-since" rq == Just (P.pack $ repr)
       repr = formatCalendarTime defaultTimeLocale 
@@ -167,8 +167,7 @@ renderResponse mime rq ((modtime,size),(ct,body)) = do
   -- "Mon, 07 Jan 2008 19:51:02 GMT"
   -- when (isJust $ getHeader "if-modified-since"  rq) $ error $ show $ getHeader "if-modified-since" rq
   if notmodified then do setResponseCode 304 ; return $ toResponse "" else do
-  let mod = getHeader "if-modified-since" rq
---  modifyResponse (setHeader "HUH" $ show $ (fmap P.unpack mod == Just repr,mod,Just repr))
+  --  modifyResponse (setHeader "HUH" $ show $ (fmap P.unpack mod == Just repr,mod,Just repr))
   modifyResponse (setHeader "Last-modified" repr)
   -- if %Z or UTC are in place of GMT below, wget complains that the last-modified header is invalid
   modifyResponse (setHeader "Content-Length" (show size))

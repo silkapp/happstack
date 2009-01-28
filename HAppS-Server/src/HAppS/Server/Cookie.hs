@@ -10,7 +10,7 @@ module HAppS.Server.Cookie
 --     getCookies, getCookie, getCookieValue
     ) where
 -}
-import Control.Monad (when, zipWithM_)
+
 import qualified Data.ByteString.Char8 as C
 import Data.Char
 import Data.List
@@ -29,23 +29,6 @@ data Cookie = Cookie
 mkCookie :: String -> String -> Cookie
 mkCookie key val = Cookie "1" "/" "" key val
 
-{-
--- | Set a cookie in the Result with empty path and domain.
---   See 'setCookieEx' for more details.
---setCookie :: Monad m => Seconds -> String -> String -> Result -> m Result
---setCookie sec key val = setCookieEx sec (Cookie "1" "" "" key val)
-
--- | Set a session cookie.
---   This should not live over browser restarts.
-sesCookie :: Monad m => String -> String -> Result -> m Result
-sesCookie key val = setCookieEx (-1) (Cookie "1" "/" "" key val)
-
--- | Delete a session cookie.
-delSesCookie :: Monad m => String -> Result -> m Result
-delSesCookie key = setCookieEx 0 (Cookie "1" "/" "" key "")
-
--}
-
 -- | Set a Cookie in the Result.
 -- The values are escaped as per RFC 2109, but some browsers may
 -- have buggy support for cookies containing e.g. @\'\"\'@ or @\' \'@.
@@ -61,33 +44,7 @@ mkCookieHeader sec cookie =
             | otherwise          = [c]
     in concat $ intersperse ";" ((cookieName cookie++"="++s cookieValue):[ (k++v) | (k,v) <- l, "" /= v ])
 
--- FIXME: validate at cookie creation.
-validateCookie :: Monad m => Cookie -> m ()
-validateCookie cookie
-    = do when (null key || any (not . ftoken) key) $ fail ("Invalid cookie name: "++show key)
-         let f n xs = when (any (not . fchar) xs) $ fail ("setCookieEx: "++n++": invalid character in value: "++show (xs))
-         zipWithM_ f ["cookieValue","cookieDomain","cookieVersion"] $ map ($ cookie) [cookieValue, cookieDomain, cookieVersion]
-         return ()
-    where key = cookieName cookie
 
-{--setCookieEx' sec cook r0 = 
-  let key = cookieName cook
-      w = concat $ intersperse ";" ((key++"="++s cookieValue):[ (k++v) | (k,v) <- l, "" /= v ])
-      l = [("Domain=",s cookieDomain)
-          ,("Max-Age=",if sec < 0 then "" else show sec)
-          ,("Path=", cookiePath cook)
-          ,("Version=", s cookieVersion)]
-      s f | f cook == "" = ""
-      s f   = '\"' : concatMap e (f cook) ++ "\""
-      e c = case () of
-              _ | fctl c || c == '"' -> ['\\',c]
-                | otherwise          -> [c]
-      new = maybe w (\ss -> w++"\r\nSet-Cookie: "++C.unpack ss) $ getRsHeader "Set-Cookie" r0
-      in 
-      setHeader "Set-Cookie" new r0
-
-delSesCookie' key = setCookieEx' 0 (Cookie "1" "/" "" key "")
---}
 {- Cookie syntax:
    av-pairs        =       av-pair *(";" av-pair)
    av-pair         =       attr ["=" value]        ; optional value
@@ -154,26 +111,6 @@ cookies = do
 (<~) :: Monad m => m a -> m b -> m a
 (<~) a b = do x <- a; b; return x
 
-{- Debugging stuff
--- deb x = look >>= \s -> trace ("parse @ "++x++ ": "++show s) (return ())
-
-t = mapM_ (\c -> putStrLn "" >> putStrLn c >> parse c >>= print)  cs
-q a b = C.putStrLn  =<< getRsHeader "Set-Cookie" =<< setCookie 400 a b =<< sresult 200 "ok"
-cs = ["$Version=\"1\"; Customer=\"WILE_E_COYOTE\"; $Path=\"/acme\""
-     ,"$Version=\"1\"; Customer=\"WILE_E_COYOTE\"; $Path=\"/acme\"; Part_Number=\"Rocket_Launcher_0001\"; $Path=\"/acme\""
-     ,"$Version=\"1\"; Customer=\"WILE_\"; $Path=\"/acme\"; Part_Number=\"Rocket_Launcher_0001\"; $Path=\"/acme\"; Shipping=\"FedEx\"; $Path=\"/acme\""
-     ,"$Version=\"1\";           Part_Number=\"Riding_Rocket_0023\"; $Path=\"/acme/ammo\";       Part_Number=\"Rocket_Launcher_0001\"; $Path=\"/acme\""
-     , "foo=bar"
-     , "foo=\"bar\""
-     , "foo=\"bar\\Zquote\""
-     , "ses=; foo=\"bar\""
-     , "foo=\"bar\"; ses="
-     , "email=\"abcdefghi333@alexjacobson.com\"; session=427922315; ses=\"hii\""
-     , "Path=/; ses=\"hii\"; session=427922315; email=\"abcdefghi333@alexjacobson.com\"; sessionId=\"552550384\""
-     ]
--}
-
-
 parse :: Monad m => String -> m [Cookie]
 parse i = case readP_to_S cookies i of
             [(res,"")] -> return res
@@ -198,4 +135,3 @@ getCookie s h = do cs <- getCookies h
 
 low :: String -> String
 low = map toLower
-

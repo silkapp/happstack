@@ -467,10 +467,6 @@ requireM fn handle
                                 Nothing -> noHandle
                                 Just a  -> unServerPartT (multi $ handle a) rq
 
-showRequest :: Reader Request (IO ())
-showRequest 
-    = Reader $ \rq -> print (rq::Request)
-
 -- FIXME: What to do with Escapes?
 -- | Use @cmd@ to transform XML against @xslPath@.
 --   This function only acts if the content-type is @application\/xml@.

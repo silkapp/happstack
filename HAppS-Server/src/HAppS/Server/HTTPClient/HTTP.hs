@@ -443,14 +443,6 @@ lookupHeader _ _  =  Nothing
 
 
 
-
-{-
-instance HasHeaders [Header]
-...requires -fglasgow-exts, and is not really necessary anyway...
--}
-
-
-
 -----------------------------------------------------------------
 ------------------ HTTP Messages --------------------------------
 -----------------------------------------------------------------
@@ -728,6 +720,7 @@ sendHTTP conn rq
          case rst of
            ([response],_) -> return (Right response)
            (_,Just err)   -> return (Left err)
+           (_,_) -> error "Case not supported in sendHTTP"
 
 sendHTTPPipelined :: Stream s => s -> [Request] -> IO ([Response],Maybe ConnError)
 sendHTTPPipelined conn rqs = 

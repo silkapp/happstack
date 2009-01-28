@@ -170,6 +170,7 @@ instance Stream Connection where
                    ; shutdown sk ShutdownReceive
                    ; sClose sk
                    }
+            closeConn (MkConn _ _ _ _) = error "Case in closeConn not supported"
 
             suck :: Connection -> IO ()
             suck cn = readLine cn >>= 

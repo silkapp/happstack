@@ -29,9 +29,6 @@ import HAppS.Server.Cookie
 import Data.List
 import Text.Show.Functions ()
 
--- lowercase pack
---lpack = (P.map toLower) . P.pack
-
 -- | HTTP version
 data Version = Version Int Int
              deriving(Show,Read,Eq)
@@ -51,7 +48,7 @@ continueHTTP rq res = (isHTTP1_0 rq && checkHeaderBS connectionC keepaliveC rq) 
 -- | HTTP configuration
 data Conf = Conf { port      :: Int -- ^ Port for the server to listen on.
                  , validator  :: Maybe (Response -> IO Response)
-                 } -- deriving(Show)
+                 } 
 nullConf :: Conf
 nullConf = Conf { port      = 8000
                 , validator  = Nothing
@@ -87,14 +84,13 @@ data Input = Input
 
 type Host = (String,Int)
 
---instance EventRelation Request Result
-
 data Response  = Response  { rsCode    :: Int,
                              rsHeaders :: Headers,
                              rsFlags   :: RsFlags,
                              rsBody    :: L.ByteString,
                              rsValidator:: Maybe (Response -> IO Response)
-                           } deriving (Show,Typeable) -- deriving(Show,Read,Typeable)
+                           } deriving (Show,Typeable) 
+
 data Request = Request { rqMethod  :: Method,
                          rqPaths   :: [String],
 			 rqUri	   :: String,
@@ -108,21 +104,9 @@ data Request = Request { rqMethod  :: Method,
                        } deriving(Show,Read,Typeable)
 
 
---rqURL=rq = '/':(concat $ intersperse "/" $ rqPaths rq) ++ rqQuery rq
+
 rqURL :: Request -> String
 rqURL rq = '/':intercalate "/" (rqPaths rq) ++ (rqQuery rq)
-{-
-instance Serialize Request where
-    typeString _  = "HAppS.Server.HTTP.Request"
-    encodeStringM = defaultEncodeStringM
-    decodeStringM = defaultDecodeStringM
--}
-{-
-instance LogFormat Request where
-    logFormat _ r = unwords [show $ rqMethod r, show $ rqURI r, show $ rqVersion r
-                            ,"\n\n"++unlines [unpack k ++ ": "++unpack v | (k,v) <- getHeadersBS r]
-                            ,show (rqBody r)]
--}
 
 class HasHeaders a where 
     updateHeaders::(Headers->Headers)->a->a
@@ -167,10 +151,6 @@ getHeaderUnsafe key var = listToMaybe =<< fmap hValue (getHeaderUnsafe' key var)
 getHeaderUnsafe' :: HasHeaders r => ByteString -> r -> Maybe HeaderPair
 getHeaderUnsafe' key r = M.lookup key (headers r)
 
-getContentType :: (HasHeaders r) => r -> Maybe ByteString
-getContentType x = getHeader "content-type" x
-
-
 --------------------------------------------------------------
 -- Querying header status
 --------------------------------------------------------------
@@ -184,10 +164,6 @@ hasHeaderBS key r = isJust (getHeaderBS key r)
 
 hasHeaderUnsafe :: HasHeaders r => ByteString -> r -> Bool
 hasHeaderUnsafe key r = isJust (getHeaderUnsafe' key r)
-
--- Case-insensitive header comparison
-checkHeader :: HasHeaders r => String -> String -> r -> Bool
-checkHeader key val = checkHeaderBS (pack key) (pack val)
 
 checkHeaderBS :: HasHeaders r => ByteString -> ByteString -> r -> Bool
 checkHeaderBS key val = checkHeaderUnsafe (P.map toLower key) (P.map toLower val)
@@ -227,18 +203,11 @@ addHeaderUnsafe key val = updateHeaders (M.insertWith join key val)
     where join (HeaderPair key vs1) (HeaderPair _ vs2) = HeaderPair key (vs1++vs2)
 
 
-
-
-
 result :: Int -> String -> Response
 result code s = resultBS code (L.pack s)
 
 resultBS :: Int -> L.ByteString -> Response
 resultBS code s = Response code M.empty nullRsFlags s Nothing
-
-
-setLocationHeader :: ToSURI uri => uri -> Response -> Response
-setLocationHeader uri = setHeaderBS locationC (pack (render (toSURI uri)))
 
 redirect :: (ToSURI s) => Int -> s -> Response -> Response
 redirect c s resp = setHeaderBS locationC (pack (render (toSURI s))) resp{rsCode = c}
@@ -248,8 +217,6 @@ redirect c s resp = setHeaderBS locationC (pack (render (toSURI s))) resp{rsCode
 -- constants here
 locationC :: ByteString
 locationC   = P.pack "Location"
-commaSpaceC :: ByteString
-commaSpaceC = P.pack ", "
 closeC :: ByteString
 closeC      = P.pack "close"
 connectionC :: ByteString

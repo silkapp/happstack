@@ -45,10 +45,7 @@ listen conf hand = do
                          let eh (x::SomeException) = logM "HAppS.Server.HTTP.Listen" ERROR ("HTTP request failed with: "++show x)
                          request conf h (hn,fromIntegral p) hand `E.catch` eh
                          hClose h
-  let msg = "\nIPV6 is not supported yet. \nLikely you made a localhost request \n"++
-            "and your machine resolved localhost to an IPv6 address. \n"++
-            "Use http://127.0.0.1:"++(show $ port conf)++"\n"
-      loop = do acceptLite s >>= forkIO . work
+  let loop = do acceptLite s >>= forkIO . work
                 loop
   let pe e = logM "HAppS.Server.HTTP.Listen" ERROR ("ERROR in accept thread: "++
                                                     show e)
