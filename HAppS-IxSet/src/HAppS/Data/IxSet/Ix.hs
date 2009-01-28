@@ -21,8 +21,10 @@ data Ix a = IxDefault |
  -- minimal hacky instance
 instance Data a => Data (Ix a) where
     toConstr (Ix _) = con_Ix_Data
+    toConstr _ = error "unexpected match for: toConstr"
     gunfold _ _     = error "gunfold"
     dataTypeOf _    = ixType_Data
+
 
 con_Ix_Data :: Constr
 con_Ix_Data = mkConstr ixType_Data "Ix" [] Prefix

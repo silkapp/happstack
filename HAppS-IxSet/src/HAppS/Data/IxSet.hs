@@ -150,6 +150,7 @@ instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (IxSet a)), SYBWC.Sat (ctx [a]),
     gunfold _ k z c  = case SYBWC.constrIndex c of
                        1 -> k (z ISet)
                        2 -> k (z fromList)
+                       _ -> error "unexpected match"
     dataTypeOf _ _ = ixSetDataType
 
 iSetConstr :: SYBWC.Constr
@@ -187,6 +188,7 @@ inferIxSet ixset typeName calName entryPoints
                                  TyConI (DataD ctxt _ nms _ _) -> (ctxt,nms)
                                  TyConI (NewtypeD ctxt _ nms _ _) -> (ctxt,nms)
                                  TyConI (TySynD _ nms _) -> ([],nms)
+                                 _ -> error "unexpected match"
              typeCon = foldl appT (conT typeName) (map varT names)
          case calInfo of
            VarI _ t _ _ ->
@@ -204,6 +206,7 @@ inferIxSet ixset typeName calName entryPoints
                      let ixType = appT (conT ''IxSet) typeCon
                      ixType' <- tySynD (mkName ixset) names ixType
                      return $ [i, ixType']  -- ++ d
+           _ -> error "unexpected match"
 
 -- modification operations
 
@@ -230,6 +233,7 @@ change op x (IxSet indices) =
                      -- partition handles out of order indexes
         ii dkey = op (fromJust $ fromDynamic dkey) x
         index' = foldr ii index ds -- handle multiple values
+    update _ _ = error "unexpected match"
 
 insert :: (Data a, Ord a,Data b,Indexable a b) => a -> IxSet a -> IxSet a
 insert = change Ix.insert
@@ -251,10 +255,12 @@ toSet :: Ord a => IxSet a -> Set a
 toSet (IxSet (Ix ix:_)) = Map.fold Set.union Set.empty ix
 toSet (IxSet []) = Set.empty
 toSet (ISet lst) = Set.fromList lst
+toSet _ = error "unexpected match"
 
 toSet' :: Ord a => [Ix a] -> Set a
 toSet' (Ix ix:_) = Map.fold Set.union Set.empty ix
 toSet' [] = Set.empty
+toSet' _ = error "unexpected match"
 
 fromSet :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
 fromSet set = Set.fold insert empty set
@@ -354,7 +360,10 @@ groupBy (IxSet indices) = collect indices
     where
     collect [] = []
     collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
+    collect _ = error "unexpected match"
     f = mapSnd Set.toList . Map.toList
+groupBy _ = error "unexpected match"
+
 
 
 rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
@@ -379,6 +388,8 @@ getOrd ord v (IxSet indices) = collect indices
             lt = concat $ map (Set.toList . snd) $ Map.toList lt'
             gt = concat $ map (Set.toList . snd) $ Map.toList gt'
             eq = maybe [] Set.toList eq'
+    collect _ = error "unexpected match"
+getOrd _ _ _ = error "unexpected match"
 
 --we want a gGets that returns a list of all matches
 

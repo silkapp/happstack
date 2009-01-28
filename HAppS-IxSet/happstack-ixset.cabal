@@ -31,5 +31,5 @@ Library
                        TypeSynonymInstances
   -- Should have ", DeriveDataTypeable", but Cabal complains
   cpp-options:         -DUNIX
-  ghc-options:         -Wall -fno-warn-incomplete-patterns
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
