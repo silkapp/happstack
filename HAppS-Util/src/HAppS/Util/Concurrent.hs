@@ -19,11 +19,19 @@ import System.Mem
 #endif
 
 --generic utils
+forkEverSt :: (t -> IO t) -> t -> IO ThreadId
 forkEverSt f state = fork (foreverSt f state)
+
+foreverSt :: (Monad m) => (t -> m t) -> t -> m b
 foreverSt f state=do {newState<-f state;foreverSt f newState;}
+
+forkEver :: IO a -> IO ThreadId
 forkEver a = fork (forever a)
 
+writeChanRight :: Chan (Either a b) -> b -> IO ()
 writeChanRight chan x= writeChan chan (Right x)
+
+writeChanLeft :: Chan (Either a b) -> a -> IO ()
 writeChanLeft chan x= writeChan chan (Left x)
 
 fork_ :: IO a -> IO ()
@@ -36,6 +44,8 @@ fork :: IO a -> IO ThreadId
 registerResetAction :: IO () -> IO ()
 -- | Reset state
 reset :: IO ()
+
+forever :: IO a -> IO a
 
 #ifndef INTERACTIVE
 forever a = do {finally a (forever a)}

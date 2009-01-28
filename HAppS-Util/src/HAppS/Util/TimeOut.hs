@@ -80,7 +80,11 @@ instance E.Exception TimeOutException
 
 throw' :: Exception exception => exception -> b
 throw' = throw
+
+throwTo' :: Exception e => ThreadId -> e -> IO ()
 throwTo' = E.throwTo
+
+catch' :: Exception e => IO a -> (e -> IO a) -> IO a
 catch' = E.catch
 
 try' :: IO a -> IO (Either SomeException a) -- give a type signature for try 
@@ -89,8 +93,8 @@ try' = E.try
 
 -- module internal function 
 catchTimeOutI :: TimeOutTId -> IO a -> IO a -> IO a
-catchTimeOutI id op handler =
-  op `catch'` (\e@(TimeOutExceptionI i) -> if i == id then handler  else throw' e)
+catchTimeOutI toId op handler =
+  op `catch'` (\e@(TimeOutExceptionI i) -> if i == toId then handler  else throw' e)
 
 
 -- | This is the normal timeout handler. It throws a TimeOutException exception,
@@ -98,21 +102,24 @@ catchTimeOutI id op handler =
 
 withTimeOutMaybe :: Int -> IO a -> IO (Maybe a)
 withTimeOutMaybe tout op = do 
-  id <- nextTimeOutId
+  toId <- nextTimeOutId
   wtid <- myThreadId
   ktid <- fork ( do threadDelay tout 
-                    throwTo' wtid (TimeOutExceptionI id)
+                    throwTo' wtid (TimeOutExceptionI toId)
                )
-  (catchTimeOutI id) (fmap Just (op >>= \r -> killThread ktid >> return  r)) (return Nothing)
+  (catchTimeOutI toId) (fmap Just (op >>= \r -> killThread ktid >> return  r)) (return Nothing)
 
+withTimeOut :: Int -> IO a -> IO a
 withTimeOut tout op = maybeToEx =<< withTimeOutMaybe tout op
-  
+
+maybeToEx :: (Monad m) => Maybe t -> m t  
 maybeToEx (Just r) = return r
 maybeToEx Nothing = throw' TimeOutException
 
 -- | Like timeOut, but additionally it works even if the computation is blocking
 -- async exceptions (explicitely or by a blocking FFI call). This consumes
 -- more resources than timeOut, but is still quite fast.
+withSafeTimeOut :: Int -> IO a -> IO a
 withSafeTimeOut tout op = maybeToEx =<< withSafeTimeOutMaybe tout op
 
 -- | Like withTimeOutMaybe, but handles the operation blocking exceptions like withSafeTimeOut

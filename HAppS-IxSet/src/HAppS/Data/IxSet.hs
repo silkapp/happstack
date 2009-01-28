@@ -109,27 +109,6 @@ import HAppS.Util.TH
 import HAppS.Data
 import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
 
-{--
--- experimental code for using hlist for the indices rather than existetials
-type Ix2 rec val = Map val (Set rec)
-
-
-ixType= (ix::Ix2 Entry Author) .&.
-        (ix::Ix2 Entry Updated) .&.
-        (ix::Ix2 Entry Word) .&.
-        Nil
-
-data IxSet2 entry calcs ixs = IxSet2 (entry->calcs) ixs
-insIndex2 k v ixs = trans (insertIndex k v) ixs
-delIndex2 k v ixs = trans (deleteIndex k v) ixs
-
-change2 op val (IxSet2 calc ixs) = IxSet2 calc ixs
-    where
-    keys = flatten (val,calc val)
---}
-
-
-
 -- the core datatypes
 
 data IxSet a = ISet [a] | IxSet [Ix a]
@@ -240,8 +219,6 @@ insert = change Ix.insert
 
 delete :: (Data a, Ord a,Data b,Indexable a b) => a -> IxSet a -> IxSet a
 delete = change Ix.delete
-
---update old new = insert new . delete old
 
 updateIx :: (Indexable a b, Ord a, Data a, Typeable k)
          => k -> a -> IxSet a -> IxSet a

@@ -29,7 +29,7 @@ Library
                        HAppS.Crypto.SHA1,
                        HAppS.Crypto.MD5,
                        HAppS.Crypto.W64,
-                       HAppS.Util.ByteStringCompat
+                       HAppS.Util.ByteStringCompat,
                        HAppS.Util.Common,
                        HAppS.Util.Concurrent,
                        HAppS.Util.Daemonize,
@@ -41,5 +41,5 @@ Library
                        RecursiveDo,
                        RankNTypes, FlexibleInstances,
                        TypeSynonymInstances
-  ghc-options:         -W -fno-warn-incomplete-patterns
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all

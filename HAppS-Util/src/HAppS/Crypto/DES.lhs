@@ -43,11 +43,6 @@ SUCH DAMAGE.
 > import Data.Bits
 > import Data.Word
 
-
---   > import ZordHUGS
-
- type Zord64 = Word64 
-
 more stuff just copied in
 
 > import Numeric
@@ -137,8 +132,6 @@ added by alex
 > unbitify :: Bits64 -> Zord64
 
 Added by Alex
-
- unbitify bs = foldlStrict (\i b -> if b then 1 + shiftL i 1 else shiftL i 1) 0 bs
 
 > unbitify bs = foldl (\i b -> if b then 1 + shiftL i 1 else shiftL i 1) 0 bs
 

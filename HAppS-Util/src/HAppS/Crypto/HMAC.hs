@@ -3,8 +3,6 @@ module HAppS.Crypto.HMAC where
 import HAppS.Crypto.SHA1
 import HAppS.Crypto.Base64
 
--- import qualified Data.ByteString.Char8 as BS
-
 import Data.Bits
 import Data.Char
 

@@ -48,20 +48,11 @@ daemonize binarylocation main =
         if startTime < appModTime then 
              E.throwTo mId $ 
                               ExitSuccess -- throws to the main thread
---           raiseSignal softwareTermination -- can we eliminate posix dependency?
+
            else do
         return ()
 
-{--
-          appCheck Nothing   _     = return ()
-          appCheck (Just bl) start = do at <- try $ getModificationTime bl
-                                        case at of
-                                          Right appModTime | start < appModTime
-                                              -> raiseSignal softwareTermination
-                                          _   -> return ()
---}
 
---daemonize = daemonize' Nothing
 getDaemonizedId
     = do prog <- getProgName
          args <- getArgs

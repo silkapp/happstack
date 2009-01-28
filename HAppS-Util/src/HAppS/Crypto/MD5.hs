@@ -62,12 +62,7 @@ md5Finalize :: MD5Context -> L.ByteString
 md5Finalize !ctx@(MD5Ctx (MD5Par _ _ _ _) rem !totLen) =
 	let totLen' = (totLen + 8*fromIntegral l) :: Word64
 	    padBS = B.pack $ 0x80 : replicate lenZeroPad 0 ++ size_split 8 totLen'
-{-
-L.toChunks $ runPut ( do
-			putWord8 0x80
-			mapM_ putWord8 (replicate lenZeroPad 0)
-			putWord64le totLen' )
--}
+
 	    (MD5Ctx (MD5Par a' b' c' d') _ _) = md5Update ctx (L.fromChunks [rem,padBS])
 	in L.pack $ concatMap (size_split 4) [a',b',c',d']
 	where
@@ -76,7 +71,6 @@ L.toChunks $ runPut ( do
 			then (blockSizeBytes - 8) - (l+1)
 			else (2*blockSizeBytes - 8) - (l+1)
 
--- size_split :: Int -> a -> [Word8]
 size_split 0 _ = []
 size_split p n = (fromIntegral d):size_split (p-1) n'
     where (n', d) = divMod n 256
@@ -210,7 +204,7 @@ applyMD5Rounds (MD5Par a b c d) w =
 	{-# INLINE ii #-}
 	(!!) word32s pos = getNthWord pos word32s
 	{-# INLINE (!!) #-}
---	getNthWord n bs = runGet (skip (n*4) >> getWord32le) (L.fromChunks [bs])
+
 	getNthWord n (PS ptr off _) =
 		inlinePerformIO $ withForeignPtr ptr $ \ptr' -> do
 		let p = castPtr $ plusPtr ptr' off

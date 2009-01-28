@@ -2,11 +2,6 @@
              ImplicitParams, TypeSynonymInstances, TypeFamilies,
              MultiParamTypeClasses, TypeOperators #-}
 
-{- LANGUAGE    TemplateHaskell , FlexibleInstances, UndecidableInstances, OverlappingInstances, 
-                DeriveDataTypeable, FlexibleContexts, ImplicitParams,
-                MultiParamTypeClasses, TypeSynonymInstances, TypeFamilies -}
-
--- MultiParamTypeClasses
 module HAppS.Store.HelpReqs where
 
 import Control.Monad.State hiding (State)
@@ -20,7 +15,7 @@ import HAppS.Server.Facebook as FB
     (Uid,uid,FBSession,fbSeeOther,getIsAdmin
     ,getAdmins,notifications_send  )
 import HAppS.Store.Util
-import HAppS.Server.SimpleHTTP -- hiding (ok)
+import HAppS.Server.SimpleHTTP 
 import HAppS.Store.FlashMsgs
 import HAppS.Server.HTTP.Types (Response)
 {--

@@ -37,6 +37,7 @@ breakCharEnd :: Char -> ByteString -> (ByteString, ByteString)
 breakCharEnd c p = B.breakEnd ((==) x) p where x = B.c2w c
 
 {-# INLINE dropSpace #-}
+dropSpace :: ByteString -> ByteString
 dropSpace = C.dropWhile isSpace
 
 {-# INLINE dropSpaceEnd #-}

@@ -34,6 +34,7 @@ epochPico ct = fromIntegral (epochSeconds ct) * 1000
 
 ----reliable getline and putline
 
+logMC :: Priority -> String -> IO ()
 logMC = logM "HAppS.Util.Common"
 
 -- | Put a line into a handle followed by "\r\n" and echo to stdout
@@ -64,10 +65,7 @@ hGetLn handle = do
 
 unBracket, ltrim, rtrim, trim :: String -> String
 unBracket = tail.reverse.tail.reverse.trim
---ltrim [] = []
---ltrim (' ':t)= ltrim t
---ltrim ('\t':t)= ltrim t
---ltrim x = x
+
 ltrim = dropWhile isSpace
 
 rtrim = reverse.ltrim.reverse
@@ -91,54 +89,16 @@ split f s = (left,right)
 	right = if null right' then [] else tail right'
 							
 
-{-
-startsWith list [] = True
-startsWith [] _ = False
-startsWith (l:ist) (p:at) = l==p && (startsWith ist at)
-endsWith list pat = startsWith (reverse list) (reverse pat)
-
-readFileSince path pos = 
-	do
-	h <- openFile path ReadMode
-	hSetBinaryMode h True
-	hSeek h AbsoluteSeek pos
-	since <- hGetContents h
-	return (since,h)
-		   
-copyFileSince origPath pos destPath =
-	do
-	(after,origHandle) <- readFileSince origPath pos
-	writeFile destPath after
-	hClose origHandle
--}
-
 -- | Read file with a default value if the file does not exist.
 mbReadFile :: a -> (String -> a) -> FilePath -> IO a
 mbReadFile noth just path  = 
 	(do text <- readFile path;return $ just text)
 	`catch` \err -> if isDoesNotExistError err then return noth else ioError err
 
-{-
-atomicWriteFile path string =
-	do
-	current <- getClockTime >>= toCalendarTime
-	writeFile (temp current path) string
-	renameFile (temp current path) path
-	where
-	temp current path = 
-		path++(formatCalendarTime defaultTimeLocale form current)
-	form=".%Y_%m_%d_%H_%M_%S.temp"
-
-readEither s = case reads s of
-			    [] -> Left s
-			    (x,s'):_->Right x
-
-ifFilesExist [] y = y >> return ()
-ifFilesExist (f:fs) y = doesFileExist f >>= \x -> 
-						if x then ifFilesExist fs y else return ()
--}
-
+doSnd :: (a -> b) -> (c,a) -> (c,b)
 doSnd f (x,y) = (x,f y)
+
+doFst :: (a -> b) -> (a,c) -> (b,c)
 doFst f (x,y) = (f x,y)
 
 
@@ -152,18 +112,6 @@ revmap item = map (\f->f item)
 
 comp :: Ord t => (a -> t) -> a -> a -> Ordering
 comp f e1 e2 = f e1 `compare` f e2
-
-{-
--- Consider replacing with better implementation
--- in future.
-hGetContentsStrict h = do
-    b <- hIsEOF h
-    if b then return [] 
-       else do
-            c <- hGetChar h
-            r <- hGetContentsStrict h
-            return (c:r)
--}
 
 -- | Run an external command. Upon failure print status
 --   to stderr.
@@ -211,12 +159,16 @@ maybeM (Just x) = return x
 maybeM _        = fail "maybeM: Nothing"
 
 -- ! Convert Bool into another monad
+boolM :: (MonadPlus m) => Bool -> m Bool
 boolM False = mzero
 boolM True  = return True
 
 notMb::a->Maybe a->Maybe a
 notMb v1 v2 = maybe (Just v1) (const Nothing) $ v2
 
+periodic :: [Int] -> IO () -> IO ThreadId
 periodic ts x = forkIO $ periodic' ts x
+
+periodic' :: [Int] -> IO a -> IO a
 periodic' [] x = x
 periodic' (t:ts) x = x >> threadDelay (10^6*t) >> periodic' ts x
