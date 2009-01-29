@@ -1,4 +1,3 @@
-{-# OPTIONS -fglasgow-exts #-}
 module HAppS.Server.Cron (cron)
 --    (Seconds, CronEvent(..), everyNthSecond,runBackground)
     where

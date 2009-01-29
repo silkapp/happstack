@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  HAppS.Util.TimeOut

@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts -cpp #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSignatures #-}
+
 module HAppS.Server.HTTP.Handler(request-- version,required
   ,parseResponse,putRequest
 -- ,unchunkBody,val,testChunk,pack

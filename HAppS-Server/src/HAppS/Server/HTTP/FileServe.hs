@@ -1,4 +1,3 @@
-{-# OPTIONS -fglasgow-exts #-}
 module HAppS.Server.HTTP.FileServe
     (
      MimeMap,fileServe, mimeTypes,isDot, blockDotFiles,doIndex,errorwrapper
@@ -21,9 +20,6 @@ import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as Map
 import qualified HAppS.Server.SimpleHTTP as SH
-
--- mapResult :: (IO Result -> IO Result) -> [ServerPart] -> ServerPart
--- mapResult fn parts = ReaderT $ \rq -> fmap fn (runReaderT (multi parts) rq
 
 ioErrors :: SomeException -> Maybe IOException
 ioErrors = fromException

@@ -1,6 +1,5 @@
-
-{-# LANGUAGE OverlappingInstances, UndecidableInstances #-}
-{-# OPTIONS_GHC -fglasgow-exts #-}
+{-# LANGUAGE OverlappingInstances, UndecidableInstances,
+             FlexibleContexts #-}
 
 -----------------------------------------------------------------------------
 -- |

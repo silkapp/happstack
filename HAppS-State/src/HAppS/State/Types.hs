@@ -1,5 +1,10 @@
-{-# OPTIONS -fglasgow-exts #-}
-{-# LANGUAGE CPP, UndecidableInstances, TemplateHaskell #-}
+{-# LANGUAGE UndecidableInstances, TemplateHaskell,
+    ExistentialQuantification, RankNTypes,
+    FlexibleInstances, DeriveDataTypeable,
+    ScopedTypeVariables, PatternSignatures
+ #-}
+
+
 module HAppS.State.Types where
 
 import Control.Concurrent.STM

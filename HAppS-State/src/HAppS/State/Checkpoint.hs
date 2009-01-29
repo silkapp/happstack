@@ -1,5 +1,4 @@
-{-# OPTIONS -fglasgow-exts #-}
-{-# LANGUAGE CPP, TemplateHaskell #-}
+{-# LANGUAGE CPP, TemplateHaskell, DeriveDataTypeable #-}
 module HAppS.State.Checkpoint
     ( createTxControl
     , closeTxControl

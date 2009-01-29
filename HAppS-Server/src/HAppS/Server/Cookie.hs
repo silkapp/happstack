@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
 -- http://tools.ietf.org/html/rfc2109
 module HAppS.Server.Cookie
     ( Cookie(..), mkCookie, mkCookieHeader

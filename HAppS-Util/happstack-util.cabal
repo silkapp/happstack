@@ -40,8 +40,7 @@ Library
                        HAppS.Util.Common,
                        HAppS.Util.Concurrent,
                        HAppS.Util.Daemonize,
-                       HAppS.Util.EventHandler,
-                       HAppS.Util.TimeOut 
+                       HAppS.Util.TimeOut,
                        HAppS.Util.TH,
                        HAppS.Util.Testing
   if flag(tests)

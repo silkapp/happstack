@@ -1,4 +1,3 @@
-{-# OPTIONS -fglasgow-exts -fallow-undecidable-instances -fth #-}
 module HAppS.State.Logger
     (LogFormat(..), Logger, LogChan,
      newLogChan, addToLog

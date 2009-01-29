@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell, UndecidableInstances, CPP #-}
-{-# OPTIONS -fglasgow-exts #-}
 module HAppS.State.SessionKeeper where
 
 

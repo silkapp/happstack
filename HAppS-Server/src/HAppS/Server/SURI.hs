@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts  #-}
+{-# LANGUAGE TypeSynonymInstances, DeriveDataTypeable #-}
+
 module HAppS.Server.SURI where
 import Data.Maybe
 import Data.Generics

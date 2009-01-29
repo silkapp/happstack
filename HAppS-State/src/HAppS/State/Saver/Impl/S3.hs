@@ -1,4 +1,3 @@
-{-# OPTIONS -fglasgow-exts #-}
 module HAppS.MACID.Saver.Impl.S3(S3.AccessKey,S3.SecretKey,s3Saver) where
 
 import HAppS.MACID.Saver.Types

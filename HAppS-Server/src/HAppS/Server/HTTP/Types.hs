@@ -1,4 +1,5 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE TypeSynonymInstances, DeriveDataTypeable #-}
+
 module HAppS.Server.HTTP.Types
     (Request(..), Response(..), RqBody(..), Input(..), HeaderPair(..),
      rqURL, mkHeaders,

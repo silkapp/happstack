@@ -1,5 +1,6 @@
-{-# OPTIONS -fglasgow-exts #-}
-{-# LANGUAGE CPP, TemplateHaskell #-}
+{-# LANGUAGE CPP, TemplateHaskell, MagicHash,
+    ExistentialQuantification, DeriveDataTypeable,
+    GADTs, MultiParamTypeClasses #-}
 module HAppS.State.Transaction where
 
 import Control.Concurrent

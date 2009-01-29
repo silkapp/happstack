@@ -1,5 +1,5 @@
-{-# OPTIONS_GHC -fglasgow-exts #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, FlexibleInstances, TypeSynonymInstances,
+    MultiParamTypeClasses #-}
 module HAppS.State.Monad where
 
 import Control.Exception

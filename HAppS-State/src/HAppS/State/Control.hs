@@ -1,4 +1,5 @@
-{-# OPTIONS -cpp -fglasgow-exts #-}
+{-# LANGUAGE CPP, EmptyDataDecls #-}
+
 module HAppS.State.Control
     ( startSystemState
     , startSystemStateMultimaster
