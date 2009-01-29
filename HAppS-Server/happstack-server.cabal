@@ -59,6 +59,10 @@ Library
     Build-Depends:     base >= 4 && < 5, syb
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
-  Extensions:          CPP, UndecidableInstances
+  Extensions:          TemplateHaskell, DeriveDataTypeable, MultiParamTypeClasses,
+                       TypeFamilies, FlexibleContexts, OverlappingInstances,
+                       FlexibleInstances, UndecidableInstances, ScopedTypeVariables,
+                       TypeSynonymInstances, PatternGuards, PatternSignatures,
+                       CPP, ForeignFunctionInterface
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all

@@ -56,9 +56,12 @@ Library
     HAppS.Data.Xml.Base
     HAppS.Data.Xml.Instances
     HAppS.Data.Xml.PrintParse
-  Extensions: UndecidableInstances, OverlappingInstances, Rank2Types,
-              TemplateHaskell, FlexibleInstances, CPP, MultiParamTypeClasses,
-              FunctionalDependencies
+  Extensions: TemplateHaskell, FlexibleInstances, UndecidableInstances,
+              OverlappingInstances, MultiParamTypeClasses, CPP,
+              FunctionalDependencies, DeriveDataTypeable, FlexibleContexts,
+              ScopedTypeVariables, GADTs, GeneralizedNewtypeDeriving,
+              PatternSignatures, TypeSynonymInstances, PatternGuards,
+              PolymorphicComponents
   -- Should also have ", DeriveDataTypeable" but Cabal complains
   GHC-Options: -Wall -fno-warn-orphans
 

@@ -1,5 +1,6 @@
 {-# LANGUAGE UndecidableInstances, OverlappingInstances, FlexibleInstances
-             ,MultiParamTypeClasses, TemplateHaskell, DeriveDataTypeable #-}
+             ,MultiParamTypeClasses, TemplateHaskell, DeriveDataTypeable,
+              TypeSynonymInstances #-}
 
 -- XXX This modules should be turned into documentation and/or test cases
 

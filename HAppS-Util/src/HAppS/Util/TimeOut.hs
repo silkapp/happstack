@@ -1,4 +1,4 @@
-{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable, RecursiveDo #-}
 
 -----------------------------------------------------------------------------
 -- |

@@ -49,6 +49,12 @@ Library
      Build-Depends:    unix
      cpp-options:      -DUNIX
 
-  Extensions:          CPP  
+  Extensions:          TemplateHaskell, FlexibleInstances, FlexibleContexts,
+                       MultiParamTypeClasses, DeriveDataTypeable,
+                       OverlappingInstances, UndecidableInstances, CPP,
+                       TypeFamilies, FunctionalDependencies, TypeOperators,
+                       GADTs, EmptyDataDecls, ExistentialQuantification, RankNTypes,
+                       ScopedtypeVariables, PatternSignatures, PatternGuards,
+                       MagicHash, TypeSynonymInstances
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all

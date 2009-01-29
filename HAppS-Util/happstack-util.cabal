@@ -46,11 +46,8 @@ Library
   if flag(tests)
     Exposed-modules:   HAppS.Util.Tests
 
-  extensions:          CPP, ForeignFunctionInterface,
-                       OverlappingInstances, UndecidableInstances,
-                       RecursiveDo,
-                       RankNTypes, FlexibleInstances,
-                       TypeSynonymInstances
+  extensions:          CPP, UndecidableInstances, BangPatterns, StandaloneDeriving,
+                       DeriveDataTypeable, TemplateHaskell, RecursiveDo
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
 

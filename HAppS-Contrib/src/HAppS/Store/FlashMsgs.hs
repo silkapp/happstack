@@ -1,5 +1,5 @@
-{-# LANGUAGE CPP, TemplateHaskell, FlexibleInstances, DeriveDataTypeable,
-             MultiParamTypeClasses, TypeFamilies, TypeSynonymInstances #-}
+{-# LANGUAGE CPP, TemplateHaskell, FlexibleInstances, DeriveDataTypeable, FlexibleContexts,
+             MultiParamTypeClasses, TypeFamilies, TypeSynonymInstances, UndecidableInstances #-}
 
 -- MultiParamTypeClasses
 module HAppS.Store.FlashMsgs where

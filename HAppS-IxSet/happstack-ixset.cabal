@@ -24,11 +24,12 @@ Library
                        HAppS.Data.IxSet
                        HAppS.Data.IxSet.Ix
                        HAppS.Data.IxSet.Usage
-  extensions:          CPP, ForeignFunctionInterface,
-                       OverlappingInstances, UndecidableInstances,
-                       RecursiveDo,
-                       RankNTypes, FlexibleInstances,
-                       TypeSynonymInstances
+  extensions:          UndecidableInstances, OverlappingInstances,
+                       FlexibleInstances, MultiParamTypeClasses,
+                       TemplateHaskell, RankNTypes, FunctionalDependencies,
+                       DeriveDataTypeable, GADTs, CPP, PolymorphicComponents,
+                       ExistentialQuantification, TypeSynonymInstances
+
   -- Should have ", DeriveDataTypeable", but Cabal complains
   cpp-options:         -DUNIX
   ghc-options:         -Wall

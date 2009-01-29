@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, DeriveDataTypeable,
              ImplicitParams, TypeSynonymInstances, TypeFamilies,
-             MultiParamTypeClasses, TypeOperators #-}
+             MultiParamTypeClasses, TypeOperators, FlexibleContexts,
+             UndecidableInstances #-}
 
 module HAppS.Store.HelpReqs where
 
