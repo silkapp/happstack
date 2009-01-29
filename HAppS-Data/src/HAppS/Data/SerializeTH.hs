@@ -39,10 +39,11 @@ deriveSerialize name
               = let getCopyBody = do c <- newName "c"
                                      appE (varE 'contain) $
                                       doE [bindS (varP c) [| getWord8 |]
-                                          , noBindS $ caseE (varE c)
+                                          , noBindS $ caseE (varE c) $
                                                         [ do args <- replicateM nArgs (newName "arg")
                                                              match (litP (integerL i)) (normalB $ getCopyWork conName args) []
                                                           | ((conName, nArgs), i) <- zip cons [0..]]
+                                                        ++ [match (return WildP) (normalB [|error "Wrong serialization type"|]) []]
                                           ]
                     getCopyWork conName args
                         = doE $ [ bindS (varP arg) [| safeGet |] | arg <- args ] ++
