@@ -34,7 +34,6 @@ type ExceptionT = SomeException
 
 logMT = logM "HAppS.State.Transaction"
 
---getTime :: AnyEv EpochTime
 getTime :: (Integral epochTime) => AnyEv epochTime
 getTime = sel (fromIntegral . txTime . evContext)
 
@@ -42,7 +41,6 @@ getEventClockTime :: AnyEv ClockTime
 getEventClockTime = do milliSeconds <- sel (txTime . evContext)
                        return $ TOD (fromIntegral milliSeconds) 0
 
--- getEventId :: AnyEv TxId
 getEventId :: (Integral txId) => AnyEv txId
 getEventId = sel (fromIntegral . txId . evContext)
 

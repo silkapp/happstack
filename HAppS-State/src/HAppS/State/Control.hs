@@ -8,7 +8,6 @@ module HAppS.State.Control
 
 import System.Log.Logger
 import qualified System.Log.Handler as SLH
--- import System.Log.Handler (LogHandler) -- why doesn't this work?
 import System.Log.Handler.Simple
 import System.Log.Handler.Syslog
 
@@ -47,9 +46,6 @@ startSystemStateMultimaster proxy
 stdSaver = do pn <- getProgName
               return $ Queue (FileSaver ("_local/" ++pn++"_state"))
 
---stdLogger = do pn <- getProgName
---               return $ Queue (FileSaver ("_local/" ++ pn ++ "_error.log"))
-
 -- | Wait for a signal.
 --   On unix, a signal is sigINT or sigTERM. On windows, the signal
 --   is entering 'e'.
@@ -70,29 +66,6 @@ waitForTermination
              loop _   = getChar >>= loop
          loop 'c'
 #endif
-
-{-
-
--- | Run a web application with a user specified Saver.
-stdMainWithSaver :: SystemState st => Saver -> StdPart st -> IO ()
-stdMainWithSaver saver sp
-    = stdMainEx sp $ \config _ hs ->
-      runWithConf (config { txcSaver = saver }) hs
-
--- | Run a web application with FileSaver.
-stdMain :: (SystemState st) => StdPart st -> IO ()
-stdMain sp = stdMainEx sp $ \config fs hs -> do
-    pn   <- liftIO getProgName
-    let fp = if null fs then ("_local/" ++pn++"_state") else head fs
-    let conf = config { txcSaver = Queue (FileSaver fp), txcLogger = Queue (FileSaver ("_local/" ++ pn ++ "_error.log")) }
-    runWithConf conf hs
-
-simpleMain sp = stdMainEx sp $ \config _fs hs -> do
-    pn  <- liftIO getProgName
-    let conf = config {txcSaver = Queue (FileSaver $ "."++pn++"_state"),txcLogger = Queue (FileSaver $ "."++pn++"_error_log")}
-    runWithConf conf hs
-
--}
 
 mkTxConfig :: [Flag] -> TxConfig
 mkTxConfig = foldr worker nullTxConfig
@@ -123,24 +96,6 @@ setLoggingSettings flags = do updateGlobalLogger "" (setHandlers ([] :: [NullLog
                                           logM "" WARNING ("Set logging priority to " ++ show (getLevel rlogger))
           worker _ = return ()
 
-{-
-runWithConf :: (SystemState st) => TxConfig -> [Handler st] -> IO ()
-runWithConf conf hs = do
-    st0 <- startState
-    tx  <- runTxSystem conf st0 (hs++componentHandlers id const)
-#ifdef UNIX
-    istty <- queryTerminal stdInput
-    case istty of
-      True -> installHandler keyboardSignal (CatchOnce (txCheckpointAndExit tx)) Nothing
-              >> installHandler softwareTermination (CatchOnce (txCheckpointAndExit tx)) Nothing
-      False -> installHandler softwareTermination (CatchOnce (txCheckpointAndExit tx)) Nothing
-    takeMVar (txTerminationMVar tx) `CE.catch` \_ -> txCheckpointAndExit tx
-#else
-    let loop 'e' = return () 
-        loop _   = getChar >>= loop
-    loop 'c' `CE.finally` txCheckpointAndExit tx
-#endif
--}
 -- order should not matter, though it does now.
 -- we should ALSO allow multiple loggers at the same time! --log-target=stdout --log-target=syslog
 options = [Option "" ["log-level"] (ReqArg (LogLevel . read . map toUpper) "level")

@@ -37,5 +37,3 @@ createWriter NullSaver _key _cutoff
                , writerAtomicReplace = fail "NullSaver: writerAtomicReplace"
                , writerCut   = fail "NullSaver: writerCut" }
 
-
-

@@ -20,7 +20,6 @@ data Env = Env
     , evContext :: TxContext }
 
 type TxId      = Int64
---type EpochTime = Int64
 type EpochMilli= Int64
 
 instance Typeable StdGen where typeOf _ = mkTyConApp (mkTyCon "System.Random.StdGen") []
@@ -76,14 +75,6 @@ instance (Typeable state, Typeable t) => Typeable (Ev (StateT state STM) t) wher
 
 type Query state = Ev (ReaderT state STM)
 type Update state = Ev (StateT state STM)
-
-{-
-withAny :: AnyEv Env
-withAny = Ev $ StateT $ \s -> return (s, s)
-
-test :: (Query st Env, Update st Env)
-test = (withAny, withAny)
--}
 
 -- unsafe lifting
 

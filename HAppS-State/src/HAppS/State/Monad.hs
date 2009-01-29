@@ -11,12 +11,6 @@ import Control.Monad.State
 import Control.Monad.Reader
 import Control.Monad
 
-{-
-instance (Monad (m STM), MonadTrans m) => Monad (Ev (m STM)) where
-    return x = Ev $ return x
-    fail x   = unsafeIOToEv (logM "HAppS.State.Monad" CRITICAL ("Ev failure: "++x)) >> Ev (fail x)
-    ev >>= f = Ev $ unEv ev >>= unEv . f
--}
 instance (Monad m) => Monad (Ev m) where
     return x = Ev $ \_ -> return x
     fail x   = Ev $ \_ -> fail x
@@ -89,22 +83,10 @@ instance MonadPlus m => MonadPlus (Ev m) where
     mzero = Ev $ \_ -> mzero
     mplus (Ev fn1) (Ev fn2) = Ev $ \env -> fn1 env `mplus` fn2 env
 
-{-
--- | Catch errors.
-catchEv :: Ev m a -> (Exception -> a) -> Ev m a
-catchEv (Ev cmd) fun = Ev $ StateT $ \s -> runStateT cmd s `catchSTM` (\a -> return (fun a, s))
--}
 -- | Select a part of the environment.
 sel :: (Env -> b) -> AnyEv b
 sel f = Ev $ \env -> return (f env)
 
--- | Run a computation with a local environment.
-{-
-plocal :: (Env sta a -> Env stb b) -> Ev stb b r -> Ev sta a r
-plocal fun (Ev c) = Ev $ StateT $ \s ->
-                    do (r,s') <- runStateT c (fun s)
-                       return (r,s)
--}
 -- FIXME: should the users see this function?
 -- | Run a computation with local state. Changes to state will be visible to outside.
 localState :: (outer -> inner) -> (inner -> outer -> outer) -> Ev (StateT inner STM) a -> Ev (StateT outer STM) a
@@ -124,23 +106,3 @@ runQuery :: Query st a -> Update st a
 runQuery fn = Ev $ \env -> StateT $ \st ->
               do a <- runReaderT (unEv fn env) st
                  return (a,st)
-
-
-
-{-
-localState ifun ufun (Ev cmd) = Ev $ do
-    old <- readRefSTM (evState env)
-    ntv <- newRefSTM $! ifun old
-    res <- cmd $ env { evState = ntv }
-    new <- readRefSTM ntv
-    writeRefSTM (evState env) $! ufun new old
-    return res
--}
-
--- | Run a computation with local event type.
-{-
-localEvent :: ev -> Ev st ev a -> Ev st oev a
-localEvent ev (Ev cmd) = Ev $ StateT $ \s -> do (r, s') <- runStateT cmd s{evEvent = (evEvent s){txEvent = ev}}
-                                                return (r,s'{evEvent = evEvent s})
--}
---    cmd $ env { evEvent = (evEvent env) { txEvent = ev } }

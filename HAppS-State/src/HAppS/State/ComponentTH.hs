@@ -105,7 +105,6 @@ genEventInstances :: [MethodInfo] -> Q [Dec]
 genEventInstances methodsInfo
     = mapM genEventInstance methodsInfo
 
--- instance (cxt keys, Serialize keys) => QueryEvent (GetPageCurrent key) WikiRevision
 genEventInstance :: MethodInfo -> Q Dec
 genEventInstance method
     = do let keys = methodKeys method
