@@ -24,6 +24,7 @@ tryE = E.try
 catchE :: IO a -> (SomeException -> IO a) -> IO a
 catchE = E.catch
 
+logMF :: Priority -> String -> IO ()
 logMF = logM "HAppS.State.Saver.Impl.File"
 
 formatFilePath :: Int -> String -> FilePath
@@ -68,18 +69,19 @@ fileWriter prefix key cutoffInit = do
                                         return ()
              , writerAtomicReplace = \ss -> do h <- takeMVar hmv
                                                hClose h
-                                               file <- getFileName
-                                               atomicWriteFile file (serialize ss)
-                                               putMVar hmv =<< openBinaryFile file AppendMode
+                                               file' <- getFileName
+                                               atomicWriteFile file' (serialize ss)
+                                               putMVar hmv =<< openBinaryFile file' AppendMode
              , writerCut = do h <- takeMVar hmv
                               hClose h
                               cutoff <- takeMVar cutoffVar
-                              let file = prefix </> formatFilePath (cutoff+1) key
+                              let file' = prefix </> formatFilePath (cutoff+1) key
                               putMVar cutoffVar (cutoff+1)
-                              putMVar hmv =<< openBinaryFile file WriteMode
+                              putMVar hmv =<< openBinaryFile file' WriteMode
                               return (cutoff+1)
                  }
 
+getAllFiles :: FilePath -> String -> Int -> IO [FilePath]
 getAllFiles prefix key cutoff
     = loop cutoff
     where loop n = do let file = prefix </> formatFilePath n key
@@ -88,6 +90,7 @@ getAllFiles prefix key cutoff
                                else return []
 
 -- | Just to avoid a dependency.
+atomicWriteFile :: String -> L.ByteString -> IO ()
 atomicWriteFile path string = do
   r <- randomIO :: IO Int
   let p' = path ++ ".atomic-tmp-" ++ show (abs r)

@@ -21,6 +21,7 @@ import Control.Monad hiding (join)
 import Control.Concurrent
 import System.Random
 
+logSP :: Priority -> String -> IO ()
 logSP = logM "HAppS.State.Spread"
 
 
@@ -51,13 +52,14 @@ connectToCluster
          join receiverGroup conn
          return $ Cluster chan conn
 
+receiverGroup :: Group
 receiverGroup = let Just g = makeGroup "receiver"
                 in g
 
 changeEventMapping :: MVar TxControl -> EventMap -> Cluster -> IO EventMap
 changeEventMapping ctlVar localEventMap cluster
     = do logSP NOTICE "Create new event mapper"
-         members <- getClusterMembers cluster
+         mems <- getClusterMembers cluster
          responseIndex <- newMVar Map.empty
          ready <- newEmptyMVar
          eventQueue <- newChan
@@ -93,7 +95,7 @@ changeEventMapping ctlVar localEventMap cluster
                             sendClusterMsg [sender] (EventResponse eid response) cluster
          forkIO listener
          forkIO responder
-         case members of
+         case mems of
            [] -> putMVar ready () -- The cluster is empty, use state from disk.
            (x:_) -> do logSP NOTICE $ "Requesting state from: " ++ show x
                        sendClusterMsg [x] RequestState cluster
@@ -114,6 +116,7 @@ changeEventMapping ctlVar localEventMap cluster
                              QueryHandler{} -> handler
          return newEventMap
 
+sendState :: MVar TxControl -> Group -> Cluster -> IO ()
 sendState ctlVar sender cluster
     = withMVar ctlVar $ \ctl ->
       do logSP NOTICE $ "Sending state to: " ++ show sender
@@ -154,6 +157,7 @@ getClusterMembers cluster
            Just msg -> error $ "Expected membership message from cluster. Received a " ++ showMsgType msg ++ " message."
            Nothing  -> error "Cluster channel unexpectedly closed."
 
+showMsgType :: Message -> String
 showMsgType (Regular _) = "regular"
 showMsgType (Membership _) = "membership"
 showMsgType (Rejected _) = "rejected"

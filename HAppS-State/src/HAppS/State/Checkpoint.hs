@@ -26,6 +26,7 @@ import qualified Data.Map as M
 
 import System.Log.Logger
 
+logMC :: Priority -> String -> IO ()
 logMC = logM "HAppS.State.Checkpoint"
 
 {- State on disk:
@@ -46,14 +47,14 @@ $(deriveSerialize ''State)
 
 createTxControl :: (Methods state, Component state) =>
                    Saver -> Proxy state -> IO (MVar TxControl)
-createTxControl saver proxy
+createTxControl saver prox
     = do -- The state hasn't been loaded yet. Ignore events.
          eventSaverVar   <- newMVar =<< createWriter NullSaver "events" 0
          newMVar $ TxControl
                        { ctlSaver             = saver
                        , ctlEventSaver        = eventSaverVar
-                       , ctlAllComponents     = allStateTypes proxy
-                       , ctlComponentVersions = componentVersions proxy
+                       , ctlAllComponents     = allStateTypes prox
+                       , ctlComponentVersions = componentVersions prox
                        , ctlChildren          = [] }
 
 closeTxControl :: MVar TxControl -> IO ()
@@ -112,14 +113,19 @@ loadEvents ctl cutoff
          logMC NOTICE "All events successfully replayed."
          return offset
 
+withReader :: (Serialize a) => TxControl -> String -> Int
+                            -> (ReaderStream a -> IO c) -> IO c
 withReader ctl key cutoff
     = bracket (createReader (ctlSaver ctl) key cutoff)
               (readerClose)
 
+withWriter :: (Serialize a) => TxControl -> String -> Int
+                            -> (WriterStream a -> IO c) -> IO c
 withWriter ctl key cutoff
     = bracket (createWriter (ctlSaver ctl) key cutoff)
               (writerClose)
 
+readState :: (Serialize a) => TxControl -> IO (Maybe a)
 readState ctl
     = withReader ctl "current" 0 $ \s ->
       liftM listToMaybe $ readerGetUncut s

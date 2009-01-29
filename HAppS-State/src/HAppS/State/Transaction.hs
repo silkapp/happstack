@@ -32,6 +32,7 @@ import qualified Data.Binary as Binary
 
 type ExceptionT = SomeException
 
+logMT :: Priority -> String -> IO ()
 logMT = logM "HAppS.State.Transaction"
 
 getTime :: (Integral epochTime) => AnyEv epochTime
@@ -206,37 +207,37 @@ extraEvents tx
     where t :: TxRun st -> st
           t _ = undefined
           stateType = show (typeOf (t tx))
-          getStateHandler tx
+          getStateHandler tx'
               = let fn :: GetCheckpointState -> IO L.ByteString
                     fn ev = do mv <- newEmptyMVar
-                               quickQuery' tx $ HR ev $ \context st ->
+                               quickQuery' tx' $ HR ev $ \context st ->
                                  return (Nothing, putMVar mv (serialize (context, st)))
                                takeMVar mv
                 in QueryHandler fn parseObject
-          setNewStateHandler tx
+          setNewStateHandler tx'
               = let fn :: SetCheckpointState -> IO ()
                     fn (SetCheckpointState bs)
                         =    do ((context, newState), rest) <- evaluate $ deserialize bs
                                 unless (L.null rest) $ error $ "Junk after checkpoint for state: " ++ stateType
                                 mv <- newEmptyMVar
-                                quickQuery' tx $ HR () $ \_context _oldState ->
+                                quickQuery' tx' $ HR () $ \_context _oldState ->
                                     return (Just newState, putMVar mv ())
                                 takeMVar mv
-                                atomically $ writeTVar (txLastTxContext tx) context
+                                atomically $ writeTVar (txLastTxContext tx') context
                 in UpdateHandler (error "No cold setState handler") fn parseObject
 
 
 allStateTypes :: (Methods a, Component a) => Proxy a -> [TypeString]
-allStateTypes proxy = let (componentTree, _versions, _ioActions) = collectHandlers proxy
-                      in M.keys componentTree
+allStateTypes prox = let (componentTree, _versions, _ioActions) = collectHandlers prox
+                     in M.keys componentTree
 
 componentVersions :: (Methods a, Component a) => Proxy a -> M.Map String [L.ByteString]
-componentVersions proxy = let (_componentTree, versions, _ioActions) = collectHandlers proxy
-                          in versions
+componentVersions prox = let (_componentTree, versions, _ioActions) = collectHandlers prox
+                         in versions
 
 componentIO :: (Methods a, Component a) => Proxy a -> [IO ()]
-componentIO proxy = let (_componentTree, _versions, ioActions) = collectHandlers proxy
-                    in ioActions
+componentIO prox = let (_componentTree, _versions, ioActions) = collectHandlers prox
+                   in ioActions
 
 createNewTxRun :: IO (TxRun st)
 createNewTxRun =
@@ -245,7 +246,10 @@ createNewTxRun =
        lastContext <- newTVar (TxContext 0 0 0 (mkStdGen 42))
        return $ TxRun processQueue lastContext
 
+setNewStateType :: String -> String
 setNewStateType str = "SetNewState: " ++ str
+
+getStateType :: String -> String
 getStateType str = "GetState: " ++ str
 
 setNewState :: TypeString -> L.ByteString -> IO ()
@@ -367,13 +371,13 @@ handleEvent :: (st -> Env -> Ev m res -> STM intermediate) -> (st -> intermediat
             -> (Either ExceptionT res -> IO ()) -> Ev m res -> RunHandler st ev
 handleEvent runner stateCheck ofun action tx st
     = handle eh $
-      do intermediate <- atomically $ runQuery
+      do intermediate <- atomically $ runQuery'
          (newState, res) <- stateCheck st intermediate
          return (newState, ofun (Right res))
-    where runQuery = do rs <- newTVar (txStdGen tx)
-                        let env = Env { evContext = tx, evRandoms = rs }
-                        intermediate <- runner st env action
-                        return $ intermediate
+    where runQuery' = do rs <- newTVar (txStdGen tx)
+                         let env = Env { evContext = tx, evRandoms = rs }
+                         intermediate <- runner st env action
+                         return $ intermediate
           eh e = do logMT ERROR ("handleEvent FAIL: "++ show e)
                     return (Nothing,ofun (Left e))
 

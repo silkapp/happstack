@@ -31,18 +31,24 @@ import System.Posix.Terminal ( queryTerminal )
 import HAppS.State.Transaction
 import HAppS.State.Saver
 import HAppS.State.TxControl
+import HAppS.State.ComponentSystem
+import HAppS.Data.Proxy hiding (proxy)
 
-
+startSystemState :: (Methods a, Component a) =>
+                    Proxy a -> IO (MVar TxControl)
 startSystemState proxy
     = do _txConfig <- parseArgs
          saver <- stdSaver
          runTxSystem saver proxy
 
+startSystemStateMultimaster :: (Methods a, Component a) =>
+                               Proxy a -> IO (MVar TxControl)
 startSystemStateMultimaster proxy
     = do _txConfig <- parseArgs
          saver <- stdSaver
          runTxSystem' True saver proxy
 
+stdSaver :: IO Saver
 stdSaver = do pn <- getProgName
               return $ Queue (FileSaver ("_local/" ++pn++"_state"))
 
@@ -91,13 +97,14 @@ setLoggingSettings flags = do updateGlobalLogger "" (setHandlers ([] :: [NullLog
                                           updateGlobalLogger "HAppS" (setHandlers [s])
           worker (LogTarget (File path)) = do s <- fileHandler path DEBUG  -- This priority seems to be ignored?
                                               updateGlobalLogger "HAppS" (setHandlers [s])
-          worker (LogLevel priority) = do updateGlobalLogger "HAppS" (setLevel priority)
-                                          rlogger <- getLogger "HAppS"
-                                          logM "" WARNING ("Set logging priority to " ++ show (getLevel rlogger))
+          worker (LogLevel pri) = do updateGlobalLogger "HAppS" (setLevel pri)
+                                     rlogger <- getLogger "HAppS"
+                                     logM "" WARNING ("Set logging priority to " ++ show (getLevel rlogger))
           worker _ = return ()
 
 -- order should not matter, though it does now.
 -- we should ALSO allow multiple loggers at the same time! --log-target=stdout --log-target=syslog
+options :: [OptDescr Flag]
 options = [Option "" ["log-level"] (ReqArg (LogLevel . read . map toUpper) "level")
                       "Log level: DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY. Default: WARNING"
           ,Option "" ["log-target"] (ReqArg (LogTarget . readTarget) "target")
@@ -114,14 +121,19 @@ data Target = File FilePath | StdOut | SysLog deriving (Read,Show,Eq,Ord)
 data Flag = LogLevel Priority | LogTarget Target
           | Cluster (Maybe String) | ClusterPort Int deriving Show
 
+readTarget :: String -> Target
 readTarget arg = case map toLower arg of
                    "stdout" -> StdOut
                    "syslog" -> SysLog
                    _        -> File arg
+
+castOptions :: [OptDescr ()]
 castOptions = flip map options $ \(Option c f desc help) -> Option c f (worker desc) help
               where worker (NoArg _) = (NoArg ())
                     worker (ReqArg _ f) = ReqArg (const ()) f
                     worker (OptArg _ f) = OptArg (const ()) f
+
+parseArgs :: IO TxConfig
 parseArgs = do
     args <- liftIO getArgs
     pn   <- liftIO getProgName

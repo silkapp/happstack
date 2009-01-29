@@ -53,10 +53,16 @@ parseAll = loop
           loop l = let (a,rest) = deserialize l
                    in a:loop rest
 
+addToStore :: (Ord a, Ord b) => a -> b -> L.ByteString
+                         -> M.Map a (M.Map b L.ByteString)
+                         -> M.Map a (M.Map b L.ByteString)
 addToStore key cutoff val store
-    = M.unionWith (M.unionWith L.append) store elem
-    where elem = M.singleton key $ M.singleton cutoff val
+    = M.unionWith (M.unionWith L.append) store element
+   where element = M.singleton key $ M.singleton cutoff val
 
+setStore :: (Ord a) => a -> b -> c
+                       -> M.Map a (M.Map b c)
+                       -> M.Map a (M.Map b c)
 setStore key cutoff val store
-    = M.unionWith (\_ _ -> M.singleton cutoff val) store elem
-    where elem = M.singleton key $ M.singleton cutoff val
+    = M.unionWith (\_ _ -> M.singleton cutoff val) store element
+   where element = M.singleton key $ M.singleton cutoff val

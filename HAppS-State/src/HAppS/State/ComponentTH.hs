@@ -19,6 +19,7 @@ import Data.List
 
 import Data.Generics.Basics
 
+nubCxt :: [TypeQ] -> Q [Type]
 nubCxt tsQ
     = do ts <- cxt tsQ
          return $ nub ts
@@ -54,21 +55,22 @@ mkMethodConstraints :: [Name] -> MethodInfo -> [TypeQ]
 mkMethodConstraints keys method
     = map return (substMethodContext method keys)
 
+substMethodContext :: MethodInfo -> [Name] -> [Type]
 substMethodContext method keys
     = let relation = zip (methodKeys method) keys
           worker (VarT old) | Just new <- lookup old relation
                    = VarT new
           worker (AppT l r) = AppT (worker l) (worker r)
-          worker (ForallT cxt names t) = ForallT cxt names (worker t)
+          worker (ForallT c names t) = ForallT c names (worker t)
           worker t = t
       in map worker (methodContext method)
 
-
+mkType :: Name -> [Name] -> TypeQ
 mkType name args = foldl appT (conT name) (map varT args)
 
 genSerializeInstances :: [MethodInfo] -> Q [Dec]
-genSerializeInstances methods
-    = liftM concat $ forM methods $ \method ->
+genSerializeInstances meths
+    = liftM concat $ forM meths $ \method ->
       let constraints = nubCxt $ mkKeyConstraints (methodKeys method) ++ map return (methodContext method)
           upperMethod = upperName (methodName method)
           encode = do args <- replicateM (length (methodArgs method)) (newName "arg")
@@ -91,8 +93,8 @@ genSerializeInstances methods
   , Query $ \GetComponent -> getComponent ]
 -}
 genComponentHandlers :: [MethodInfo] -> ExpQ
-genComponentHandlers methods
-    = do let localHandlers = flip map methods $ \method ->
+genComponentHandlers meths
+    = do let localHandlers = flip map meths $ \method ->
                         let upName = upperName (methodName method)
                         in do args <- replicateM (length (methodArgs method)) (newName "arg")
                               appE (conE (methodEv method)) $
@@ -119,8 +121,8 @@ genEventInstance method
 
 
 genMethodStructs :: [Name] -> [MethodInfo] -> Q [Dec]
-genMethodStructs derv methods
-    = liftM concat (mapM (genMethodStruct derv) methods)
+genMethodStructs derv meths
+    = liftM concat (mapM (genMethodStruct derv) meths)
 
 -- FIXME: allow class constraints on keys.
 genMethodStruct :: [Name] -> MethodInfo -> Q [Dec]
@@ -128,6 +130,7 @@ genMethodStruct derv method
     = do let c = NormalC (upperName (methodName method)) (zip (repeat NotStrict ) (methodArgs method))
          return [ DataD [] (upperName (methodName method)) (methodKeys method) [c] (derv) ]
 
+upperName :: Name -> Name
 upperName = mkName . upperFirst . nameBase
 
 upperFirst :: String -> String
@@ -166,7 +169,7 @@ getMethodInfo method
            VarI _name funcType _decl _fixity -> return (getTypes funcType){methodName = method}
            _ -> error $ "Method is not a function: " ++ nameBase method ++ " is a " ++ showInfo methodInfo
 
-
+showInfo :: Info -> String
 showInfo (ClassI _) = "class"
 showInfo (TyConI _) = "type constructor"
 showInfo (PrimTyConI _ _ _) = "primitive type constructor"
@@ -183,15 +186,15 @@ showInfo x = pprint x
 --  X -> Ev (ReaderT state STM) Y
 --  X -> Ev (StateT state STM) Y
 getTypes :: Type -> MethodInfo
-getTypes (ForallT _ cxt t) = getTypes' cxt t
+getTypes (ForallT _ contxt t) = getTypes' contxt t
 getTypes t = getTypes' [] t
 
 -- FIXME: only allow type variables used by the component.
 getTypes' :: Cxt -> Type -> MethodInfo
-getTypes' cxt t
+getTypes' contxt t
     = case runWriter (worker t) of
         ((keys,className, typeName, res), args) -> Method { methodName = error "Method name not set", methodKeys = keys
-                                                          , methodContext = filter (isRelevant keys) cxt
+                                                          , methodContext = filter (isRelevant keys) contxt
                                                           , methodArgs = args [], methodClass = className
                                                           , methodEv = typeName, methodResult = res}
     where -- recursive case: A -> B
@@ -208,26 +211,32 @@ getTypes' cxt t
               | m == ''ReaderT = return (getStateKeys state,''QueryEvent, 'Query, r)
           -- end case: m res    (check if m is an instance of MonadState)
           worker (AppT name r)
-              | Just state <- isMonadState cxt name  = return (getStateKeys state, ''UpdateEvent, 'Update, r)
-              | Just state <- isMonadReader cxt name = return (getStateKeys state, ''QueryEvent, 'Query, r)
+              | Just state <- isMonadState contxt name  = return (getStateKeys state, ''UpdateEvent, 'Update, r)
+              | Just state <- isMonadReader contxt name = return (getStateKeys state, ''QueryEvent, 'Query, r)
           -- error case
-          worker t = error ("Unexpected method type: " ++ pprint t)
+          worker c = error ("Unexpected method type: " ++ pprint c)
 
+getStateKeys :: Type -> [Name]
 getStateKeys (AppT r r') = getStateKeys r ++ getStateKeys r'
 getStateKeys (VarT key) = [key]
 getStateKeys (ConT _st) = []
 getStateKeys v = error $ "Bad state type: " ++ pprint v ++ " (expected a constant, an application or a type variable)"
 
-isMonadState cxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- cxt, mName == name, m == ''MonadState ]
-isMonadReader cxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- cxt, mName == name, m == ''MonadReader ]
+isMonadState :: [Type] -> Type -> Maybe Type
+isMonadState contxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- contxt, 
+                                         mName == name, m == ''MonadState ]
 
+isMonadReader :: [Type] -> Type -> Maybe Type
+isMonadReader contxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- contxt, 
+                                          mName == name, m == ''MonadReader ]
+
+isRelevant :: [Name] -> Type -> Bool
 isRelevant keys t = isAcceptableContext t && any (`elem` keys) (getStateKeys t)
 
+isAcceptableContext :: Type -> Bool
 isAcceptableContext (AppT r r') = isAcceptableContext r && isAcceptableContext r'
 isAcceptableContext (ConT con) = con `notElem` [''MonadState, ''MonadReader]
 isAcceptableContext _ = True
-
-
 
 requireSimpleCon :: Name -> Info -> [Name]
 requireSimpleCon _ (TyConI (DataD _ _ names _ _derv)) = names

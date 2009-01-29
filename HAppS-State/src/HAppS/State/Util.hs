@@ -46,12 +46,12 @@ getRandomR z = do r <- sel evRandoms
 inferRecordUpdaters :: Name -> Q [Dec]
 inferRecordUpdaters typeName = do
     con <- decToSimpleRecord =<< nameToDec typeName
-    let c name upd sel = 
+    let c name upd s = 
             do let un = mkName ("a_"++ns)
                    wn = mkName ("with"++(toUpper (head ns):tail ns))
                    ns = nameBase name
                ud <- un `sdef` upd
-               wd <- wn `sdef` (varE 'localState `appE` sel `appE` varE un)
+               wd <- wn `sdef` (varE 'localState `appE` s `appE` varE un)
                return [ud, wd]
     xs <- sequence $ zipWith3 c (fieldNames con) (updFuns con) (selFuns con)
     return $ concat xs
@@ -74,6 +74,7 @@ nameToDec ty = reify ty >>= un
 -- | Create a list of selection functions for a record.
 selFuns :: Con -> [ExpQ]
 selFuns (RecC _ ts) = [ varE n | (n,_,_) <- ts ]
+selFuns _ = error "Constructors other than RecC not handled in selFuns"
 
 -- | Create a list of update functions for a record.
 updFuns :: Con -> [ExpQ]
@@ -81,12 +82,15 @@ updFuns (RecC _ ts) = [ upd n | (n,_,_) <- ts ]
     where [x,y] = map mkName ["x","y"]
           upd f = lamE [varP x, varP y] $ rup f
           rup f = recUpdE (varE y) [return (f,VarE x)]
-
+updFuns _ = error "Constructors other than RecC not handled in updFuns"
 
 -- | Return field names
+fieldNames :: Con -> [Name]
 fieldNames (RecC _ ts) = [ n | (n,_,_) <- ts ]
+fieldNames _ = error "Constructors other than RecC not handled in fieldNames"
 
 -- | Simple definition
+sdef :: Name -> ExpQ -> DecQ
 sdef vn ve = valD (varP vn) (normalB ve) []
 
 

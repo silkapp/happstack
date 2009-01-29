@@ -17,6 +17,7 @@ import HAppS.State.Spread
 import HAppS.State.ComponentSystem
 import HAppS.Data.Proxy
 
+logMM :: Priority -> String -> IO ()
 logMM = logM "HAppS.State.TxControl"
 
 
@@ -44,7 +45,7 @@ runTxSystem' withMultimaster saver stateProxy =
        children <- forM ioActions $ \action -> do mv <- newEmptyMVar
                                                   tid <- forkIO (action `finally` putMVar mv ())
                                                   return (tid,mv)
-       modifyMVar_ ctl $ \ctl -> return ctl{ctlChildren = children}
+       modifyMVar_ ctl $ \c -> return c{ctlChildren = children}
        return ctl
 
 shutdownSystem :: MVar TxControl -> IO ()

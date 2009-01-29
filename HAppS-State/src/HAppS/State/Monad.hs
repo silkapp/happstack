@@ -35,12 +35,16 @@ instance (Monad m) => Functor (Ev m) where fmap = liftM
 -- | Use a proxy to force the type of an update action.
 setUpdateType :: Proxy t -> Update t ()
 setUpdateType _ = return ()
-proxyUpdate f proxy = setUpdateType proxy >> f
+
+proxyUpdate :: Ev (StateT t STM) b -> Proxy t -> Ev (StateT t STM) b
+proxyUpdate f prox = setUpdateType prox >> f
 
 -- | Use a proxy to force the type of a query action.
 setQueryType :: Proxy t -> Query t ()
 setQueryType _ = return ()
-proxyQuery f proxy = setQueryType proxy >> f
+
+proxyQuery :: Ev (ReaderT t STM) b -> Proxy t -> Ev (ReaderT t STM) b
+proxyQuery f prox = setQueryType prox >> f
 
 -- | Currying version of 'setUpdateType'.
 asUpdate :: Update t a -> Proxy t -> Update t a

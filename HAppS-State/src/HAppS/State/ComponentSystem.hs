@@ -40,6 +40,7 @@ instance Show (Method st) where
     show method = "Method: " ++ methodType method
 
 
+methodType :: Method t -> String
 methodType m = case m of
                 Update fn -> let ev :: (ev -> Update st res) -> ev
                                  ev _ = undefined
@@ -90,6 +91,8 @@ instance (Methods a, Component a, SubHandlers b) => SubHandlers (a :+: b) where
 
 data Collection = Collection ComponentTree ComponentVersions [IO ()]
 
+addItem :: (MonadState Collection m) => 
+           String -> MethodMap -> [L.ByteString] -> IO () -> m ()
 addItem key item versions ioAction
     = do Collection tree allVersions ioActions <- get
          case Map.member key tree of
@@ -99,18 +102,19 @@ addItem key item versions ioAction
 type Collect = State Collection
 
 collectHandlers :: (Methods a, Component a) => Proxy a -> (ComponentTree, ComponentVersions, [IO ()])
-collectHandlers proxy
-    = case execState (collectHandlers' proxy) (Collection Map.empty Map.empty []) of
+collectHandlers prox
+    = case execState (collectHandlers' prox) (Collection Map.empty Map.empty []) of
         Collection tree versions ioActions -> (tree, versions, ioActions)
 
 collectHandlers' :: (Methods a, Component a) => Proxy a -> Collect ()
-collectHandlers' proxy
-    = let key = show (typeOf (unProxy proxy))
-          item = MethodMap $ Map.fromList [ (methodType m, m) | m <- methods proxy ]
-          versions = collectVersions proxy
-      in do addItem key item versions (onLoad proxy)
-            subHandlers (sub proxy)
+collectHandlers' prox
+    = let key = show (typeOf (unProxy prox))
+          item = MethodMap $ Map.fromList [ (methodType m, m) | m <- methods prox ]
+          versions = collectVersions prox
+      in do addItem key item versions (onLoad prox)
+            subHandlers (sub prox)
     where sub :: Component a => Proxy a -> Dependencies a
           sub _ = undefined
 
+dup :: String -> b
 dup key = error $ "Duplicate component: " ++ key
