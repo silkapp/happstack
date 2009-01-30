@@ -195,16 +195,16 @@ notifications_send uids notifObj emailObj =
     print uids
     let (xsltcmd::XSLTCmd
          ,xslpath::XSLPath) = gFind' (?fbSession::FBSession)
-        f x = do
+        aux x = do
               let els = toPublicXml x
               if null els then return "" else do
               let res = toResponse els
               xres <- doXslt xsltcmd xslpath res 
               (return . L.unpack . rsBody) xres
               
-        f :: (ToMessage a,Xml a)=> a -> IO String
-    (notification::String) <- f notifObj
-    (email::String) <- f emailObj
+        aux :: (ToMessage a,Xml a)=> a -> IO String
+    (notification::String) <- aux notifObj
+    (email::String) <- aux emailObj
     Notifications_send_response confirm <-
         fb (?fbSession::FBSession) $ 
                (To_ids $ gFind uids) .&.
@@ -225,11 +225,11 @@ profile_setFBML :: (?fbSession::FBSession,
                     Eq a,
                     Eq b) =>
                    a -> b -> IO Bool
-profile_setFBML uid markup =
+profile_setFBML u_id markup =
     do
     --can markup be passed as straight string of fbml?
     --how do we call out to xsl for this?
-    Profile_setFBML_response x <- fb (?fbSession::FBSession) $ uid .&. markup
+    Profile_setFBML_response x <- fb (?fbSession::FBSession) $ u_id .&. markup
     return x
 
 profile_getFBML :: (?fbSession::FBSession,
@@ -238,9 +238,9 @@ profile_getFBML :: (?fbSession::FBSession,
                     Data a,
                     Eq a) =>
                    a -> IO String
-profile_getFBML uid  =
+profile_getFBML u_id  =
     do
-    Profile_getFBML_response markup <- fb (?fbSession::FBSession) $ uid
+    Profile_getFBML_response markup <- fb (?fbSession::FBSession) $ u_id
     --does this need decoding?
     return markup
 
@@ -308,10 +308,10 @@ isAppAdded = maybe (error "no fb_sig_added") (const appAdded) mbAdded
 getConfig :: IO Fb_config
 getConfig = --yes reading a file is bad but roundtripping to fb sucks too
     do
-    let path = "config/facebook.xml"
-    fe <- doesFileExist path 
-    when (not fe) $ error $ "you need a "++path++ "file of type fb_config"
-    configData <- readFile path   -- need error message if this fails
+    let configPath = "config/facebook.xml"
+    fe <- doesFileExist configPath 
+    when (not fe) $ error $ "you need a "++configPath++ "file of type fb_config"
+    configData <- readFile configPath   -- need error message if this fails
     print configData
     let (fb_config::Fb_config) = runIdentity $ fromString Flexible configData
     return fb_config
@@ -355,9 +355,9 @@ fbserver=suri $ fromJust $ parse "http://api.facebook.com/restserver.php"
 
 
 toUid :: Fb_sig_user -> Uid
-toUid (Fb_sig_user uid) = Uid uid
+toUid (Fb_sig_user u_id) = Uid u_id
 toFriends :: Fb_sig_friends -> Friends
-toFriends (Fb_sig_friends friends) = Friends friends
+toFriends (Fb_sig_friends fs) = Friends fs
 toSesKey :: Fb_sig_session_key -> Session_key
 toSesKey (Fb_sig_session_key s) = Session_key s
 
@@ -376,12 +376,12 @@ makeReq t fbInfo a resp= req
      cons = first toLower $ 
             show $ toConstr example
      fbCmd' = map (\x->if x=='_' then '.' else x) $ "facebook."++ cons
-     method = Method $  if ".response" `isSuffixOf` fbCmd' 
+     meth = Method $  if ".response" `isSuffixOf` fbCmd' 
               then take (length fbCmd'- (length "_response")) fbCmd'
               else fbCmd'
      sesKey = (fmap toSesKey (gFind fbInfo::Maybe Fb_sig_session_key))
      args = ("v","1.0"):("call_id",show t):
-            (toPairs $ apikey .&. method .&. sesKey .&. a)
+            (toPairs $ apikey .&. meth .&. sesKey .&. a)
      s_args = sort args 
      Secret secret = fromJust $ gFind fbInfo
      (apikey::Api_key) = fromJust $ gFind fbInfo

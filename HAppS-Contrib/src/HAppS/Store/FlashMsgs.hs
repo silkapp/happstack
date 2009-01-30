@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP, TemplateHaskell, FlexibleInstances, DeriveDataTypeable, FlexibleContexts,
              MultiParamTypeClasses, TypeFamilies, TypeSynonymInstances, UndecidableInstances #-}
 
--- MultiParamTypeClasses
 module HAppS.Store.FlashMsgs where
 
 import Control.Monad.State hiding (State)
@@ -66,11 +65,11 @@ $(inferIxSet "FlashMsgs" ''FlashMsg 'noCalcs [''FB.Uid,''Published])
 
 --Command Functions
 setFlashMsg :: (Ord msg,Data msg) => Uid -> msg -> Update (FlashMsgs msg) ()
-setFlashMsg uid msg =
+setFlashMsg u_id msg =
     do
     t <- getTime
-    let f = FlashMsg uid (Published t) msg
-    modify (updateIx uid f)
+    let aux = FlashMsg u_id (Published t) msg
+    modify (updateIx u_id aux)
     --delete old messages
     expired <-gets (toList . (@< (Updated $ t-maxAge)))
     mapM (modify . delete) expired
@@ -79,12 +78,12 @@ setFlashMsg uid msg =
 
 
 getFlashMsg :: (Ord msg, Data msg) => Uid -> Query (FlashMsgs msg) (Maybe msg) 
-getFlashMsg uid = 
-    (return . gFind . getOne . (@=uid)) =<< ask
+getFlashMsg u_id = 
+    (return . gFind . getOne . (@=u_id)) =<< ask
 
 delFlashMsg :: (Ord msg, Data msg) => Uid -> Proxy (FlashMsgs msg) -> Update (FlashMsgs msg) ()
-delFlashMsg uid _ = do
-    mbMsg <- gets (getOne . (@=uid) ) 
+delFlashMsg u_id _ = do
+    mbMsg <- gets (getOne . (@=u_id) ) 
     maybe (return ()) (modify . delete) mbMsg
 
 $(mkMethods ''FlashMsgs [ 'setFlashMsg
@@ -92,20 +91,21 @@ $(mkMethods ''FlashMsgs [ 'setFlashMsg
                         , 'delFlashMsg ])
 
 instance (Serialize (FlashMsgs a), Ord a, Data a) => Component (FlashMsgs a) where
+    initialValue = error "No initialValue for Component (FlashMsgs a) "
     type Dependencies (FlashMsgs a) = End
 
 -- Controls
 insFlashMsg :: (Xml a, MonadIO m) => Uid -> a -> m ()
-insFlashMsg uid msg = update $ SetFlashMsg uid $ toXml msg
+insFlashMsg u_id msg = update $ SetFlashMsg u_id $ toXml msg
 extFlashMsg :: (Data msg,
                 Serialize msg,
                 Ord msg,
                 MonadIO m) =>
                Uid -> m (Maybe msg)
-extFlashMsg uid = do
-                  msg <- query $ GetFlashMsg uid
+extFlashMsg u_id = do
+                  msg <- query $ GetFlashMsg u_id
                   let mkProxy :: Maybe msg -> Proxy (FlashMsgs msg)
                       mkProxy _ = Proxy
-                  update $ DelFlashMsg uid (mkProxy msg)
+                  update $ DelFlashMsg u_id (mkProxy msg)
                   return msg
 

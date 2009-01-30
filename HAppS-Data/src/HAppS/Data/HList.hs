@@ -26,6 +26,7 @@ class CoupleClass a where
 
 instance (Eq a,Xml a, Show a, G.Data a,CoupleClass b) => CoupleClass (Couple a b) where
     toPairs' (Couple a b) = (toPairs a) ++ (toPairs' b)
+    fromPairs' = const Nothing --doesn't make sense to unmix to make toPairs' . fromPairs' an identity
 
 instance CoupleClass Nil where
     toPairs' _ = []

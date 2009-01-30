@@ -63,6 +63,7 @@ getHelpReqs  = liftM byRevTime ask
 
 $(mkMethods ''HelpReqs ['addHelpReq,'getHelpReqs])
 instance Component HelpReqs where
+    initialValue = error "initialValue not defined for Component HelpReqs"
     type Dependencies HelpReqs = FlashMsgs HelpMsgReceived :+: End
 
 
