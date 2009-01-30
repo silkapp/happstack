@@ -441,21 +441,6 @@ rproxyServe defaultHost list  = withRequest $ \rq ->
                 liftIO (getResponse (unrproxify defaultHost list rq)) >>=
                 either (badGateway . toResponse . show) (escape . return)
 
-
-{-
-modXml:: (Monad m) => (Request -> Element -> m Element) -> [ServerPartT m a] -> 
-          ServerPartT m a
-modXml f handle 
-    = Reader $ \rq -> 
-      do res <- runReader (multi handle) rq  
-         case res of 
-                  Nothing -> return Nothing
-                  Just res'@(Left _) -> return $ Just res'
-                  Just res'@(Right (s,el)) -> 
-                      (\el->return $ Just $ Right (s,el)) =<< f rq el
--}
-
-
 -- | Run an IO action and, if it returns @Just@, pass it to the second argument.
 require :: MonadIO m => IO (Maybe a) -> (a -> [ServerPartT m r]) -> ServerPartT m r
 require fn = requireM (liftIO fn)

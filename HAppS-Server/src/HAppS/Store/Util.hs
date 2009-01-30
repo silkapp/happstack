@@ -1,14 +1,7 @@
 {-# LANGUAGE TemplateHaskell , FlexibleInstances, UndecidableInstances, CPP,
              OverlappingInstances, DeriveDataTypeable, MultiParamTypeClasses #-}
 
-module HAppS.Store.Util 
-{--    (
-     module Control.Monad.State
-    ,module Control.Monad.Reader
-    ,byTime,byRevTime,fun0_1,fun0_2
- 
-) --}
-where
+module HAppS.Store.Util where
 import HAppS.Data
 import GHC.Conc
 import HAppS.State

@@ -137,14 +137,6 @@ readFileStrict fp = do
         fseqM xs = last xs `seq` return xs
     fseqM =<< readFile fp
 
-{-
-hGetContentsStrict :: Handle -> IO String
-hGetContentsStrict h = flip finally (hClose h) $ do
-    r <- hGetContents h
-    let fseq [] = []; fseq xs = last xs `seq` xs
-    return $! fseq r
--}
-
 {-# NOINLINE tempDir #-}
 tempDir :: FilePath
 tempDir = unsafePerformIO $ tryAny [getEnv "TEMP",getEnv "TMP"] err

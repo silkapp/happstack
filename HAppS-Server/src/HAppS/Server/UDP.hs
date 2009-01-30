@@ -23,15 +23,6 @@ import qualified Data.ByteString as BS
 udpServer :: (Request -> IO ()) -> UDPConfig -> Handler st
 udpServer fn conf = IoH $ listen conf fn
 
-{-
-instance ConfHandler UDPConfig where
-    confUsage _ = copt ho
-    confHandler fun = liftM fun (getOptM ho >>= foldM (\x y -> y x) nullUDPConfig)
-
-ho :: [OptDescr (UDPConfig -> OptM UDPConfig)]
-ho = [Option [] ["udp-port"] (ReqArg (\h c -> do x <- readM h; return c { port = x }) "port") "port to bind udp server"]
--}
-
 -- | UDP configuration
 data UDPConfig = UDPConfig
     { bodyLimit :: Int -- ^ Limit on the number of bytes accepted for Requests. Default 2k.

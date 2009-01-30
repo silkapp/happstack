@@ -5,12 +5,6 @@ module HAppS.Server.Cookie
     ( Cookie(..), mkCookie, mkCookieHeader
     , getCookies, getCookie )
     where
-{-
-    (Cookie(..), setCookie, setCookieEx,
-     sesCookie, delSesCookie, delSesCookie'
---     getCookies, getCookie, getCookieValue
-    ) where
--}
 
 import qualified Data.ByteString.Char8 as C
 import Data.Char

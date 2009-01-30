@@ -43,24 +43,13 @@ render x = (show . suri . toSURI) x
 parse :: String -> Maybe SURI
 parse =  fmap SURI . URI.parseURIReference 
 
---mbParse::String->Maybe SURI
-
-
---let x = readsPrec 5 s in if null x then Nothing 
---                    else Just $ fst $ head x
 
 class ToSURI x where toSURI::x->SURI
---instance ToSURI (Maybe x) where toSURI =toSURI.fromJust
 instance ToSURI SURI where toSURI=id
 instance ToSURI URI.URI where toSURI=SURI
 instance ToSURI String where 
     toSURI = maybe (SURI $ URI.URI "" Nothing "" "" "") id . parse
 
---class ToSURI x where toSURI::x->SURI
---instance ToSURI SURI where toSURI=id
---instance ToURI String where toURI=URI
---instance ToURI String 
---    where toURI s = maybe (URI "" Nothing "" s "") id (parseURIReference s)
 
 --handling obtaining things from URI paths
 class FromPath x where fromPath::String->x

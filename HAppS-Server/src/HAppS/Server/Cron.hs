@@ -1,6 +1,4 @@
-module HAppS.Server.Cron (cron)
---    (Seconds, CronEvent(..), everyNthSecond,runBackground)
-    where
+module HAppS.Server.Cron (cron) where
 
 import Control.Concurrent (threadDelay)
 

@@ -1,16 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 module HAppS.Server.MessageWrap where
-{-
-    (ToMessage(..), toMessage, FromMessage(..),
---     Index(..), 
-     reqPath, pathEls, -- getPath,
-     ReadString(..),
-     look, lookS, lookM, lookMb,
-     lookMbRead, mbRead, lookInput
-    ,bodyToMap,bodyToList
-    ) where
--}
 
 import Control.Monad.Identity
 import qualified Data.ByteString.Char8 as P
@@ -96,7 +86,6 @@ defaultInputType = ContentType "text" "plain" [] -- FIXME: use some default enco
 -- | Get the path components from a String.
 pathEls :: String -> [String]
 pathEls = (drop 1) . map SURI.unEscape . splitList '/' 
---    filter (not.null) $ map URI.unEscapeString $ splitList '/' path 
 
 -- | Like 'Read' except Strings and Chars not quoted.
 class (Read a)=>ReadString a where readString::String->a; readString =read 

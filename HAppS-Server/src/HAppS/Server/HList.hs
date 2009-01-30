@@ -42,15 +42,6 @@ data ToXml t = ToXml Name [t]
 instance RecordToElement r => ToElement (ToXml (Record r)) where
     toElement (ToXml top rs) = Elem top [] $ concat [ recordToElement r | Record r <- rs ]
 
---instance (RecordToElement r,ToElement (ToXml Record r)) => ToElement (ToXml (Record r)) where
-
-
-                                                             
-
-    
---instance RecordToElement r => ToElement (Record r) where
---    toElement (Record r) = Elem "top" [] $ recordToElement r 
-
 class (Show el) => JSON el where jrender::el->String;jrender=show
 instance JSON String where jrender = id
 instance JSON Int
