@@ -26,7 +26,7 @@ Description: Web framework
 Package: libghc6-happstack-util-prof
 Architecture: any
 Section: libdevel
-Depends: ${haskell:Depends}, libghc6-happstack-utils-dev
+Depends: ${haskell:Depends}, libghc6-happstack-util-dev
 Description: Web framework
   .
   This package contains the libraries compiled with profiling enabled.
