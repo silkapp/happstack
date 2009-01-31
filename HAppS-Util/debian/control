@@ -1,0 +1,46 @@
+Source: haskell-happstack-util
+Priority: optional
+Section: misc
+Maintainer: David Fox <david@seereason.com>
+Build-Depends: debhelper (>= 5.0),
+               haskell-cdbs,
+               ghc6 (>= 6.8),
+               ghc6-doc,
+               haddock,
+               ghc6-prof,
+               libghc6-extensible-exceptions-prof,
+               libghc6-extensible-exceptions-doc,
+               libghc6-hslogger-prof (>= 1.0.2),
+               libghc6-hslogger-doc (>= 1.0.2)
+Standards-Version: 3.7.2.2
+Homepage: http://happstack.com
+
+Package: libghc6-happstack-util-dev
+Architecture: any
+Section: libdevel
+Depends: ${haskell:Depends}
+Description: Web framework
+  .
+  This package contains the normal library files.
+
+Package: libghc6-happstack-util-prof
+Architecture: any
+Section: libdevel
+Depends: ${haskell:Depends}, libghc6-happstack-utils-dev
+Description: Web framework
+  .
+  This package contains the libraries compiled with profiling enabled.
+
+Package: libghc6-happstack-util-doc
+Architecture: any
+Section: libdevel
+Depends: ${haskell:Depends}, ghc6-doc
+Description: Web framework
+  .
+  This package contains the documentation files.
+
+Package: happstack-util-tests
+Architecture: any
+Section: misc
+Depends: ${shlibs:Depends}, ${haskell:Depends}
+Description:  An executable built with the happstack-util-0.1 library.
