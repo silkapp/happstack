@@ -54,7 +54,7 @@ Library
                        OverlappingInstances, UndecidableInstances, CPP,
                        TypeFamilies, FunctionalDependencies, TypeOperators,
                        GADTs, EmptyDataDecls, ExistentialQuantification, RankNTypes,
-                       ScopedtypeVariables, PatternSignatures, PatternGuards,
+                       ScopedTypeVariables, PatternSignatures, PatternGuards,
                        MagicHash, TypeSynonymInstances
   ghc-options:         -Wall -fno-warn-deprecated-flags
   GHC-Prof-Options:    -auto-all
