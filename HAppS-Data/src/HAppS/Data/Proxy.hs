@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, TemplateHaskell, DeriveDataTypeable #-}
+{-# LANGUAGE CPP, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, TemplateHaskell, DeriveDataTypeable, UndecidableInstances #-}
 module HAppS.Data.Proxy where
 
 import HAppS.Data.DeriveAll

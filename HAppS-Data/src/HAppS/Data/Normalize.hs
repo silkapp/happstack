@@ -1,5 +1,5 @@
 {-# LANGUAGE OverlappingInstances, UndecidableInstances,
-             FlexibleContexts #-}
+             FlexibleContexts, FlexibleInstances #-}
 
 -----------------------------------------------------------------------------
 -- |
