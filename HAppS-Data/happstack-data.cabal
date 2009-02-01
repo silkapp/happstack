@@ -63,6 +63,6 @@ Library
               PatternSignatures, TypeSynonymInstances, PatternGuards,
               PolymorphicComponents
   -- Should also have ", DeriveDataTypeable" but Cabal complains
-  GHC-Options: -Wall -fno-warn-deprecated-flags
+  GHC-Options: -Wall
  
 
