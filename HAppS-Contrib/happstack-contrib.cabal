@@ -38,5 +38,5 @@ Library
                        DeriveDataTypeable, MultiParamTypeClasses, TypeFamilies,
                        TypeSynonymInstances, ImplicitParams, TypeOperators,
                        UndecidableInstances
-  ghc-options:         -Wall -fno-warn-deprecated-flags
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
