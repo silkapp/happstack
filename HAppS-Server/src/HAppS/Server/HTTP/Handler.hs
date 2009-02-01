@@ -7,7 +7,7 @@ module HAppS.Server.HTTP.Handler(request-- version,required
 --    ,fsepC,crlfC,pversion
 import Control.Exception.Extensible as E
 import Control.Monad
-import Data.List(elemIndex, unfoldr, foldl')
+import Data.List(elemIndex)
 import Data.Char(toLower)
 import Data.Maybe ( fromMaybe, fromJust, isJust, isNothing )
 import Prelude hiding (last)
@@ -28,10 +28,8 @@ import HAppS.Server.HTTP.RFC822Headers
 import HAppS.Server.MessageWrap
 import HAppS.Server.SURI(SURI(..),path,query)
 import HAppS.Server.SURI.ParseURI
-import HAppS.Util.ByteStringCompat
 import HAppS.Util.TimeOut
 
-import System.Log.Logger hiding (debugM)
 
 request :: Conf -> Handle -> Host -> (Request -> IO Response) -> IO ()
 request conf h host handler = rloop conf h host handler =<< L.hGetContents h

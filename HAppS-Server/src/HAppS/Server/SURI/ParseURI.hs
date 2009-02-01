@@ -61,6 +61,7 @@ puriref fs cont =
       _ | null r -> cont (unpack u) "" ""
       '?'        -> pquery    (unsafeTail r) $ cont (unpack u)
       '#'        -> pfragment (unsafeTail r) $ cont (unpack u) ""
+      _          -> error "unexpected match"
 pquery :: ByteString -> (String -> String -> t) -> t
 pquery fs cont =
   case breakChar '#' fs of
