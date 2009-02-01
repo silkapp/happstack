@@ -56,5 +56,5 @@ Library
                        GADTs, EmptyDataDecls, ExistentialQuantification, RankNTypes,
                        ScopedtypeVariables, PatternSignatures, PatternGuards,
                        MagicHash, TypeSynonymInstances
-  ghc-options:         -Wall
+  ghc-options:         -Wall -fno-warn-deprecated-flags
   GHC-Prof-Options:    -auto-all
