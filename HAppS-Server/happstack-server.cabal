@@ -64,5 +64,5 @@ Library
                        FlexibleInstances, UndecidableInstances, ScopedTypeVariables,
                        TypeSynonymInstances, PatternGuards, PatternSignatures,
                        CPP, ForeignFunctionInterface
-  ghc-options:         -Wall -fno-warn-deprecated-flags
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
