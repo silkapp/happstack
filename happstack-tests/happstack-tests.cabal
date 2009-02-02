@@ -35,7 +35,6 @@ Library
   Exposed-modules:
   if flag(tests)
     Exposed-modules:   HAppS.Tests
-  -- Should also have ", DeriveDataTypeable" but Cabal complains
   GHC-Options: -Wall
 
 Executable happstack-tests
