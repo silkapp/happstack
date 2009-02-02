@@ -1,6 +1,0 @@
-#!/usr/bin/make -f
-include /usr/share/cdbs/1/rules/hlibrary.mk
-
-# How to install an extra file into the documentation package
-#binary-fixup/libghc6-happstack-util-doc::
-#	echo "Some informative text" > debian/libghc6-happstack-util-doc/usr/share/doc/libghc6-happstack-util-doc/AnExtraDocFile
