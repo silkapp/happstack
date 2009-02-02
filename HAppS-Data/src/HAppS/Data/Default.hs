@@ -34,6 +34,8 @@ import Data.Generics.SYB.WithClass.Basics
 import Data.Generics.SYB.WithClass.Instances ()
 import Data.Int
 import Data.Word
+import qualified Data.Map as M
+import qualified Data.Set as S
 import Foreign.ForeignPtr
 
 -- | The 'Default' class provides a 'defaultValue' value, which
@@ -118,3 +120,5 @@ instance Default BSC.ByteString where
 instance Default a => Default (ForeignPtr a) where
     defaultValue = error "defaultValue: ForeignPtr"
 
+instance (Data DefaultD a, Data DefaultD b, Ord a) => Default (M.Map a b) 
+instance (Data DefaultD a, Ord a) => Default (S.Set a)
