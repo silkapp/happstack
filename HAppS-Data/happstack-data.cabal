@@ -26,6 +26,10 @@ Cabal-Version:      >=1.2
 
 flag base4
 
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: False
+
 Library
   if flag(base4)
     Build-Depends:    base >=4 && < 5, syb
@@ -35,6 +39,8 @@ Library
   Build-Depends:      mtl, template-haskell, syb-with-class >= 0.4, HaXml >= 1.13 && < 1.14,
                       happstack-util, bytestring, pretty, binary, containers
   hs-source-dirs:     src
+  if flag(tests)
+    hs-source-dirs:    tests
   Exposed-modules:
     HAppS.Data
     HAppS.Data.Default
@@ -51,6 +57,16 @@ Library
     HAppS.Data.Proxy
     HAppS.Data.Serialize
     HAppS.Data.SerializeTH
+  if flag(tests)
+    Exposed-modules:   
+      HAppS.Data.Tests
+      HAppS.Data.Tests.HasT001
+      HAppS.Data.Tests.Xml001
+      HAppS.Data.Tests.Xml002
+      HAppS.Data.Tests.Xml003
+      HAppS.Data.Tests.HList001
+      HAppS.Data.Tests.HList002
+
   Other-modules:
     HAppS.Data.HListBase
     HAppS.Data.Xml.Base
@@ -64,5 +80,13 @@ Library
               PolymorphicComponents
   -- Should also have ", DeriveDataTypeable" but Cabal complains
   GHC-Options: -Wall
- 
+
+Executable happstack-data-tests
+  Main-Is: Test.hs
+  Build-depends: HUnit
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+  else
+    Buildable: False
 

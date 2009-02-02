@@ -1,0 +1,15 @@
+stepcut:
+
+I converted all the existing tests to use HUnit. Some of the tests
+were failing before I did the conversion, I did not attempt to fix
+them. Obviously we could change the tests so that they 'pass', but
+that would be wrong if the failures actually indicated errors in
+happstack-data.
+
+There was not expected result listed for 'testPairs' so I guess that
+the == assertion was supposed to hold when things are working.
+
+Some of the Has* tests are specifically checking for the existence of
+type errors which cause the compiler to fail. I have not ported these
+tests yet. We can port them once we have the wrapper for calling
+external programs in hunit.

@@ -8,7 +8,7 @@ import Test.HUnit as HU (Test(..),(~:))
 -- |All of the tests for happstack-util should be listed here. 
 allTests :: Test
 allTests = 
-    "HAppS-Utils tests" ~: [ splitTest ]
+    "happstack-util tests" ~: [ splitTest ]
 
 -- |turn 'splitTest_prop' into an HUnit test with a label
 splitTest :: Test

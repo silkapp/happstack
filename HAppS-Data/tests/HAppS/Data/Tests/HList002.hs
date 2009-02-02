@@ -1,12 +1,11 @@
-
 {-# LANGUAGE TemplateHaskell, DeriveDataTypeable,
              FlexibleInstances, MultiParamTypeClasses,
              OverlappingInstances, UndecidableInstances #-}
-
-module Main (main) where
+module HAppS.Data.Tests.HList002 (hlist002, t15) where
 
 import Language.Haskell.TH
 import HAppS.Data
+import Test.HUnit
 
 $( deriveAll [''Show,''Eq, ''Default]
    [d|
@@ -16,15 +15,17 @@ $( deriveAll [''Show,''Eq, ''Default]
        newtype Age = Age Int
     |]
  )
-
+t12 :: Couple User (Couple Pass Age)
 t12 = (User "ales" .&. Pass "pass" .&. Age 55 )
+
+t13 :: Pairs
 t13 = toPairs t12
+
+t14 :: Maybe (Couple User (Couple Pass Age))
 t14 = fromPairs t13 
-t15 = t14 == t12
 
-main :: IO ()
-main = do print t12
-          print t13
-          print t14
-          print t15
+t15 :: Test
+t15 = "t15" ~: (Just t12) @?= t14
 
+hlist002 :: Test
+hlist002 = "toPairs/fromPairs" ~: [ t15 ]
