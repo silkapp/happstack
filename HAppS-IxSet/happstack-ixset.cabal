@@ -11,6 +11,10 @@ Cabal-version:       >=1.2
 
 flag base4
 
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: True
+
 Library
   if flag(base4)
     Build-Depends:     base >=4 && < 5, syb
@@ -20,10 +24,16 @@ Library
                        happstack-data, template-haskell,
                        syb-with-class, containers
   hs-source-dirs:      src
+  if flag(tests)
+    hs-source-dirs:    tests
   Exposed-modules:     
                        HAppS.Data.IxSet
                        HAppS.Data.IxSet.Ix
                        HAppS.Data.IxSet.Usage
+  if flag(tests)
+    Exposed-modules:   
+                       HAppS.Data.IxSet.Tests
+
   extensions:          UndecidableInstances, OverlappingInstances,
                        FlexibleInstances, MultiParamTypeClasses,
                        TemplateHaskell, RankNTypes, FunctionalDependencies,
@@ -34,3 +44,12 @@ Library
   cpp-options:         -DUNIX
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
+
+Executable happstack-ixset-tests
+  Main-Is: Test.hs
+  Build-depends: HUnit
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+  else
+    Buildable: False
