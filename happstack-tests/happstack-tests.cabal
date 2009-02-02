@@ -36,7 +36,7 @@ Library
   if flag(tests)
     Exposed-modules:   HAppS.Tests
   -- Should also have ", DeriveDataTypeable" but Cabal complains
-  GHC-Options: -Wall -fno-warn-deprecated-flags
+  GHC-Options: -Wall
 
 Executable happstack-tests
   Main-Is: Test.hs
