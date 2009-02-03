@@ -14,12 +14,19 @@ Cabal-Version:       >= 1.2
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.
 
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: True
+
 Library
 
   Exposed-modules:
                        HAppS.Server.Facebook
                        HAppS.Store.FlashMsgs
                        HAppS.Store.HelpReqs
+  if flag(tests)
+    Exposed-modules:   
+                       HAppS.Contrib.Tests
 
   Build-Depends:       base, network, old-time, bytestring, happstack-server,
                        mtl, HTTP >= 4000.0.2, directory, happstack-util, happstack-data,
@@ -32,6 +39,11 @@ Library
      cpp-options:      -DUNIX
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
+  if flag(tests)
+    Build-Depends:     HUnit
+
+  if flag(tests)
+    hs-source-dirs:    tests
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
   Extensions:          CPP, TemplateHaskell, FlexibleInstances,
@@ -40,3 +52,14 @@ Library
                        UndecidableInstances
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
+
+
+Executable happstack-contrib-tests
+  Main-Is: Test.hs
+  GHC-Options: -threaded
+  Build-depends: HUnit
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+  else
+    Buildable: False

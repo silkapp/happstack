@@ -14,6 +14,10 @@ Cabal-Version:       >= 1.2
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.
 
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: True
+
 Library
 
   Exposed-modules:
@@ -32,6 +36,9 @@ Library
                        HAppS.Server.Cron,
                        HAppS.Server.StdConfig,
                        HAppS.Store.Util
+  if flag(tests)
+    Exposed-modules:   
+                       HAppS.Server.Tests
   Other-modules:       
                        HAppS.Server.S3,
                        HAppS.Server.HTTPClient.HTTP,
@@ -51,12 +58,17 @@ Library
                        bytestring, containers, old-time, old-locale, directory, 
                        process, extensible-exceptions
   hs-source-dirs:      src
+  if flag(tests)
+    hs-source-dirs:    tests
 
   if !os(windows)
      Build-Depends:    unix
      cpp-options:      -DUNIX
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
+
+  if flag(tests)
+    Build-Depends:     HUnit
 
   -- Should have ", DeriveDataTypeable, PatternSignatures" but Cabal complains
   Extensions:          TemplateHaskell, DeriveDataTypeable, MultiParamTypeClasses,
@@ -66,3 +78,13 @@ Library
                        CPP, ForeignFunctionInterface
   ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
+
+Executable happstack-server-tests
+  Main-Is: Test.hs
+  GHC-Options: -threaded
+  Build-depends: HUnit
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+  else
+    Buildable: False
