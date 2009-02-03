@@ -1,4 +1,4 @@
-module Helpers where
+module HAppS.State.Tests.Helpers where
 
 import HAppS.State.Saver
 import HAppS.State.Saver.Impl.Memory
@@ -59,6 +59,16 @@ withFileSaver action = withTemporaryDirectory $ \dir -> action (FileSaver dir)
 withQueueSaver h action = h (action . Queue)
 
 forEachSaver action
+    = forM savers $ \(name, withSaver) ->
+      action name withSaver
+  where savers = [ ("Memory", withMemorySaver)
+                 , ("Queue Memory", \action -> withMemorySaver (action . Queue)) 
+                 , ("File", withFileSaver)
+                 , ("Queue File", \action -> withFileSaver (action . Queue))
+                 ]
+
+
+forEachSaver_ action
     = forM_ savers $ \(name, withSaver) ->
       action name withSaver
   where savers = [ ("Memory", withMemorySaver)

@@ -27,7 +27,7 @@ Library
   else
     Build-Depends:    base < 4
 
-  Build-Depends:      happstack-util, happstack-data, happstack-ixset
+  Build-Depends:      happstack-util, happstack-data, happstack-ixset, happstack-state
                       
   hs-source-dirs:     src
   if flag(tests)

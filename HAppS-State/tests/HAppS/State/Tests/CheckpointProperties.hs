@@ -1,14 +1,17 @@
-{-# OPTIONS -fglasgow-exts -fth #-}
-module CheckpointProperties
+{-# LANGUAGE DeriveDataTypeable, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, TemplateHaskell, TypeFamilies #-}
+module HAppS.State.Tests.CheckpointProperties
     ( testCongestedCheckpoint
+    , congestedCheckpoint
     , checkCheckpointProperties
+    , checkpointProperties
+    , runRestoreCongestionKnownFailures
     ) where
 
 import HAppS.State
 import HAppS.State.ComponentTH
 import HAppS.State.TxControl
-
-import Helpers
+import HAppS.State.Tests.Helpers
+import HAppS.Util.Testing (qccheck, qctest)
 
 import Control.Monad
 import Control.Monad.State (get,put)
@@ -20,6 +23,7 @@ import Text.Printf
 
 import Test.QuickCheck
 import Test.QuickCheck.Batch
+import Test.HUnit (Test(..),(~:), assertBool, assertFailure)
 
 --------------------------------------------------------------
 -- Checkpoint congestion
@@ -86,6 +90,14 @@ checkRestoredValue saver
       do val <- query $ GetValue
          when (val /= 1) $ error $ "testCongestedCheckpoint failed: " ++ show val
          printf "%25s : OK\n" "Checkpoint congestion"
+
+congestedCheckpoint :: Test
+congestedCheckpoint = TestCase $
+    withMemorySaver $ \saver ->
+      do initCongestedCheckpoint (Queue saver)
+         bracket (runTxSystem saver restoreTestEntryPoint) (shutdownSystem) $ \ctl ->
+             do val <- query $ GetValue
+                when (val /= 1) $ assertFailure $ "testCongestedCheckpoint failed: " ++ show val
 
 initCongestedCheckpoint saver
     = bracket (runTxSystem saver restoreTestEntryPoint) (shutdownSystem) $ \ctl ->
@@ -177,4 +189,48 @@ checkCheckpointProperties
                                       ,run (prop_runRestoreCongestion saver)]
     where options = defOpt{length_of_tests=5}
           saver = withQueueSaver withMemorySaver
+
+checkpointProperties :: Test
+checkpointProperties 
+    = "checkpointProperties" ~: 
+      [ "prop_runRestoreId"                  ~: qccheck config (prop_runRestoreId saver)
+      , "prop_runRestoreCheckpoint"          ~: qccheck config (prop_runRestoreCheckpoint saver)
+      , "prop_runRestoreMultipleCheckpoint"  ~: qccheck config (prop_runRestoreMultipleCheckpoint saver)
+      , "prop_runRestoreAsync"               ~: qccheck config (prop_runRestoreAsync saver)
+      , "prop_runRestoreCongestion"          ~: qccheck config (prop_runRestoreCongestion saver)
+      ]
+    where
+      config = defaultConfig { configMaxTest = 100 }
+      saver = withQueueSaver withMemorySaver
+
+
+{- 
+
+I have seen prop_runRestoreCongestion fail several times. I tried
+adding the failing cases as explicit tests, but they don't seem to
+fail.
+
+ ### Failure in: happstack-state:0:checkpointProperties:4:prop_runRestoreCongestion
+ Falsifiable, after 56 tests:
+ [-15,8,-11,-6,-3,-7,20,20,15,-16,13,20,-17,-19,14,-2,-17,-15,-1,-17]
+
+ ### Failure in:  happstack-state:0:checkpointProperties:4:prop_runRestoreCongestion
+ Falsifiable, after 59 tests:
+ [6,-10,3,14,2,1,-12,-8,-14,17,7,-14,10,-11]
+
+ ### Failure in: happstack:3:happstack-state:0:checkpointProperties:4:prop_runRestoreCongestion
+ Falsifiable, after 67 tests:
+ [11,22,22,10,12,-13,-8,-21,9,19,3,11,-5]
+
+-}
+runRestoreCongestionKnownFailures :: Test
+runRestoreCongestionKnownFailures
+    = "runRestoreCongestionKnownFailures"
+      ~: map (assertBool "" . prop_runRestoreCongestion saver) known
+    where
+      saver = withQueueSaver withMemorySaver
+      known = [ [-15,8,-11,-6,-3,-7,20,20,15,-16,13,20,-17,-19,14,-2,-17,-15,-1,-17]
+              , [6,-10,3,14,2,1,-12,-8,-14,17,7,-14,10,-11]
+              , [11,22,22,10,12,-13,-8,-21,9,19,3,11,-5]
+              ]
 

@@ -1,9 +1,12 @@
-module SaverProperties
+module HAppS.State.Tests.SaverProperties
     ( checkSaverProperties
+    , saverProperties
     ) where
 
 import HAppS.State.Saver
 import HAppS.State.Saver.Impl.Memory
+import HAppS.State.Tests.Helpers
+import HAppS.Util.Testing (qctest, qcrun)
 
 import System.Directory
 import System.Random
@@ -16,8 +19,7 @@ import Data.List
 
 import Test.QuickCheck
 import Test.QuickCheck.Batch
-
-import Helpers
+import Test.HUnit (Test(TestCase),(~:), assertFailure)
 
 --------------------------------------------------------------
 -- Tests
@@ -72,9 +74,20 @@ prop_atomic withSaver (NonEmpty key) (Abs cutoff) value
 
 checkSaverProperties :: IO ()
 checkSaverProperties
-    = forEachSaver $ \name withSaver ->
+    = forEachSaver_ $ \name withSaver ->
       tryTests (name ++ " saver") options [run (prop_getSetId withSaver)
                                           ,run (prop_seqReadWrite withSaver)
                                           ,run (prop_cutDrop withSaver)
                                           ,run (prop_atomic withSaver)]
+  where options = defOpt{length_of_tests=5}
+
+saverProperties :: Test
+saverProperties 
+    = "saverProperties" ~:
+       (forEachSaver $ \name withSaver ->
+           [ name ~: "prop_getSetId"     ~: qcrun (prop_getSetId withSaver) options
+           , name ~: "prop_seqReadWrite" ~: qcrun (prop_seqReadWrite withSaver) options
+           , name ~: "prop_cutDrop"      ~: qcrun (prop_cutDrop withSaver) options
+           , name ~: "prop_atomic"       ~: qcrun (prop_atomic withSaver) options
+           ])
   where options = defOpt{length_of_tests=5}

@@ -52,4 +52,4 @@ ixSet001 :: Test
 ixSet001 = "ixSet001" ~: (Just ts) @=? ts'
 
 allTests :: Test
-allTests = "IxSet" ~: [ixSet001]
+allTests = "happstack-ixset" ~: [ixSet001]
