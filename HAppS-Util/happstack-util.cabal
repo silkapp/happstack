@@ -53,6 +53,7 @@ Library
 
 Executable happstack-util-tests
   Main-Is: Test.hs
+  GHC-Options: -threaded
   Build-depends: HUnit
   hs-source-dirs: tests, src
   if flag(tests)
