@@ -58,7 +58,8 @@ withFileSaver action = withTemporaryDirectory $ \dir -> action (FileSaver dir)
 
 withQueueSaver h action = h (action . Queue)
 
-forEachSaver action
+forEachSaverM :: (Monad m) => (String -> ((Saver -> IO a) -> IO a) -> m b) -> m [b]
+forEachSaverM action
     = forM savers $ \(name, withSaver) ->
       action name withSaver
   where savers = [ ("Memory", withMemorySaver)
@@ -66,6 +67,17 @@ forEachSaver action
                  , ("File", withFileSaver)
                  , ("Queue File", \action -> withFileSaver (action . Queue))
                  ]
+
+forEachSaver :: (String -> ((Saver -> IO a) -> IO a) -> b) -> [b]
+forEachSaver action
+    = flip map savers $ \(name, withSaver) ->
+      action name withSaver
+  where savers = [ ("Memory", withMemorySaver)
+                 , ("Queue Memory", \action -> withMemorySaver (action . Queue)) 
+                 , ("File", withFileSaver)
+                 , ("Queue File", \action -> withFileSaver (action . Queue))
+                 ]
+
 
 
 forEachSaver_ action

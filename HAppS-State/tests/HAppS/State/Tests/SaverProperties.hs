@@ -84,10 +84,11 @@ checkSaverProperties
 saverProperties :: Test
 saverProperties 
     = "saverProperties" ~:
-       (forEachSaver $ \name withSaver ->
-           [ name ~: "prop_getSetId"     ~: qcrun (prop_getSetId withSaver) options
-           , name ~: "prop_seqReadWrite" ~: qcrun (prop_seqReadWrite withSaver) options
-           , name ~: "prop_cutDrop"      ~: qcrun (prop_cutDrop withSaver) options
-           , name ~: "prop_atomic"       ~: qcrun (prop_atomic withSaver) options
-           ])
+       ((forEachSaver $ \name withSaver ->
+             name ~:
+              [ "prop_getSetId"     ~: qcrun (prop_getSetId withSaver) options
+              , "prop_seqReadWrite" ~: qcrun (prop_seqReadWrite withSaver) options
+              , "prop_cutDrop"      ~: qcrun (prop_cutDrop withSaver) options
+              , "prop_atomic"       ~: qcrun (prop_atomic withSaver) options
+              ]))
   where options = defOpt{length_of_tests=5}
