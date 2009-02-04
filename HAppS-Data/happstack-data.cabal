@@ -22,7 +22,7 @@ Description:
      * Marshalling Haskell values to and from HTML forms.
 Tested-With:        GHC==6.6.1, GHC==6.8.2
 Build-Type:         Simple
-Cabal-Version:      >=1.2
+Cabal-Version:      >= 1.2.3
 
 flag base4
 
