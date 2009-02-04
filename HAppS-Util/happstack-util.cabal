@@ -1,6 +1,6 @@
 Cabal-version:       >=1.2.3
 Name:                happstack-util
-Version:             0.1
+Version:             0.1.9
 Synopsis:            Web framework
 License:             BSD3
 License-file:        COPYING
