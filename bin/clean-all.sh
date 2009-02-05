@@ -1,10 +1,10 @@
 #!/bin/sh
 echo "Creating source distribution tarballs in dist" && \
-cd HAppS-Util       && cabal clean && \
-cd ../HAppS-Data    && cabal clean && \
-cd ../HAppS-State   && cabal clean && \
-cd ../HAppS-IxSet   && cabal clean && \
-cd ../HAppS-Server  && cabal clean && \
-cd ../HAppS-Contrib && cabal clean && \
-cd ../happstack-tests && cabal clean && \
+cd happstack-util       && cabal clean && \
+cd ../happstack-data    && cabal clean && \
+cd ../happstack-state   && cabal clean && \
+cd ../happstack-ixset   && cabal clean && \
+cd ../happstack-server  && cabal clean && \
+cd ../happstack-contrib && cabal clean && \
+cd ../happstack-tests   && cabal clean && \
 echo "Done"

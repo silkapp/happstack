@@ -1,9 +1,9 @@
 #!/bin/sh
 echo "Creating source distribution tarballs in dist" && \
-cd HAppS-Util       && cabal sdist --builddir=../dist && \
-cd ../HAppS-Data    && cabal sdist --builddir=../dist && \
-cd ../HAppS-State   && cabal sdist --builddir=../dist && \
-cd ../HAppS-IxSet   && cabal sdist --builddir=../dist && \
-cd ../HAppS-Server  && cabal sdist --builddir=../dist && \
-cd ../HAppS-Contrib && cabal sdist --builddir=../dist && \
+cd happstack-util       && cabal sdist --builddir=../dist && \
+cd ../happstack-data    && cabal sdist --builddir=../dist && \
+cd ../happstack-state   && cabal sdist --builddir=../dist && \
+cd ../happstack-ixset   && cabal sdist --builddir=../dist && \
+cd ../happstack-server  && cabal sdist --builddir=../dist && \
+cd ../happstack-contrib && cabal sdist --builddir=../dist && \
 echo "Done"
