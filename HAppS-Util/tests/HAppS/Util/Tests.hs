@@ -4,11 +4,16 @@ module HAppS.Util.Tests (allTests) where
 import HAppS.Util.Common (split)
 import HAppS.Util.Testing (qctest)
 import Test.HUnit as HU (Test(..),(~:))
+import HAppS.Util.Tests.HostAddress
 
 -- |All of the tests for happstack-util should be listed here. 
 allTests :: Test
 allTests = 
-    "happstack-util tests" ~: [ splitTest ]
+    "happstack-util tests" ~:
+      [splitTest
+      ,showHostAddressTest
+      ,showHostAddressTest
+      ]
 
 -- |turn 'splitTest_prop' into an HUnit test with a label
 splitTest :: Test
@@ -25,4 +30,12 @@ splitTest_prop elem list =
               _  -> right2
     in
       (left1 == left2) && (right1 == right2')
+
+-- |test showHostAddress against inet_ntoa to ensure that the same results occur
+showHostAddressTest :: Test
+showHostAddressTest = "showHostAddressTest" ~: qctest propShowHostAddress
+
+-- |test showHostAddress6 against getNameInfo to ensure that the same results occur
+showHostAddress6Test :: Test
+showHostAddress6Test = "showHostAddress6Test" ~: qctest propShowHostAddress6
 

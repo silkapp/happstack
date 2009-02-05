@@ -41,6 +41,7 @@ Library
                        HAppS.Util.Common,
                        HAppS.Util.Concurrent,
                        HAppS.Util.Daemonize,
+                       HAppS.Util.HostAddress,
                        HAppS.Util.TimeOut,
                        HAppS.Util.TH,
                        HAppS.Util.Testing
@@ -59,6 +60,7 @@ Executable happstack-util-tests
   hs-source-dirs: tests, src
   if flag(tests)
     Buildable: True
+    Build-Depends: network
   else
     Buildable: False
 
