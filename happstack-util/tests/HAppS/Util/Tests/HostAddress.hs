@@ -9,9 +9,6 @@ import Data.Word (Word32)
 import System.Random
 import Test.QuickCheck
 
-type HostAddress = Word32
-type HostAddress6 = (Word32,Word32,Word32,Word32)
-
 instance Arbitrary Word32 where
   arbitrary = choose (minBound, maxBound)
 

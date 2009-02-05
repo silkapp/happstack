@@ -1,6 +1,6 @@
 -- Pure Haskell functions to convert HostAddress and HostAddress6 to a human
 -- readable string format.
-module HAppS.Util.HostAddress (showHostAddress, showHostAddress6) where
+module HAppS.Util.HostAddress (showHostAddress, showHostAddress6, HostAddress, HostAddress6) where
 import Data.Word (Word32)
 import Numeric (showHex)
 import Data.List (intersperse)
