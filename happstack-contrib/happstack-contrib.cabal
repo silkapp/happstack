@@ -21,12 +21,12 @@ Flag tests
 Library
 
   Exposed-modules:
-                       HAppS.Server.Facebook
-                       HAppS.Store.FlashMsgs
-                       HAppS.Store.HelpReqs
+                       Happstack.Server.Facebook
+                       Happstack.Store.FlashMsgs
+                       Happstack.Store.HelpReqs
   if flag(tests)
     Exposed-modules:   
-                       HAppS.Contrib.Tests
+                       Happstack.Contrib.Tests
 
   Build-Depends:       base, network, old-time, bytestring, happstack-server,
                        mtl, HTTP >= 4000.0.2, directory, happstack-util, happstack-data,

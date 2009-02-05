@@ -7,7 +7,7 @@ Maintainer:         Happstack team <happs@googlegroups.com>
 homepage:           http://happstack.com
 Stability:          experimental
 Category:           Web, Distributed Computing
-Synopsis:           HAppS tests library
+Synopsis:           Happstack tests library
 Description:
     This package provides the top-level tests for happstack. It also
     integrates all the per-modules tests.
@@ -35,7 +35,7 @@ Library
     hs-source-dirs:    tests
   Exposed-modules:
   if flag(tests)
-    Exposed-modules:   HAppS.Tests
+    Exposed-modules:   Happstack.Tests
   GHC-Options: -Wall
 
 Executable happstack-tests

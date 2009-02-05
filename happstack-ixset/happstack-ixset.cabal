@@ -29,12 +29,12 @@ Library
   if flag(tests)
     hs-source-dirs:    tests
   Exposed-modules:     
-                       HAppS.Data.IxSet
-                       HAppS.Data.IxSet.Ix
-                       HAppS.Data.IxSet.Usage
+                       Happstack.Data.IxSet
+                       Happstack.Data.IxSet.Ix
+                       Happstack.Data.IxSet.Usage
   if flag(tests)
     Exposed-modules:   
-                       HAppS.Data.IxSet.Tests
+                       Happstack.Data.IxSet.Tests
 
   extensions:          UndecidableInstances, OverlappingInstances,
                        FlexibleInstances, MultiParamTypeClasses,

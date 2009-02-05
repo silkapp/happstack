@@ -1,6 +1,6 @@
 module Main where
 
-import HAppS.Util.Tests (allTests)
+import Happstack.Util.Tests (allTests)
 import Test.HUnit (errors, failures, putTextToShowS,runTestText, runTestTT)
 import System.Exit (exitFailure)
 import System.IO (hIsTerminalDevice, stdout)

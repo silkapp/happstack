@@ -42,36 +42,36 @@ Library
   if flag(tests)
     hs-source-dirs:    tests
   Exposed-modules:
-    HAppS.Data
-    HAppS.Data.Default
-    HAppS.Data.Default.Generic
-    HAppS.Data.DeriveAll
-    HAppS.Data.HList
-    HAppS.Data.Migrate
-    HAppS.Data.Normalize
-    HAppS.Data.Pairs
-    HAppS.Data.Xml
-    HAppS.Data.Xml.HaXml
-    HAppS.Data.Atom
-    HAppS.Data.GOps
-    HAppS.Data.Proxy
-    HAppS.Data.Serialize
-    HAppS.Data.SerializeTH
+    Happstack.Data
+    Happstack.Data.Default
+    Happstack.Data.Default.Generic
+    Happstack.Data.DeriveAll
+    Happstack.Data.HList
+    Happstack.Data.Migrate
+    Happstack.Data.Normalize
+    Happstack.Data.Pairs
+    Happstack.Data.Xml
+    Happstack.Data.Xml.HaXml
+    Happstack.Data.Atom
+    Happstack.Data.GOps
+    Happstack.Data.Proxy
+    Happstack.Data.Serialize
+    Happstack.Data.SerializeTH
   if flag(tests)
     Exposed-modules:   
-      HAppS.Data.Tests
-      HAppS.Data.Tests.HasT001
-      HAppS.Data.Tests.Xml001
-      HAppS.Data.Tests.Xml002
-      HAppS.Data.Tests.Xml003
-      HAppS.Data.Tests.HList001
-      HAppS.Data.Tests.HList002
+      Happstack.Data.Tests
+      Happstack.Data.Tests.HasT001
+      Happstack.Data.Tests.Xml001
+      Happstack.Data.Tests.Xml002
+      Happstack.Data.Tests.Xml003
+      Happstack.Data.Tests.HList001
+      Happstack.Data.Tests.HList002
 
   Other-modules:
-    HAppS.Data.HListBase
-    HAppS.Data.Xml.Base
-    HAppS.Data.Xml.Instances
-    HAppS.Data.Xml.PrintParse
+    Happstack.Data.HListBase
+    Happstack.Data.Xml.Base
+    Happstack.Data.Xml.Instances
+    Happstack.Data.Xml.PrintParse
   Extensions: TemplateHaskell, FlexibleInstances, UndecidableInstances,
               OverlappingInstances, MultiParamTypeClasses, CPP,
               FunctionalDependencies, DeriveDataTypeable, FlexibleContexts,

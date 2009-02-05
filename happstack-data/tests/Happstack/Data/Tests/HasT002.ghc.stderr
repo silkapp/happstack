@@ -1,0 +1,9 @@
+
+HasT002.hs:18:5:
+    No instance for (Happstack.Data.HList.HasT' [Char] Bool)
+      arising from a use of `tHasT' at HasT002.hs:18:5-40
+    Possible fix:
+      add an instance declaration for
+      (Happstack.Data.HList.HasT' [Char] Bool)
+    In the expression: tHasT (User "alex" .&. "asad") True
+    In the definition of `e9': e9 = tHasT (User "alex" .&. "asad") True

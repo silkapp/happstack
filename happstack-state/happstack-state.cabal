@@ -1,7 +1,7 @@
 Name:                happstack-state
 Version:             0.1.9
 Synopsis:            Event-based distributed state.
-Description:         Unplug your machine and restart and have your app recover to exactly where it left off. HAppS-State spares you the need to deal with all the marshalling, consistency, and configuration headache that you would have if you used an external DBMS for this purpose. Its component model makes it easy to compose big applications from smaller reliable parts. Use event subscription to trigger IO actions and support comet-style or irc-bot applications. 
+Description:         Unplug your machine and restart and have your app recover to exactly where it left off. Happstack-State spares you the need to deal with all the marshalling, consistency, and configuration headache that you would have if you used an external DBMS for this purpose. Its component model makes it easy to compose big applications from smaller reliable parts. Use event subscription to trigger IO actions and support comet-style or irc-bot applications. 
 License:             BSD3
 License-file:        COPYING
 Author:              Happstack team, HAppS LLC
@@ -20,31 +20,31 @@ Flag tests
 Library
 
   Exposed-modules:     
-                       HAppS.State
---                     HAppS.State.Logger
-                       HAppS.State.Saver
-                       HAppS.State.Control
-                       HAppS.State.Transaction
-                       HAppS.State.ComponentTH
-                       HAppS.State.ComponentSystem
+                       Happstack.State
+--                     Happstack.State.Logger
+                       Happstack.State.Saver
+                       Happstack.State.Control
+                       Happstack.State.Transaction
+                       Happstack.State.ComponentTH
+                       Happstack.State.ComponentSystem
   if flag(tests)
     Exposed-modules:   
-                       HAppS.State.Tests
-                       HAppS.State.Tests.Helpers
-                       HAppS.State.Tests.CheckpointProperties
-                       HAppS.State.Tests.SaverProperties
+                       Happstack.State.Tests
+                       Happstack.State.Tests.Helpers
+                       Happstack.State.Tests.CheckpointProperties
+                       Happstack.State.Tests.SaverProperties
   Other-modules:       
-                       HAppS.State.Checkpoint
-                       HAppS.State.Spread
-                       HAppS.State.Monad
-                       HAppS.State.Saver.Impl.File
-                       HAppS.State.Saver.Impl.Memory
-                       HAppS.State.Saver.Impl.Queue
-                       HAppS.State.Saver.Types
---                     HAppS.State.OperationModes
-                       HAppS.State.Types
-                       HAppS.State.Util
-                       HAppS.State.TxControl
+                       Happstack.State.Checkpoint
+                       Happstack.State.Spread
+                       Happstack.State.Monad
+                       Happstack.State.Saver.Impl.File
+                       Happstack.State.Saver.Impl.Memory
+                       Happstack.State.Saver.Impl.Queue
+                       Happstack.State.Saver.Types
+--                     Happstack.State.OperationModes
+                       Happstack.State.Types
+                       Happstack.State.Util
+                       Happstack.State.TxControl
   Build-Depends:       mtl,stm, template-haskell, hslogger >= 1.0.2, happstack-util,
                        happstack-data, bytestring, containers, random, old-time,
                        directory, binary, filepath, hspread >=0.3, extensible-exceptions

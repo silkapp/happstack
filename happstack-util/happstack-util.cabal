@@ -31,23 +31,23 @@ Library
   if flag(tests)
     hs-source-dirs:    tests
   Exposed-modules:     
-                       HAppS.Crypto.Base64,
-                       HAppS.Crypto.DES,
-                       HAppS.Crypto.HMAC,
-                       HAppS.Crypto.SHA1,
-                       HAppS.Crypto.MD5,
-                       HAppS.Crypto.W64,
-                       HAppS.Util.ByteStringCompat,
-                       HAppS.Util.Common,
-                       HAppS.Util.Concurrent,
-                       HAppS.Util.Daemonize,
-                       HAppS.Util.HostAddress,
-                       HAppS.Util.TimeOut,
-                       HAppS.Util.TH,
-                       HAppS.Util.Testing
+                       Happstack.Crypto.Base64,
+                       Happstack.Crypto.DES,
+                       Happstack.Crypto.HMAC,
+                       Happstack.Crypto.SHA1,
+                       Happstack.Crypto.MD5,
+                       Happstack.Crypto.W64,
+                       Happstack.Util.ByteStringCompat,
+                       Happstack.Util.Common,
+                       Happstack.Util.Concurrent,
+                       Happstack.Util.Daemonize,
+                       Happstack.Util.HostAddress,
+                       Happstack.Util.TimeOut,
+                       Happstack.Util.TH,
+                       Happstack.Util.Testing
   if flag(tests)
-    Exposed-modules:   HAppS.Util.Tests
-    Exposed-modules:   HAppS.Util.Tests.HostAddress
+    Exposed-modules:   Happstack.Util.Tests
+    Exposed-modules:   Happstack.Util.Tests.HostAddress
 
   extensions:          CPP, UndecidableInstances, BangPatterns, StandaloneDeriving,
                        DeriveDataTypeable, TemplateHaskell, RecursiveDo
