@@ -116,7 +116,7 @@ data IxSet a = ISet [a] | IxSet [Ix a]
 
 instance Version (IxSet a)
 instance (Serialize a, Ord a, Data a, Indexable a b) => Serialize (IxSet a) where
-    putCopy ixset = contain $ safePut (toList ixset)
+    putCopy = contain . safePut . toList
     getCopy = contain $ liftM fromList safeGet
 
 instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (IxSet a)), SYBWC.Sat (ctx [a]),
@@ -246,16 +246,16 @@ fromSet' :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
 fromSet' set = Set.fold insert empty set
 
 fromList :: (Indexable a b, Ord a, Data a) => [a] -> IxSet a
-fromList list = fromSet $ Set.fromList list
+fromList = fromSet . Set.fromList
 
 size :: Ord a => IxSet a -> Int
-size x = Set.size $ toSet x
+size = Set.size . toSet
 
 toList :: Ord a => IxSet a -> [a]
-toList x = Set.toList $ toSet x
+toList = Set.toList . toSet
 
 toList' :: Ord a => [Ix a] -> [a]
-toList' x = Set.toList $ toSet' x
+toList' = Set.toList . toSet'
 
 getOne :: Ord a => IxSet a -> Maybe a
 getOne ixset = case toList ixset of
@@ -267,10 +267,10 @@ getOneOr def = fromMaybe def . getOne
 
 -- set operations
 (&&&) :: (Ord a, Data a, Indexable a b) => IxSet a -> IxSet a -> IxSet a
-x1 &&& x2 = intersection x1 x2
+(&&&) = intersection
 
 (|||) :: (Ord a, Data a, Indexable a b) => IxSet a -> IxSet a -> IxSet a
-x1 ||| x2 = union x1 x2
+(|||) = union
 
 infixr 5 &&&
 infixr 5 |||
@@ -308,15 +308,15 @@ ix @* list = foldr intersection empty $ map (ix @=) list
 
 getEQ :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
-getEQ v ix = getOrd EQ v ix
+getEQ = getOrd EQ
 
 getLT :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
-getLT v ix = getOrd LT v ix
+getLT = getOrd LT
 
 getGT :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
-getGT v ix = getOrd GT v ix
+getGT = getOrd GT
 
 getLTE :: (Indexable a b, Data a, Ord a, Typeable k)
        => k -> IxSet a -> IxSet a
@@ -344,7 +344,7 @@ groupBy _ = error "unexpected match"
 
 
 rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
-rGroupBy x = reverse $ groupBy x
+rGroupBy = reverse . groupBy
     
 --query impl function
 getOrd :: (Indexable a b, Ord a, Data a, Typeable k)
@@ -362,8 +362,8 @@ getOrd ord v (IxSet indices) = collect indices
               EQ -> eq
             where
             (lt',eq',gt')=Map.splitLookup v'' index
-            lt = concat $ map (Set.toList . snd) $ Map.toList lt'
-            gt = concat $ map (Set.toList . snd) $ Map.toList gt'
+            lt = concatMap (Set.toList . snd) $ Map.toList lt'
+            gt = concatMap (Set.toList . snd) $ Map.toList gt'
             eq = maybe [] Set.toList eq'
     collect _ = error "unexpected match"
 getOrd _ _ _ = error "unexpected match"
