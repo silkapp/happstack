@@ -65,7 +65,7 @@ SUCH DAMAGE.
 >        s5 = sha1_step_5_display abcde'
 
 > sha1_step_1_2_pad_length :: String -> String
-> sha1_step_1_2_pad_length s = sha1_step_1_2_work 0 s
+> sha1_step_1_2_pad_length = sha1_step_1_2_work 0
 
 > sha1_step_1_2_work :: Integer -> String -> String
 > sha1_step_1_2_work c64 "" = padding ++ len

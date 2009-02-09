@@ -52,18 +52,18 @@ hGetLn handle = do
     let hGetLn' = do
           c <- hGetChar handle
           case c of
-	    '\n' -> do return []
+	    '\n' -> return []
             '\r' -> do c2 <- hGetChar handle 
 		       if c2 == '\n' then return [] else getRest c
-	    _    -> do getRest c
-	getRest c = do fmap (c:) hGetLn'
+	    _    -> getRest c
+	getRest c = fmap (c:) hGetLn'
     line <- hGetLn'
     logMC DEBUG line
     return line
 
 
 unBracket, ltrim, rtrim, trim :: String -> String
-unBracket = tail.reverse.tail.reverse.trim
+unBracket = tail . init . trim
 
 ltrim = dropWhile isSpace
 
@@ -162,11 +162,11 @@ boolM :: (MonadPlus m) => Bool -> m Bool
 boolM False = mzero
 boolM True  = return True
 
-notMb::a->Maybe a->Maybe a
+notMb :: a-> Maybe a-> Maybe a
 notMb v1 v2 = maybe (Just v1) (const Nothing) $ v2
 
 periodic :: [Int] -> IO () -> IO ThreadId
-periodic ts x = forkIO $ periodic' ts x
+periodic ts = forkIO . periodic' ts
 
 periodic' :: [Int] -> IO a -> IO a
 periodic' [] x = x

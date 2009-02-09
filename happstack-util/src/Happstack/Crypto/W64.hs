@@ -17,7 +17,7 @@ pad :: String -> String
 pad x = padding++x
     where 
     padLength = 4 - (length x) `mod` 4
-    padding = (toEnum padLength) : (take (padLength-1) $ repeat 'A')
+    padding = (toEnum padLength) : (replicate (padLength-1) 'A')
 
 unpad :: (Enum a) => [a] -> [a]
 unpad x = drop (fromEnum $ head x) x
@@ -54,10 +54,10 @@ toQuadChars (a:b:c:d:rest) = [a,b,c,d]:toQuadChars rest
 toQuadChars _ = error "Argument for toQuadChars must have a length that is a multiple of 4"
 
 stringToW64s :: (Num a) => String -> [a]
-stringToW64s x = map quadCharToW64 $ toQuadChars $ pad x
+stringToW64s = map quadCharToW64 . toQuadChars . pad
 
 w64sToString :: (Enum b) => [Integer] -> [b]
-w64sToString x = unpad $ concat $ map w64ToQuadChar x
+w64sToString = unpad . concatMap w64ToQuadChar
 
 prop_stringW64 :: String -> Bool
 prop_stringW64 x = x == (w64sToString $ stringToW64s x)

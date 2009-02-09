@@ -50,8 +50,7 @@ daemonize binarylocation main =
              E.throwTo mId $ 
                               ExitSuccess -- throws to the main thread
 
-           else do
-        return ()
+           else return ()
 
 getDaemonizedId :: IO String
 getDaemonizedId

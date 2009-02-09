@@ -125,7 +125,7 @@ added by alex
 </ADDED>
 
 > instance Bits [Bool] where
->  a `xor` b = (zipWith (\x y -> (not x && y) || (x && not y)) a b)
+>  xor = zipWith (\x y -> (not x && y) || (x && not y))
 >  rotate bits rot = drop rot' bits ++ take rot' bits
 >   where rot' = rot `mod` (length bits)
 
@@ -136,7 +136,7 @@ added by alex
 
 Added by Alex
 
-> unbitify bs = foldl (\i b -> if b then 1 + shiftL i 1 else shiftL i 1) 0 bs
+> unbitify = foldl (\i b -> if b then 1 + shiftL i 1 else shiftL i 1) 0 
 
 > initial_permutation :: Bits64 -> Bits64
 > initial_permutation mb = map ((!!) mb) i

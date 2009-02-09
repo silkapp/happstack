@@ -52,6 +52,7 @@ import Data.Typeable(Typeable)
 import Data.IORef
 import Data.Maybe
 import System.IO.Unsafe (unsafePerformIO)
+import Control.Monad (when)
 
 import Happstack.Util.Concurrent
 
@@ -62,7 +63,7 @@ timeOutIdState :: IORef TimeOutTId
 timeOutIdState = unsafePerformIO $ newIORef minBound
 
 nextTimeOutId :: IO TimeOutTId
-nextTimeOutId = do
+nextTimeOutId = 
   atomicModifyIORef timeOutIdState (\a -> let nid =nextId a in (nid,nid))
   where nextId i | i == maxBound = minBound
         nextId i = i + 1
@@ -137,7 +138,7 @@ withSafeTimeOutMaybe tout op = mdo
   kt <- fork $ do 
           threadDelay tout
           e <- tryPutMVar mv (Right Nothing)
-          if e then killThread wt else return ()
+          when e $ killThread wt
   eitherToEx =<< takeMVar mv
   where eitherToEx (Left e) = throw' e
         eitherToEx (Right r) = return r
