@@ -7,20 +7,20 @@ import Data.Maybe
 -- useful generic functions with better names
 
 gSet :: (Data b, Typeable a) => a -> b -> b
-gSet v = gReplace (const v)
+gSet = gReplace . const
 
 gReplace :: (Typeable a, Data b) => (a -> a) -> b -> b
 gReplace f x = everywhere (mkT f) x
 
 gFind :: (MonadPlus m, Data a, Typeable b) => a -> m b
-gFind x = msum $ map return $ listify (const True) x
+gFind = msum . map return . listify (const True)
 
 gFind' :: (Data a, Typeable b) => a -> b
-gFind' x = fromJust $ gFind x
+gFind' = fromJust . gFind
 --Monad versions
 
 gModify :: (MonadState s m,Typeable a,Data s) => (a->a) -> m ()
-gModify f = modify $ gReplace f
+gModify = modify . gReplace
 
 gAsk :: (Data r, Typeable a, MonadReader r m, MonadPlus n) =>
         (a -> n b) -> m (n b)

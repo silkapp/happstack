@@ -106,7 +106,7 @@ compareVersions v1 v2 = compare (unVersion v1) (unVersion v2)
 
 
 serialize :: Serialize a => a -> L.ByteString
-serialize a = runPut (safePut a)
+serialize = runPut . safePut
 
 deserialize :: Serialize a => L.ByteString -> (a, L.ByteString)
 deserialize bs = case runGetState safeGet bs 0 of
@@ -127,58 +127,58 @@ collectVersions prox
 
 instance Version Int where mode = Primitive
 instance Serialize Int where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Integer where mode = Primitive
 instance Serialize Integer where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Float where mode = Primitive
 instance Serialize Float where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Double where mode = Primitive
 instance Serialize Double where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version L.ByteString where mode = Primitive
 instance Serialize L.ByteString where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version B.ByteString where mode = Primitive
 instance Serialize B.ByteString where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Char where mode = Primitive
 instance Serialize Char where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Word8 where mode = Primitive
 instance Serialize Word8 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Word16 where mode = Primitive
 instance Serialize Word16 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Word32 where mode = Primitive
 instance Serialize Word32 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Word64 where mode = Primitive
 instance Serialize Word64 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Ordering where mode = Primitive
 instance Serialize Ordering where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Int8 where mode = Primitive
 instance Serialize Int8 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Int16 where mode = Primitive
 instance Serialize Int16 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Int32 where mode = Primitive
 instance Serialize Int32 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Int64 where mode = Primitive
 instance Serialize Int64 where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version () where mode = Primitive
 instance Serialize () where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version Bool where mode = Primitive
 instance Serialize Bool where
-    getCopy = contain $ get; putCopy = contain . put
+    getCopy = contain get; putCopy = contain . put
 instance Version (Either a b) where mode = Primitive
 instance (Serialize a, Serialize b) => Serialize (Either a b) where
     getCopy = contain $ do n <- get

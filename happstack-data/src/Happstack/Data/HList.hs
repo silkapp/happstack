@@ -40,10 +40,10 @@ instance (Xml a, Xml b) => Xml (Couple a b) where
                   return (xml'', Couple a b)
 
 hlextract :: HasT a b => a -> b
-hlextract hlist = x hlist
+hlextract = x
 
 hlupdate :: HasT a b => a -> b -> a
-hlupdate hlist val = u hlist val
+hlupdate = u
 
 class HasT a b where
     x :: a -> b
@@ -63,8 +63,8 @@ class HasT' a b where
     u' :: a -> b -> a
 
 instance HasT' a b => HasT a b where
-    x a = x' a
-    u a b = u' a b
+    x = x'
+    u = u'
 
 instance (HasT c a) => HasT' (Couple b c) a where
     x' (Couple _ b) = x b
@@ -83,7 +83,7 @@ class Trans' ft a where
     trans' :: ft -> a ->a
 
 instance Trans' ft a => Trans ft a where
-    trans f a = trans' f a
+    trans = trans'
 
 instance (Trans ft b) => Trans' ft (Couple a b) where
     trans' f (Couple a b) = Couple a (trans f b)

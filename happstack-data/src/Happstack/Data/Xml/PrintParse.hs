@@ -31,7 +31,7 @@ instance ToString Element where
     toString = render . content . toHaXml
 
 instance (Xml a,G.Data a) => ToString a where 
-    toString a = toString $ toXml a
+    toString = toString . toXml
 
 
 class FromString a where
@@ -50,6 +50,5 @@ instance FromString [Element] where
     fromString r s = liftM (: []) $ fromString r s
 
 instance (Xml a,G.Data a) => FromString a where
-    fromString r x = do els <- fromString r x
-                        fromXml r els
+    fromString r x = fromString r x >>= fromXml r
 

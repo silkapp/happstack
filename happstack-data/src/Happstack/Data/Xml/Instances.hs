@@ -56,9 +56,9 @@ instance Xml String where
               f _ _ = Nothing
 
 instance Xml Char where
-    toXml x = [CData (x:[])]
+    toXml x = [CData [x]]
     readXml = readXmlWith f
-        where f _ (CData (x:[])) = Just x
+        where f _ (CData [x]) = Just x
               f _ _ = Nothing
 
 instance Xml ByteString where

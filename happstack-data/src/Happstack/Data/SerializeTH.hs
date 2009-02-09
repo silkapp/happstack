@@ -52,8 +52,7 @@ deriveSerialize name
 
 
 deriveSerializeFor :: [Name] -> Q [Dec]
-deriveSerializeFor names
-    = liftM concat $ mapM deriveSerialize names
+deriveSerializeFor = liftM concat . mapM deriveSerialize
 
 
 mkType :: Name -> [TypeQ] -> TypeQ

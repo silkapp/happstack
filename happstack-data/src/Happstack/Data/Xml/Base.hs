@@ -144,7 +144,7 @@ defaultToXml x
    in [Elem me rest']
 
 transparentToXml :: Xml t => t -> [Element]
-transparentToXml x = concat $ gmapQ xmlProxy (toXmlD dict) x
+transparentToXml = concat . gmapQ xmlProxy (toXmlD dict)
 
 transparentReadXml :: forall m t . (Monad m, Xml t)
                    => Rigidity m -> [Element] -> Maybe ([Element], t)
@@ -276,7 +276,7 @@ readElement r (Elem n es) = res
                        Flexible -> case runIdentity m of
                                        -- We ignore left over elements
                                        (_, x) -> Just x
-          endsWithNum m = head (reverse m) `elem` "0123456789"
+          endsWithNum m = (last m) `elem` "0123456789"
           noNum  = reverse . dropWhile (`elem` "012344566789") . reverse 
 
 readElement _ _ = Nothing

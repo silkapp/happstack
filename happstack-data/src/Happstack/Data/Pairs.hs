@@ -22,7 +22,7 @@ import Control.Monad.Identity
 type Pairs = [(String,String)]
 
 pairsToXml :: Pairs -> [Element]
-pairsToXml pairs = fst $ formIntoEls "" $ map slash pairs
+pairsToXml = fst . formIntoEls "" . map slash
 
 slash :: (String,t) -> (String,t)
 slash p@('/':_,_) = p
@@ -42,7 +42,7 @@ formIntoEls ctx pairs@((name,val):rest)
     where
     ctx' = ctx ++ "/" ++ top
     node =  tail $ drop (length ctx) name
-    (top,subs) = break (=='/') $  node
+    (top,subs) = break (=='/') node
     elName = takeWhile (/='[') top
     isLeaf = null subs
     isAttr = head top == '@'
@@ -101,7 +101,7 @@ class (Xml x,Show x, G.Data x) => AsPairs x where
     fromPairs::Pairs -> Maybe x
 
 instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
-    toPairs x = xmlToPairs $ toPublicXml x
+    toPairs = xmlToPairs . toPublicXml
     fromPairs [] = Nothing
     fromPairs pairs = if res == dv && notRigidMatch then Nothing else Just res
         where
@@ -113,21 +113,21 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
         notRigidMatch = not isRigidMatch
         dv = defaultValue
         (cons,_) = break (==' ') $ show dv
-        clean n = if (map toLower parent)==(map toLower cons) then n
-                  else if head n =='/' then n
-                  else (cons++('/':name))
+        clean n = if (map toLower parent)==(map toLower cons) || (head n == '/') 
+                  then n
+                  else cons++('/':name)
             where
             name = trimSlash n
             (parent,_) = break (=='/') name
         trimSlash n = if head n=='/' then tail n else n
 
 toPairsX :: (Xml a, Show a, Data a, Eq a) => a -> Pairs
-toPairsX x = map (\(n,v)->let (_,child)=break (=='/') n in
-                            if null child then (n,v) else (tail child,v)) $ toPairs x
+toPairsX = map (\(n,v)->let (_,child)=break (=='/') n in
+                            if null child then (n,v) else (tail child,v)) . toPairs
 
 toHTMLForm :: (Xml a, Show a, Data a, Eq a) =>
               String -> String -> String -> a -> [Element]
-toHTMLForm iden method action = xmlToHTMLForm iden method action 
+toHTMLForm = xmlToHTMLForm
 
 
 

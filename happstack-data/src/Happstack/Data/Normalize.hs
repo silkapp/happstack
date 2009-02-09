@@ -61,8 +61,7 @@ defaultNormalize x = x
 -- 'Normalize' instance. It may be a useful building block when writing
 -- your own instances.
 defaultNormalizeRecursively :: Normalize a => a -> a
-defaultNormalizeRecursively x
- = normalize $ gmapT normalizeProxy (normalizeRecursivelyD dict) x
+defaultNormalizeRecursively = normalize . gmapT normalizeProxy (normalizeRecursivelyD dict)
 
 -- | When writing your own generic functions for 'Normalize' you may
 -- need to access the class methods through this datatype rather than
