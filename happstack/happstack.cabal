@@ -1,7 +1,7 @@
 Name:                happstack
 Version:             0.1.9
-Synopsis:            Web related tools and services.
-Description:         Web framework
+Synopsis:            The haskell application server stack + code generation
+Description:         The haskell application server stack
 License:             BSD3
 License-file:        COPYING
 Author:              Happstack team, HAppS LLC
@@ -11,47 +11,29 @@ Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-Version:       >= 1.2.3
 
-Flag base4
-    Description: Choose the even newer, even smaller, split-up base package.
-
-Flag tests
-    Description: Build the testsuite, and include the tests in the library
-    Default: True
+data-files:          templates/project/bin/run.sh,
+                     templates/project/bin/run-interactive.sh,
+                     templates/project/bin/build.sh,
+                     templates/project/src/AppControl.hs,
+                     templates/project/src/AppLogger.hs,
+                     templates/project/src/AppState.hs,
+                     templates/project/src/Main.hs
+                     templates/project/public/index.html
+                     templates/project/public/entries/new.html
 
 Library
+  other-modules:       Paths_happstack
 
-  Exposed-modules:     Happstack
-
-  if flag(tests)
-    Exposed-modules:   Happstack.Tests
-
-  Build-Depends:       happstack-server, happstack-state, happstack-ixset,
-                       happstack-util, happstack-data
+  build-depends:       happstack-server, happstack-state, happstack-ixset,
+                       happstack-util, happstack-data, base >= 4
 
   hs-source-dirs:      src
 
-  if flag(tests)
-    hs-source-dirs:    tests
-
-  if !os(windows)
-     Build-Depends:    unix
-     cpp-options:      -DUNIX
-
-  if flag(base4)
-    Build-Depends:     base >= 4 && < 5, syb
-
-  if flag(tests)
-    Build-Depends:     HUnit
 
   ghc-options:         -Wall
-  GHC-Prof-Options:    -auto-all
 
-Executable happstack-server-tests
-  Main-Is: Test.hs
-  GHC-Options: -threaded
-  Build-depends: HUnit
-  hs-source-dirs: tests, src
-  if flag(tests)
-    Buildable: True
-  else
-    Buildable: False
+Executable happstack
+  build-depends:       directory >= 1, filepath >= 1
+  hs-source-dirs:      commands
+  main-is:             happstack.hs
+

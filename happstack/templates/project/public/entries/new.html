@@ -1,0 +1,16 @@
+<html>
+<head>
+  <title>New Guestbook Entry</title>
+  <style type="text/css">
+  input, textarea { display:block }
+  </style>
+</head>
+<body>
+  <h1>New Guestbook Entry</h1>
+  <form action="/entries" method="post">
+    <p><label>Author <input type="text" name="author"></label></p>
+    <p><label>Message <textarea name="message"></textarea></label></p>
+    <p><input type="submit" value="Leave GuestBook Entry"></p>
+  </form>
+</body>
+</html>
