@@ -25,7 +25,7 @@ Library
   other-modules:       Paths_happstack
 
   build-depends:       happstack-server, happstack-state, happstack-ixset,
-                       happstack-util, happstack-data, base >= 4
+                       happstack-util, happstack-data, base > 3
 
   hs-source-dirs:      src
 
