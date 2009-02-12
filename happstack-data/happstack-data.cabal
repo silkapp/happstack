@@ -37,7 +37,7 @@ Library
     Build-Depends:    base < 4
 
   Build-Depends:      mtl, template-haskell, syb-with-class >= 0.5, HaXml >= 1.13 && < 1.14,
-                      happstack-util, bytestring, pretty, binary, containers
+                      happstack-util >= 0.1.9, bytestring, pretty, binary, containers
   hs-source-dirs:     src
   if flag(tests)
     hs-source-dirs:    tests

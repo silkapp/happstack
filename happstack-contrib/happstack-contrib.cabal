@@ -28,9 +28,11 @@ Library
     Exposed-modules:   
                        Happstack.Contrib.Tests
 
-  Build-Depends:       base, network, old-time, bytestring, happstack-server,
-                       mtl, HTTP >= 4000.0.2, directory, happstack-util, happstack-data,
-                       happstack-state, happstack-ixset
+  build-depends:       base, network, old-time, bytestring,
+                       happstack-server >= 0.1.9, happstack-util >= 0.1.9,
+                       happstack-state >= 0.1.9, happstack-ixset >= 0.1.9,
+                       happstack-data >= 0.1.9, mtl, HTTP >= 4000.0.2,
+                       directory
 
   hs-source-dirs:      src
 

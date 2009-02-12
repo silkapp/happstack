@@ -24,8 +24,9 @@ data-files:          templates/project/bin/run.sh,
 Library
   other-modules:       Paths_happstack
 
-  build-depends:       happstack-server, happstack-state, happstack-ixset,
-                       happstack-util, happstack-data, base > 3
+  build-depends:       happstack-server >= 0.1.9, happstack-state >= 0.1.9,
+                       happstack-ixset >= 0.1.9, happstack-util >= 0.1.9,
+                       happstack-data >= 0.1.9, base > 3
 
   hs-source-dirs:      src
 
