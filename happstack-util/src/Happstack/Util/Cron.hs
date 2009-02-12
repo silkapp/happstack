@@ -1,4 +1,4 @@
-module Happstack.Server.Cron (cron) where
+module Happstack.Util.Cron (cron) where
 
 import Control.Concurrent (threadDelay)
 

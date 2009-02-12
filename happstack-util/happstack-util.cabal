@@ -40,6 +40,7 @@ Library
                        Happstack.Util.ByteStringCompat,
                        Happstack.Util.Common,
                        Happstack.Util.Concurrent,
+                       Happstack.Util.Cron,
                        Happstack.Util.Daemonize,
                        Happstack.Util.HostAddress,
                        Happstack.Util.TimeOut,
