@@ -15,7 +15,7 @@ flag base4
 
 Flag tests
     Description: Build the testsuite, and include the tests in the library
-    Default: True
+    Default: False
 
 Library
 
