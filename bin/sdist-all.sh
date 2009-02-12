@@ -6,4 +6,5 @@ cd ../happstack-state   && cabal sdist --builddir=../dist && \
 cd ../happstack-ixset   && cabal sdist --builddir=../dist && \
 cd ../happstack-server  && cabal sdist --builddir=../dist && \
 cd ../happstack-contrib && cabal sdist --builddir=../dist && \
+cd ../happstack         && cabal sdist --builddir=../dist && \
 echo "Done"

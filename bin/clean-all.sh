@@ -7,4 +7,5 @@ cd ../happstack-ixset   && cabal clean && \
 cd ../happstack-server  && cabal clean && \
 cd ../happstack-contrib && cabal clean && \
 cd ../happstack-tests   && cabal clean && \
+cd ../happstack         && cabal clean && \
 echo "Done"
