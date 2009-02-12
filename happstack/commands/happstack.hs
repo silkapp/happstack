@@ -33,11 +33,9 @@ main = do
       putStrLn "  new project <dir>: create a new happstack project"
   
 processArgs :: [String] -> Command
-processArgs args = do
-  case args of
-    ["new", "project", dir] -> NewProjectCmd dir
-    ["help"]                -> HelpCmd
-    _                       -> HelpCmd
+processArgs ["new", "project", dir] = NewProjectCmd dir
+processArgs ["help"]                = HelpCmd
+processArgs _                       = HelpCmd
     
 newProject :: FilePath -> IO ()
 newProject dir = do
