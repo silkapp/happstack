@@ -1,0 +1,349 @@
+
+/*
+Theme Name: Dezinerfolio (s)impress
+Theme URI: dezinerfolio.com	
+Description: Simple and Clean theme
+Version: 2.0
+Author: Navdeep Raj
+*/
+
+*{
+	margin:0;
+	padding:0;
+}
+
+body{
+	font-family:Georgia, "Times New Roman", Times, serif;
+	font-size:12px;
+        background: #fff;
+}
+
+#header{
+	height:98px;
+	clear:both;
+	background:#FFF url(images/header_loop.gif) repeat-x 0 0;
+}
+
+.mainlogo{
+	float:left;
+	padding:0px 50px;
+}
+
+.mainlogo a{
+	background:url(images/logo.gif) no-repeat 0 0;
+	width:144px;
+	height:98px;
+	display:block;
+	overflow:hidden;
+	text-indent:-9999px;
+}
+
+.topnavi li{
+	float:left;
+	list-style:none;
+	overflow:hidden;
+}
+
+.topnavi .page_item{
+	background:url(images/header_loop.gif) repeat-x left top;
+	border-left:1px solid #e4e4e4;
+	border-right:1px solid #e4e4e4;
+	display:block;
+}
+
+.topnavi li a{
+	padding:60px 20px 0 20px;
+	height:27px;
+	display:block;
+	float:left;
+	text-decoration:none;
+	font-size:12px;
+	color:#585858;
+}
+
+.topnavi li a:hover{
+	background:url(images/menu_hover.gif) repeat-x 0 0;
+}
+
+.topnavi .current_page_item{
+	background:url(images/menu_hili.gif) repeat-x left top;
+	border:1px solid #3e8709;
+	overflow:hidden;
+	display:block;
+}
+
+.topnavi .current_page_item a:hover{
+	background:url(images/menu_hili.gif) repeat-x left top;
+}
+
+.topnavi .current_page_item a{
+	color:#FFF;
+	font-weight:bold;
+}
+
+.grunge{
+	background:url(images/grunge.gif);
+	width:105px;
+	height:98px;
+	display:block;
+	float:left;
+}
+
+.side1{
+	float:left;
+	width:200px;
+	padding:12px
+}
+
+.side2{
+	float:left;
+	width:200px;
+	padding:12px;
+}
+
+.sbar_section{
+	padding:10px 0;
+}
+
+.side1 li, .side2 li{
+	list-style:none;
+}
+
+.side1 li a, .side2 li a{
+	padding:8px 5px;
+	display:block;
+	border-bottom:1px solid #CDCDCD;
+	text-decoration:none;
+	color:#555;
+}
+
+.side1 li a:hover, .side2 li a:hover{
+	border-bottom:1px solid #888;
+	color:#222;
+	background:#f1f1f1;
+}
+
+.side1{
+	border-right:1px solid #ddd;
+}
+
+.side1 h2, .side2 h2{
+	color:#333;
+	font-size:16px;
+	padding:5px 0;
+}
+
+.sbar_section #s{
+	padding:4px;
+	border:1px solid #CDCDCD;
+	text-align:center;
+	font-family:Georgia, "Times New Roman", Times, serif;
+	color:#555;
+	width:185px;
+	background:#f1f1f1;
+}
+
+.sbar_section #s:hover, .sbar_section #s:focus{
+	border:1px solid #888;
+	background:#FFF;
+}
+
+.peel{
+	background:url(images/peel.gif);
+	width:102px;
+	height:129px;
+	overflow:hidden;
+	display:block;
+	position:absolute;
+	z-index:9999px;
+	right:0;
+	top:0;
+}
+
+.wrap{
+	padding-left:265px;
+	color:#333;
+	padding-right:25px;
+}
+
+.wrap h1 a, .wrap h1{
+	color:#59ba12;
+	font-size:20px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	text-decoration:none;
+}
+
+
+.wrap p{
+	padding:15px 0px;
+	line-height:19px;
+}
+
+.wrap img{
+	padding:10px;
+}
+
+.wrap ul{
+	padding-left:20px;
+}
+.wrap li{
+	padding:5px;
+}
+
+.wrap ul p{
+	padding:0;
+}
+
+blockquote {
+	background:transparent url(images/blockquote.gif) no-repeat scroll left top;
+	line-height:18px;
+}
+
+
+
+
+.wrap h2 a, .wrap h2{
+	color:#333333;
+	font-size:18px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:normal;
+}
+
+.entry-meta{
+	background:red;
+	display:block;
+	font-size:11px;
+	background:url(images/entrymeta.gif) repeat-x left bottom;
+	padding:12px;
+	border:1px solid #cfcfcf;
+	line-height:18px;
+}
+
+.entry-meta a{
+	text-decoration:none;
+	color:#4a9d0d;
+}
+
+.entry-meta a:hover{
+	color:#0066FF;
+}
+
+
+
+.date{
+	float:left;
+	background:red;
+	background:url(images/date.gif) no-repeat;
+	width:45px;
+	height:48px;
+	margin-top:-8px;
+	padding-top:2px;
+	font-size:16px;
+	color:#FFFFFF;
+	font-weight:bold;
+	padding-left:11px;
+	z-index:9999999999999px;
+}
+
+.date div{
+	color:#999999;
+	font-size:11px;
+	padding-top:8px;
+}
+
+.posttop{
+	border-bottom:2px solid #52af10;
+	padding-bottom:25px;
+	margin-bottom:8px;
+}
+
+.posttop .feedback a{
+	color:#666;
+	text-decoration:none;
+	float:right;
+	padding-top:5px;
+}
+
+.footer{
+	padding:15px;
+	background:#222;
+	clear:both;
+	text-align:center;
+	color:#999;
+	margin-top:25px;
+}
+
+.footer a{
+	color:#59ba12;
+	text-decoration:none;
+}
+
+.commentlist li{
+	list-style:none;
+}
+
+#commentform p{
+	padding:5px;
+}
+
+#comment, #author, #email, #url{
+	width:250px;
+	padding:3px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color:#333;
+	border:1px solid #AAA;
+}
+
+
+#comment:hover, #author:hover, #email:hover, #url:hover, #comment:focus, #author:focus, #email:focus, #url:focus{
+	border:1px solid #333;
+}
+
+#commentform label{
+	color:#666666;
+}
+
+#commentform #submit{
+	padding:5px 15px;
+	border:none;
+	width:260px;
+	text-align:center;
+	background:#FFF url(images/entrymeta.gif) repeat-x left bottom;
+	color:#666;
+	border:1px solid #999;
+	cursor:pointer;
+}
+
+.wrap ul.commentlist{
+	padding:20px 0px;
+}
+
+.commentlist li{
+	padding:10px;
+	border-bottom:1px solid #AAA;
+}
+
+.commentmetadata
+{ 
+	color:#999;
+ }
+
+.commentlist .commentmetadata a{
+	color:#999;
+}
+
+.commentlist li.alt{
+	background:#F4F4F4;
+}
+
+.storycontent a, #commentform a, .commentlist li a{
+	color:#009900;
+	text-decoration:none;
+}
+
+.accesskey
+{ 
+  text-decoration: underline; 
+  }

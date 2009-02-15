@@ -7,10 +7,10 @@ import System.Log.Logger
 import System.Log.Handler.Simple
   (fileHandler)
 
-setupLogger = do
-  h <- logHandler
+setupLogger progName = do
+  h <- logHandler progName
   updateGlobalLogger "Happstack.Server" (setLevel DEBUG . setHandlers [h])
   updateGlobalLogger "Happstack.State" (setLevel DEBUG . setHandlers [h])
   
-logHandler = fileHandler "app.log" DEBUG
+logHandler progName = fileHandler (progName ++ ".log") DEBUG
 

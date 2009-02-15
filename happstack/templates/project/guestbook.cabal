@@ -1,0 +1,48 @@
+Name: guestbook
+Version: 1.0
+Author: Jeremy Shaw <jeremy@seereason.com.
+Copyright: 2009 Jeremy Shaw
+Stability: Experimental
+Category: Web
+Synopsis: An example guestbook application which uses happstack and HSP
+Description:
+ This small example guestbook makes an excellent starting point for
+ your own happstack applications.
+Cabal-version: >= 1.4.0.0
+build-type: Simple
+Data-files:
+        public/theme/style.css
+        public/theme/images/date.gif
+        public/theme/images/ql_rss.gif
+        public/theme/images/header_loop.gif
+        public/theme/images/Thumbs.db
+        public/theme/images/blockquote.gif
+        public/theme/images/menu_hili.gif
+        public/theme/images/grunge.gif
+        public/theme/images/entrymeta.gif
+        public/theme/images/logo.gif
+        public/theme/images/peel.gif
+        public/theme/images/menu_hover.gif
+        public/theme/readme.txt
+
+Flag base4
+    Description: Choose the even newer, even smaller, split-up base package.
+
+Library
+ Exposed-Modules:
+  AppControl,
+  AppLogger,
+  AppState
+ hs-source-dirs: src
+
+ GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
+ Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data
+ if flag(base4)
+    Build-Depends: base >= 4 && < 5, syb
+
+Executable guestbook-server
+ Main-Is: Main.hs
+ hs-source-dirs: src
+ GHC-options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
+ Build-depends: happstack-util
+ Build-Tools: trhsx
