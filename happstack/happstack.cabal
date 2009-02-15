@@ -24,7 +24,6 @@ data-files:          templates/project/bin/run.sh
                      templates/project/public/theme/images/date.gif
                      templates/project/public/theme/images/ql_rss.gif
                      templates/project/public/theme/images/header_loop.gif
-                     templates/project/public/theme/images/Thumbs.db
                      templates/project/public/theme/images/blockquote.gif
                      templates/project/public/theme/images/menu_hili.gif
                      templates/project/public/theme/images/grunge.gif
