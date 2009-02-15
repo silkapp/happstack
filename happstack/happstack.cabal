@@ -22,11 +22,14 @@ data-files:          templates/project/bin/run.sh,
                      templates/project/public/entries/new.html
 
 Library
+  exposed-modules:     Happstack.Server.HSP.HTML
+                       Happstack.State.ClockTime
   other-modules:       Paths_happstack
 
   build-depends:       happstack-server >= 0.1.9, happstack-state >= 0.1.9,
                        happstack-ixset >= 0.1.9, happstack-util >= 0.1.9,
-                       happstack-data >= 0.1.9, base > 3
+                       happstack-data >= 0.1.9, base > 3,
+                       hsp >= 0.4.5, utf8-string, bytestring, mtl, old-time
 
   hs-source-dirs:      src
 
