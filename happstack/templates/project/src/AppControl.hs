@@ -16,8 +16,9 @@ import System.Time (formatCalendarTime, getClockTime, toUTCTime)
 
 appHandler :: [ServerPartT IO Response]
 appHandler =
-  [ msum [postEntry, getEntries]
-  , fileServe ["index.html"] "public"
+  [ dir "entries" [postEntry, getEntries]
+  , dir "public"  [fileServe ["index.html"] "public"]
+  , anyRequest $ seeOther "/entries" (toResponse ())
   ]
 
 getEntries :: ServerPartT IO Response
@@ -78,7 +79,7 @@ pageFromBody title body =
      <head>
       <title><% title %></title>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-      <link rel="stylesheet" type="text/css" href="/theme/style.css" media="screen" />
+      <link rel="stylesheet" type="text/css" href="/public/theme/style.css" media="screen" />
      </head>
      <body>
       <div id="header">
@@ -108,8 +109,11 @@ pageFromBody title body =
           <div class="date">14<div>Feb</div></div>
           <h1 class="posttitle">Happstack Guestbook</h1>
           <div class="storycontent">
-           <p>Leave a message in the guestbook!</p>
-           <form action="/" method="post" enctype="multipart/form-data:charset=UTF-8" accept-charset="UTF-8">
+           <p>Hey congrats! You're using happstack 0.1.9. This is a
+              guestbook example which you can freely change to your whims and
+              fancies.</p>
+           <p>Leave a message for the next visitor here...</p>
+           <form action="/entries" method="post" enctype="multipart/form-data:charset=UTF-8" accept-charset="UTF-8">
             <p><label for="author">A<span class="accesskey">u</span>thor</label><br /><input type="text" name="author" id="author" tabindex="1" accesskey="U" /></p>
             <p><label for="message"><span class="accesskey">M</span>essage</label><br /><textarea cols="80" rows="10" name="message" id="message" tabindex="2" accesskey="M"></textarea></p>
             <p><input type="submit" tabindex="3" accesskey="L" value="Leave GuestBook Entry" /></p>
