@@ -10,7 +10,7 @@ Happstack 0.2
  * Code generation tool added for creating "quick start" project folders
  ? Removed dependency of happstack-server on happstack-state
  * Module Cron module moved from happstack-server to happstack-util
- * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized
+ * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized (Daniel Rogers)
  
 Happstack 0.1
  * Cabal packaging name change:

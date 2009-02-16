@@ -1,0 +1,85 @@
+Happstack 0.2 Release Notes
+================================================================================
+
+  The big WebT/ServerPartT change
+  -------------------------------
+  It should be reviewed, 'cause it's pretty big.  This structure, I must
+  say, is pretty awesome.  You never have to look at WebT again.  You
+  just have do blocks in ServerPartT.  Inside the ServerPartT you get
+  your request (askRq), modify your request (localRq), exit immediately
+  (finishWith), exit failure (mzero), alter your response filters
+  (composeFilter, setFilter, getFilter) and apply your responseFilters
+  (applyFilter).  It also lifts ErrorT, ReaderT, WriterT and StateT, so
+  you can embed one of those as well.  The monad stack (which is pretty
+  big) handles all the data threading.  Also notice the two new
+  functions, getHeaderM and setHeaderM for getting headers from the
+  request, and setting them to the response, respectively.
+
+  That being said, here are a list of the non-backwards compatible
+  changes.  ServerPartT, WebT, unServerPartT and unWebT now have
+  different semantics.  To get existing code to compile you can change
+  your methods like so:
+
+    ServerPartT -> withRequest
+    WebT -> mkWebT
+    unServerPartT -> runServerPartT
+    unWebT -> ununWebT or runWebT depending on what you're going for.
+
+  I also changed the name of the two new functions I wrote (per Andrea's
+  request):
+
+    executeSP -> runServerPartT
+    executeWebT -> runWebT
+
+  And runWebT no longer accepts a default (it returns m Maybe Response)
+
+  However, at this point, the entire interface in SimpleHTTP needs to be
+  revisited.  And any old code you have can be greatly simplified.  For
+  example, you will never have to use anyRequest or withRequest to
+  change from ServerPartT to WebT.  You never have to interact with WebT
+  directly.  You can do everything in a ServerPartT do block.  The
+  examples I provided in the documentation (especially basicAuth') just
+  barely touch on the power of ServerPartT now.  Notice that basicAuth'
+  mixes reading requests, altering responses, all without exposing WebT,
+  constructing a ServerPartT, or really doing any data threading at
+  all.  For example I did change one function, because I was looking at
+  it:
+
+  This:
+    uriRest :: Monad m => (String -> ServerPartT m a) -> ServerPartT m a
+    uriRest handle = withRequest $ \rq ->
+                  unServerPartT (handle (rqURL rq)) rq
+
+  Became this:
+    uriRest :: (ServerMonad m, Monad m) => (String -> m a) -> m a
+    uriRest handle = askRq >>= handle . rqURL
+
+  Pretty much every single function in SimpleHTTP that uses withRequest,
+  anyRequest, unServerPartT, unWebT or ununWebT can now be rewritten to
+  take advantage of these simple monad behaviors.  Obviously the same
+  would apply to users of the library
+
+  Also, basicAuth' should be a candidate for inclusion into SimpleHTTP.
+  It's a much more reusable method.  Also, it suggests how you can use
+  mzero to handle two way communication between the client and server.
+  For example, consider CRAM-MD5 authentication:
+
+    [ challengeClient, testChallenge, ..]
+
+  Where challangeClient returns a response that initiates the first
+  phase of the exchange and returns mzero for the second phase.  Then
+  testChallange returns a response if you fail the challange, and mzero
+  if the challange was successful.  This manages to guard the remainder
+  of the list with CRAM-MD5 auth.  Incidentally, this CRAM-MD5 module
+  would probably be a nice and easy and also a good candidate for
+  inclusion.
+
+
+  FYI, for the curious, the monad stack for ServerT (leaving out all
+  kinds of additional typing) looks like:
+
+  ServerT $ ReaderT $ WebT $ ErrorT $ FilterT $ WriterT $ MaybeT m
+
+  --
+  Daniel Rogers
+  
