@@ -33,6 +33,9 @@ data-files:          templates/project/bin/run.sh
                      templates/project/public/theme/images/menu_hover.gif
                      templates/project/public/theme/readme.txt
 
+Flag base4
+    Description: Choose the even newer, even smaller, split-up base package.
+
 Library
   exposed-modules:     Happstack.Server.HSP.HTML
                        Happstack.State.ClockTime
@@ -42,6 +45,9 @@ Library
                        happstack-ixset >= 0.1.9, happstack-util >= 0.1.9,
                        happstack-data >= 0.1.9, base > 3,
                        hsp >= 0.4.5, utf8-string, bytestring, mtl, old-time
+
+  if flag(base4)
+    Build-Depends:     base >= 4 && < 5, syb
 
   hs-source-dirs:      src
 
