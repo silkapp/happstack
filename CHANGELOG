@@ -1,0 +1,27 @@
+Happstack 0.2
+ * Module namespace refactoring from HAppS to Happstack
+   HAppS.Server  -> Happstack.Server
+   HAppS.State   -> Happstack.State
+   HAppS.Util    -> Happstack.Util
+   HAppS.IxSet   -> Happstack.IxSet
+   HAppS.Data    -> Happstack.Data
+   HAppS.Contrib -> Happstack.Contrib
+ * Creation of additional package 'happstack'
+ * Code generation tool added for creating "quick start" project folders
+ ? Removed dependency of happstack-server on happstack-state
+ * Module Cron module moved from happstack-server to happstack-util
+ * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized
+ 
+Happstack 0.1
+ * Cabal packaging name change:
+   HAppS-Server -> happstack-server
+   HAppS-State  -> happstack-state
+   HAppS-Util   -> happstack-util
+   HAppS-IxSet  -> happstack-ixset
+   HAppS-Data   -> happstack-data
+ * Creation of additional package 'happstack-contrib' (HAppS.Contrib)
+ * Moved Facebook module from happstack-server to happstack-contrib
+ * Fixed various warnings
+ * Removed dead modules and many dead code blocks
+ * Turned name resolution off for peers in HTTP.Listen (fixes getNameInfo crash)
+ 
