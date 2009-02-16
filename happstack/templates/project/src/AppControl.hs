@@ -110,9 +110,12 @@ pageFromBody title body =
           <div class="date">14<div>Feb</div></div>
           <h1 class="posttitle">Happstack Guestbook</h1>
           <div class="storycontent">
-           <p>Hey congrats! You're using happstack 0.1.9. This is a
-              guestbook example which you can freely change to your whims and
-              fancies.</p>
+           <p>
+              Hey congrats! You're using
+              <a href="http://happstack.com">Happstack</a> 0.1.9.
+              This is a guestbook example which you can freely change to your
+              whims and fancies.
+            </p>
            <p>Leave a message for the next visitor here...</p>
            <form action="/entries" method="post" enctype="multipart/form-data:charset=UTF-8" accept-charset="UTF-8">
             <p><label for="author">A<span class="accesskey">u</span>thor</label><br /><input type="text" name="author" id="author" tabindex="1" accesskey="U" /></p>
