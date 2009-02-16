@@ -96,7 +96,8 @@ pageFromBody title body =
        <div class="sbar_section">
         <h2>Links</h2>
          <ul>
-      	  <li class="cat-item cat-item-1"><a href="http://happstack.com/" title="happstack" accesskey="H"><span class="accesskey">h</span>appstack</a></li>
+      	  <li class="cat-item cat-item-1"><a href="http://happstack.com/" title="happstack" accesskey="H"><span class="accesskey">H</span>appstack</a></li>
+      	  <li class="cat-item cat-item-2"><a href="http://happstack.com/tutorials.html" title="happstack" accesskey="T"><span class="accesskey">T</span>utorials</a></li>
          </ul>
        </div>
       </div>
