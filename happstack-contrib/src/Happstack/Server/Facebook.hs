@@ -1,6 +1,6 @@
 {-# OPTIONS -fcontext-stack=25 #-}
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, CPP, ImplicitParams, RecursiveDo, DeriveDataTypeable, PatternSignatures,
-             ScopedTypeVariables, MultiParamTypeClasses, FunctionalDependencies, OverlappingInstances, UndecidableInstances #-}
+             ScopedTypeVariables, MultiParamTypeClasses, FunctionalDependencies, OverlappingInstances, UndecidableInstances, FlexibleContexts #-}
 module Happstack.Server.Facebook where
 import Control.Monad.Reader
 
@@ -399,30 +399,30 @@ consIf :: Bool -> a -> [a] -> [a]
 consIf False _ list = list
 consIf _ x list = x:list
 
-fbApp :: (MonadIO m, ToMessage r) =>
+fbApp :: (MonadIO m, ToMessage r, ServerMonad m, MonadPlus m) =>
          XSLTCmd
          -> XSLPath
-         -> (FBSession -> ServerPartT m r)
-         -> ServerPartT m Response
+         -> (FBSession -> m r)
+         -> m Response
 fbApp xslproc stylesheet app -- api_key secret app  
     = 
     xslt xslproc stylesheet $ withData fun
     where
     fun (fbSes::FBSession) = app $ gSet (Just (xslproc,stylesheet)) fbSes
 
-onlyInstalled :: (?fbSession::FBSession, MonadIO m) =>
-                 [ServerPartT m [Char]] -> [ServerPartT m [Char]]
+onlyInstalled :: (?fbSession::FBSession, MonadIO m, FilterMonad Response m, ServerMonad m) =>
+                 [m [Char]] -> [m [Char]]
 onlyInstalled app = 
     if isAppAdded then app else 
            [uriRest $ \uri ->
-                anyRequest $ fbSeeOther . gFind' =<< liftIO (getInstallURL uri)
+                fbSeeOther . gFind' =<< liftIO (getInstallURL uri)
            ]
 
-postAdd :: Monad m => [ServerPartT m String]
-postAdd = [uriRest $ \uri -> anyRequest $ fbSeeOther uri]
+postAdd :: (Monad m, ServerMonad m, FilterMonad Response m) => [m String]
+postAdd = [uriRest $ \uri -> fbSeeOther uri]
 --     = 
 
-fbSeeOther :: (Monad m) => [Char] -> WebT m [Char]
+fbSeeOther :: (Monad m, FilterMonad Response m) => [Char] -> m [Char]
 fbSeeOther s = ok $ "<fb:redirect url=\""++s++"\"/>"
 
 --can make it typesafe.  now we just need to deal with response

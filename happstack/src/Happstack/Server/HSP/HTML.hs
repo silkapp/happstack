@@ -1,13 +1,13 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
 module Happstack.Server.HSP.HTML 
     ( webHSP
     )
     where
 
-import Control.Monad.Trans(liftIO)
+import Control.Monad.Trans(MonadIO, liftIO)
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Lazy.UTF8 as L
-import Happstack.Server(ToMessage(toMessage, toContentType,toResponse),Response,WebT(..))
+import Happstack.Server(ToMessage(toMessage, toContentType,toResponse),Response)
 import HSP (HSP, evalHSP)
 import HSP.XML (XML(..), XMLMetaData(..))
 import HSP.HTML (html4Strict, renderAsHTML)
@@ -24,5 +24,5 @@ instance ToMessage (Maybe XMLMetaData, XML) where
     toMessage (Nothing, xml) =
         L.fromString (renderAsHTML xml)
 
-webHSP :: HSP XML -> WebT IO Response
+webHSP :: (MonadIO m) => HSP XML -> m Response
 webHSP hsp = return . toResponse =<< liftIO (evalHSP Nothing hsp)

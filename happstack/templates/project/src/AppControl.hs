@@ -3,7 +3,7 @@
 module AppControl (appHandler) where
 import Control.Applicative((<$>))
 import Control.Monad(msum)
-import Control.Monad.Trans(liftIO)
+import Control.Monad.Trans(liftIO, MonadIO)
 import Data.ByteString.Lazy.UTF8 (toString)
 import Happstack.Data (defaultValue)
 import Happstack.Server
@@ -14,24 +14,27 @@ import HSP
 import System.Locale (defaultTimeLocale)
 import System.Time (formatCalendarTime, getClockTime, toUTCTime)
 
-appHandler :: [ServerPartT IO Response]
+-- for some reason I don't understand, appHandler
+-- is forced to be a concrete instance.  It really wants
+-- to be a ServerPartT IO Response.  Any attempt to generalize
+-- it further will fail
+appHandler :: [ ServerPartT IO Response ]
 appHandler =
-  [ dir "entries" [postEntry, getEntries]
-  , dir "public"  [fileServe ["index.html"] "public"]
-  , anyRequest $ seeOther "/entries" (toResponse ())
+  [ dir "entries" $ msum [postEntry, getEntries]
+  , dir "public"  $ fileServe ["index.html"] "public"
+  , seeOther "/entries" (toResponse ())
   ]
 
-getEntries :: ServerPartT IO Response
-getEntries = method GET $ webHSP renderGuestBook
-
+getEntries = methodM GET >> webHSP renderGuestBook
+--
 -- only accept a post method for adding a new guestbook entry
-postEntry :: ServerPartT IO Response
 postEntry = withData $ \e ->
-  [method POST $ do
+  do
+     methodM POST
      now <- liftIO $ getClockTime
      update (AddGuestBookEntry (e { date = now }))
      seeOther "/" (toResponse ())
-  ]
+  
 
 -- this tells happstack how to turn post data into a datatype using 'withData'
 instance FromData GuestBookEntry where

@@ -78,33 +78,36 @@ instance Component HelpReqs where
 -- http stuff 
 http::( ?fbSession::FBSession
       , MonadIO m
-      ) => [ServerPartT m Response]
+      , ServerMonad m
+      , FilterMonad Response m
+      , MonadPlus m
+      ) => [m Response]
 http = 
     [
-     dir "help" $ method () $ ok $ toResponse HelpReqForm
+     dir "help" $ ok $ toResponse HelpReqForm
+    ,dir "addHelp" $ do
+                       mbHelpReq <- getData
+                       helpReq <- maybe mzero return mbHelpReq
+                       liftIO $ update $ AddHelpReq helpReq
+                       liftIO $ insFlashMsg uid HelpMsgReceived
+                       admins <- liftIO $ getAdmins
+                       unless (null admins) $ 
+                              do
+                              liftIO $ notifications_send admins 
+                                              (Title "helpreq")
+                                              ()
+                              return ()
+                       liftM toResponse $ fbSeeOther "side-nav"
 
-    ,dir "addHelp" $
-             withData $ \helpReq -> 
-                  method () $ do
-                               (liftIO . update) $ AddHelpReq helpReq
-                               liftIO $ insFlashMsg uid HelpMsgReceived
-                               admins <- liftIO $ getAdmins
-                               unless (null admins) $ 
-                                      do
-                                      liftIO $ notifications_send admins 
-                                                      (Title "helpreq")
-                                                      ()
-                                      return ()
-                               liftM toResponse $ fbSeeOther "side-nav"
-
-    ,dir "helps" $ method () $ do
-                  isAdmin <- liftIO $ getIsAdmin
-                  if not isAdmin then forbidden (toResponse "not admin!") else do
-                  flashMsg <- liftIO $ (extFlashMsg uid :: IO (Maybe HelpMsgReceived))
-                  helpReqs <- (liftIO . query) $ GetHelpReqs
-                  (ok . toResponse .
-                     insEl (Attr "context" "helpfeed") . 
-                     insEl flashMsg .
-                     HelpFeed . 
-                     take 1000) helpReqs 
+    ,dir "helps"  $ do
+                      isAdmin <- liftIO $ getIsAdmin
+                      if not isAdmin then forbidden (toResponse "not admin!") else do
+                      flashMsg <- liftIO $ (extFlashMsg uid :: IO (Maybe HelpMsgReceived))
+                      helpReqs <- liftIO $ query $ GetHelpReqs
+                      (ok . toResponse .
+                         insEl (Attr "context" "helpfeed") . 
+                         insEl flashMsg .
+                         HelpFeed . 
+                         take 1000) helpReqs 
+                 
       ]

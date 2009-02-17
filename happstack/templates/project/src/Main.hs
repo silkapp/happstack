@@ -4,6 +4,8 @@ import Control.Concurrent
   , killThread
   , MVar
   )
+import Control.Monad
+  (msum)
 import Happstack.Util.Cron
   (cron)
 import Happstack.State
@@ -54,7 +56,7 @@ main = do
   control <- startSystemState' (store appConf) stateProxy
   
   -- start the http server
-  httpTid <- forkIO $ simpleHTTP (httpConf appConf) appHandler
+  httpTid <- forkIO $ simpleHTTP (httpConf appConf) $ msum appHandler
 
   -- checkpoint the state once a day
   cronTid <- forkIO $ cron (60*60*24) (createCheckpoint control)
