@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Creating source distribution tarballs in dist" && \
+echo "Cleaning all packages" && \
 cd happstack-util       && cabal clean && \
 cd ../happstack-data    && cabal clean && \
 cd ../happstack-state   && cabal clean && \
