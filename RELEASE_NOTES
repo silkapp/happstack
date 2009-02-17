@@ -50,7 +50,7 @@ Happstack 0.2 Release Notes
   behaviors.  Additionally, a lot of functions were added to make it easier to
   work entirely inside a do block.
   
-    getHeaderM, setHeaderM, getData, getData', escape', finishWith, getFilter,
+    getHeaderM, addHeaderM, getData, getDataFn, escape', finishWith, getFilter,
     setFilter, composeFilter, applyFilter, setResponseCode, guardRq, methodM,
     methodOnly, nullDir
 
