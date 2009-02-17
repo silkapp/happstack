@@ -52,7 +52,7 @@ Happstack 0.2 Release Notes
   
     getHeaderM, addHeaderM, getData, getDataFn, escape', finishWith, getFilter,
     setFilter, composeFilter, applyFilter, setResponseCode, guardRq, methodM,
-    methodOnly, nullDir
+    methodOnly, nullDir, requireM
 
   The following were deprecated since they duplicate functionality
     
@@ -74,5 +74,71 @@ Happstack 0.2 Release Notes
   -------------------------------
   This release also adds substantial documentation for the package
   Happstack.Server.SimpleHTTP which convers most of the new structures added,
-  as well as many of your old favorites
+  as well as many of your old favorites.  Be sure to check it out.
+
+  Removing list types from SimpleHTTP
+  -------------------------------
+  Having most of the methods in SimpleHTTP take array types was cumbersome,
+  since often you only had one part and had to wrap it up.  All methods that
+  used to take a list of ServerPartTs now only take a single ServerPartT.  To
+  convert your list of ServerPartT into a single ServerPartT, use msum.
+
+  For example:
+    simpleHTTP nullConf [spart1, spart2]
+  Becomes:
+    simpleHTTP nullConf $ msum [spart1, spart2]
+  
+  The functions affected by this change are:
+    simpleHTTP, dir, path, anyPath, withData, withDataFn, require, requireM,
+    xslt, debugFilter, applyRequest, basicAuth, and errorHandlerSP
+
+  Guidlines for porting existing HAppS and Happstack <= 0.1 code to 0.2
+  -------------------------------
+  The first change you should do is change the following functions
+  as described above.
+    ServerPartT -> withRequest
+    WebT -> mkWebT
+    unServerPartT -> runServerPartT
+    unWebT -> ununWebT
+  
+  Next, work on prepending $ msum in front of every list of ServerPartTs, or
+  deleting lists that are no longer necessary.
+
+  After this point, you should be able to get your app compiled and running.
+  To further clean up your code and take advantage of the new functionality in
+  ServerPartT, the general procedure is as follows:
+
+  - consider studying the revised examples in happstack-server/Examples.  They
+    all use the new idioms.
+  
+  - delete your type signatures that reference WebT or ServerPartT, as after
+    the first step they will all have changed dramatically
+
+  - delete all uses of withRequest and anyRequest (they aren't needed anymore)
+
+  - change the idiom 'method m $' to 'methodM m >>'
+
+  - change 'withRequest \rq -> do ...' to 'do { rq <- askRq; ... }'
+
+  - change withData \myDat $ \dat -> do ... to
+      do dat <- getData >>= maybe mzero return
+         ... 
+ 
+  - change withDataFn fn \myDat $ \dat -> do ... to
+      do dat <- getDataFn fn >>= maybe mzero return
+         ...
+
+  - change all references of noHandle to mzero
+  
+  - you can probably benefit from some do blocks at this point
+
+  - if you're passing around the request explictly, stop.  You can just
+    "rq <- askRq" whenever you need it.
+
+  - consider embedding your favorite monad transformer into your ServerPartTs.
+    To make this work, you'll want to read the documentation for simpleHTTP',
+    mapServerPartT, and WebT
+  
+  - consider reading the newly minted documentation for
+    Happstack.Server.SimpleHTTP.  Hopefully you'll learn something.
 
