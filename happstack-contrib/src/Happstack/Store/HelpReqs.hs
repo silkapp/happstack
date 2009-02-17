@@ -81,11 +81,11 @@ http::( ?fbSession::FBSession
       ) => [ServerPartT m Response]
 http = 
     [
-     dir "help" [ method () $ ok $ toResponse HelpReqForm]
+     dir "help" $ method () $ ok $ toResponse HelpReqForm
 
-    ,dir "addHelp" 
-             [withData $ \helpReq -> 
-                  [method () $ do
+    ,dir "addHelp" $
+             withData $ \helpReq -> 
+                  method () $ do
                                (liftIO . update) $ AddHelpReq helpReq
                                liftIO $ insFlashMsg uid HelpMsgReceived
                                admins <- liftIO $ getAdmins
@@ -96,9 +96,8 @@ http =
                                                       ()
                                       return ()
                                liftM toResponse $ fbSeeOther "side-nav"
-                   ]]
 
-    ,dir "helps" [method () $ do
+    ,dir "helps" $ method () $ do
                   isAdmin <- liftIO $ getIsAdmin
                   if not isAdmin then forbidden (toResponse "not admin!") else do
                   flashMsg <- liftIO $ (extFlashMsg uid :: IO (Maybe HelpMsgReceived))
@@ -108,5 +107,4 @@ http =
                      insEl flashMsg .
                      HelpFeed . 
                      take 1000) helpReqs 
-                 ]
       ]

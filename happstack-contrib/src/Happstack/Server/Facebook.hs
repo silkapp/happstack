@@ -402,11 +402,11 @@ consIf _ x list = x:list
 fbApp :: (MonadIO m, ToMessage r) =>
          XSLTCmd
          -> XSLPath
-         -> (FBSession -> [ServerPartT m r])
+         -> (FBSession -> ServerPartT m r)
          -> ServerPartT m Response
 fbApp xslproc stylesheet app -- api_key secret app  
     = 
-    xslt xslproc stylesheet [ withData fun]
+    xslt xslproc stylesheet $ withData fun
     where
     fun (fbSes::FBSession) = app $ gSet (Just (xslproc,stylesheet)) fbSes
 
