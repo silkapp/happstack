@@ -46,13 +46,11 @@ Library
     Happstack.Data.Default
     Happstack.Data.Default.Generic
     Happstack.Data.DeriveAll
-    Happstack.Data.HList
     Happstack.Data.Migrate
     Happstack.Data.Normalize
     Happstack.Data.Pairs
     Happstack.Data.Xml
     Happstack.Data.Xml.HaXml
-    Happstack.Data.Atom
     Happstack.Data.GOps
     Happstack.Data.Proxy
     Happstack.Data.Serialize
@@ -60,15 +58,11 @@ Library
   if flag(tests)
     Exposed-modules:   
       Happstack.Data.Tests
-      Happstack.Data.Tests.HasT001
       Happstack.Data.Tests.Xml001
       Happstack.Data.Tests.Xml002
       Happstack.Data.Tests.Xml003
-      Happstack.Data.Tests.HList001
-      Happstack.Data.Tests.HList002
 
   Other-modules:
-    Happstack.Data.HListBase
     Happstack.Data.Xml.Base
     Happstack.Data.Xml.Instances
     Happstack.Data.Xml.PrintParse

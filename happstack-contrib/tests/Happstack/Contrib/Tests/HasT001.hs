@@ -1,10 +1,11 @@
 {-# LANGUAGE TemplateHaskell, DeriveDataTypeable,
              FlexibleInstances, MultiParamTypeClasses,
              OverlappingInstances, UndecidableInstances #-}
-module Happstack.Data.Tests.HasT001 (hasT001, t8, t9) where
+module Happstack.Contrib.Tests.HasT001 (hasT001, t8, t9) where
 
 import Language.Haskell.TH
 import Happstack.Data
+import Happstack.Contrib.HList
 import Test.HUnit (Test,(@?=), (~:))
 
 $( deriveAll [''Show,''Eq, ''Default]

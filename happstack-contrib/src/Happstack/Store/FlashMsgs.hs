@@ -8,8 +8,8 @@ import Control.Monad.Reader
 
 
 import Happstack.Data
+import Happstack.Contrib.Atom
 import Data.Generics.Basics
-import Happstack.Data.Atom
 import Happstack.Data.IxSet
 import Happstack.State
 import Happstack.Server.Facebook as FB

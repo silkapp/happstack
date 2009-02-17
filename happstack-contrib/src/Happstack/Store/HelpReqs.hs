@@ -9,16 +9,23 @@ import Control.Monad.State hiding (State)
 import Control.Monad.Reader
 
 import Happstack.Data
-import Happstack.Data.Atom
 import Happstack.Data.IxSet
+import Happstack.Contrib.Atom
 import Happstack.State
 import Happstack.Server.Facebook as FB 
     (Uid,uid,FBSession,fbSeeOther,getIsAdmin
     ,getAdmins,notifications_send  )
-import Happstack.Store.Util
 import Happstack.Server.SimpleHTTP 
 import Happstack.Store.FlashMsgs
 import Happstack.Server.HTTP.Types (Response)
+
+-- Kept from old Happstack.Store.Util
+byTime::(Typeable a) => IxSet a -> [a]
+byTime = concatMap (\(Published _,es)->es) . groupBy
+byRevTime::(Typeable a) => IxSet a -> [a]
+byRevTime = concatMap (\(Published _,es)->es) . rGroupBy
+
+
 {--
 
   Use HelpReqs to track help requests on your app.  The concept is that the
@@ -79,7 +86,7 @@ http =
     ,dir "addHelp" 
              [withData $ \helpReq -> 
                   [method () $ do
-                               webUpdate $ AddHelpReq helpReq
+                               (liftIO . update) $ AddHelpReq helpReq
                                liftIO $ insFlashMsg uid HelpMsgReceived
                                admins <- liftIO $ getAdmins
                                unless (null admins) $ 
@@ -95,7 +102,7 @@ http =
                   isAdmin <- liftIO $ getIsAdmin
                   if not isAdmin then forbidden (toResponse "not admin!") else do
                   flashMsg <- liftIO $ (extFlashMsg uid :: IO (Maybe HelpMsgReceived))
-                  helpReqs <- webQuery $ GetHelpReqs
+                  helpReqs <- (liftIO . query) $ GetHelpReqs
                   (ok . toResponse .
                      insEl (Attr "context" "helpfeed") . 
                      insEl flashMsg .

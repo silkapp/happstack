@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP, TemplateHaskell, UndecidableInstances, DeriveDataTypeable #-}
-module Happstack.Data.Atom 
+module Happstack.Contrib.Atom 
     (
      Entry(..)
     ,Feed(..)
@@ -20,6 +20,7 @@ module Happstack.Data.Atom
     where
 
 import Happstack.Data
+import Happstack.Contrib.HList
 
 
 $( deriveAll [''Ord,''Eq,''Read,''Show,''Default] 

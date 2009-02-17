@@ -9,7 +9,8 @@ import Data.List
 import Data.Maybe
 
 import Happstack.Data
-import Happstack.Data.Atom (Email(..))
+import Happstack.Contrib.Atom (Email(..))
+import Happstack.Contrib.HList
 import Happstack.Server.SURI
 import Network.URI (URI)
 import Happstack.Server.SimpleHTTP hiding (escape,Method)

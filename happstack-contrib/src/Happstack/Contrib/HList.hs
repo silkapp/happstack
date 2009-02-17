@@ -2,7 +2,7 @@
              UndecidableInstances, OverlappingInstances,
              MultiParamTypeClasses, CPP, FunctionalDependencies #-}
 
-module Happstack.Data.HList (HasT, hlextract, hlupdate, (.&.),
+module Happstack.Contrib.HList (HasT, hlextract, hlupdate, (.&.),
                          (:&:),
                          Couple(..),Nil(..),CoupleClass,hMap,trans) where
 -- HList useful with generic
@@ -10,7 +10,7 @@ module Happstack.Data.HList (HasT, hlextract, hlupdate, (.&.),
 import Happstack.Data.Xml
 import Happstack.Data.Pairs
 import Data.Generics as G
-import Happstack.Data.HListBase
+import Happstack.Contrib.HListBase
 
 infixr 6 .&.
 (.&.) :: a -> b -> Couple a b

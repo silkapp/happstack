@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances,
              UndecidableInstances, OverlappingInstances,
              MultiParamTypeClasses, CPP, DeriveDataTypeable #-}
-module Happstack.Data.HListBase where
+module Happstack.Contrib.HListBase where
 import Happstack.Data.DeriveAll
 import Happstack.Data.Default
 import Data.Typeable
