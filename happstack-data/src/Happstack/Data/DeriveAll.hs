@@ -28,12 +28,19 @@ import Data.List
 import Happstack.Data.Default
 import Language.Haskell.TH
 
+{- | Derives instances for syb-with-class's Data class and 
+   Happstack.Data.Default's Default class.
+   The list of names should be of the form [''Foo,''Bar,..]
+-}
 deriveNewData :: [Name] -> Q [Dec]
 deriveNewData names
  = do nd <- deriveData names
       defaults <- mapM mkDefaultInstance names
       return (nd ++ concat defaults)
 
+{- | Derives instances for syb-with-class's Data class only.
+   The list of names should be of the form [''Foo,''Bar,..]
+-}
 deriveNewDataNoDefault :: [Name] -> Q [Dec]
 deriveNewDataNoDefault = deriveData
 

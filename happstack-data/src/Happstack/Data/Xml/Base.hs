@@ -24,6 +24,12 @@ import Happstack.Util.TH
 import Language.Haskell.TH
 import qualified Data.Generics as G
 
+{-| Element recursively represents XML data.  
+    Elem n elems -> XML element with name n and described by elems.  Note that elems contains sub-elements as well as the attributes or literal data of the element.
+    CData d -> Literal string data
+    Attr key val -> Key/Value pair of the element attribute.
+-}
+
 $(deriveAll [''Default, ''Eq,''Read,''Ord] [d|
     data Element = Elem String [Element]
                  | CData String
@@ -443,6 +449,7 @@ xmlCDataList newTypeName
                        |]
       return [d]
 
+-- | Replaces commas in the string with single spaces
 noCommas :: String -> String
 noCommas = map (\x -> if x == ',' then ' ' else x)
 

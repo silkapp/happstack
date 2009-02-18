@@ -42,6 +42,10 @@ data ClusterMsg
 instance Version ClusterMsg -- version 0
 $(deriveSerialize ''ClusterMsg)
 
+{- | Connects the Happstack process to the local running spread daemon.
+   The spread daemon must already be running.
+-}
+
 connectToCluster :: IO Cluster
 connectToCluster
     = do logSP NOTICE "Connecting to spread daemon on localhost"
@@ -55,6 +59,11 @@ connectToCluster
 receiverGroup :: Group
 receiverGroup = let Just g = makeGroup "receiver"
                 in g
+
+{- | This function modifies any event handlers in the given EventMap
+   to make them route the update information to the rest of the cluster
+
+-}
 
 changeEventMapping :: MVar TxControl -> EventMap -> Cluster -> IO EventMap
 changeEventMapping ctlVar localEventMap cluster
