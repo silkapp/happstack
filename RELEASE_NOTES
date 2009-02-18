@@ -8,12 +8,12 @@ Happstack 0.2 Release Notes
   with, most of the time.  I.e. you almost never have to look at WebT again.
   You just have do blocks in ServerPartT.  Inside ServerPartT you can get your
   request (askRq), modify your request (localRq), exit immediately
-  (finishWith), exit failure (mzero), alter your response filters
-  (composeFilter, setFilter, getFilter) and apply your responseFilters
-  (applyFilter).  It also lifts ErrorT, ReaderT, WriterT and StateT, so you can
-  embed one of those as well.  As a bonus, nearly all the functions you
-  expected to take a WebT or to operate only within a WebT can now work inside
-  a ServerPartT directly. The monad stack handles all the data threading.
+  (finishWith), exit failure (mzero), and alter your response filters
+  (composeFilter, setFilter, getFilter) It also lifts ErrorT, ReaderT, WriterT
+  and StateT, so you can embed one of those as well.  As a bonus, nearly all
+  the functions you expected to take a WebT or to operate only within a WebT
+  can now work inside a ServerPartT directly. The monad stack handles all the
+  data threading.
   
   That being said, here are a list of the non-backwards compatible changes.
   ServerPartT, WebT, unServerPartT and unWebT now have different semantics.  To
