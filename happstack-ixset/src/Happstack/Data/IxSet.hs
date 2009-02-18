@@ -4,7 +4,7 @@
              GADTs, CPP #-}
 
 
-{--
+{- |
 Description:
 
 An efficient implementation of queryable sets.
@@ -83,7 +83,7 @@ do
 
     entries @= (FirstAuthor "john@doe.com")  -- guess what this does
 
---}
+-}
 
 module Happstack.Data.IxSet (module Happstack.Data.IxSet,
                          module Ix)
@@ -228,6 +228,7 @@ updateIx i new ixset = insert new $
 
 -- conversion operations
 
+-- | Converts an IxSet to a Set of its elements
 toSet :: Ord a => IxSet a -> Set a
 toSet (IxSet (Ix ix:_)) = Map.fold Set.union Set.empty ix
 toSet (IxSet []) = Set.empty
@@ -251,6 +252,7 @@ fromList = fromSet . Set.fromList
 size :: Ord a => IxSet a -> Int
 size = Set.size . toSet
 
+-- | Converts an IxSet to its list of elements.
 toList :: Ord a => IxSet a -> [a]
 toList = Set.toList . toSet
 

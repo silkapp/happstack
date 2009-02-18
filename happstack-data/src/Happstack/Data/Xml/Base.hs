@@ -36,6 +36,9 @@ $(deriveAll [''Default, ''Eq,''Read,''Ord] [d|
                  | Attr String String
  |])
 
+
+-- | insEl a b will convert a to xml and insert it into the
+-- xml of b if b results in an Elem constructor.
 insEl :: (Data XmlD a, Default a, Data NormalizeD a,
           Data XmlD b, Default b, Data NormalizeD b) =>
          a -> b -> Element
@@ -60,6 +63,8 @@ instance Show Element where
     show (CData s) = "CData " ++ show s
     show (Attr k v) = "Attr " ++ show k ++ " " ++ show v
 
+-- | Wrapper around the Xml class method readXml.
+-- The Rigidity will determine the behavior in the case of a failed parsing:  Rigid will return Nothing and Flexible will return Identity (defaultValue)
 fromXml :: forall m a . (Monad m, Xml a) => Rigidity m -> [Element] -> m a
 fromXml r xs = case readXml r xs of
                Just (_, v) ->
@@ -72,6 +77,7 @@ fromXml r xs = case readXml r xs of
 data Other b = forall a . (Migrate a b, Xml a) => Other a
              | NoOther
 
+-- | Identical to toXml from Xml class except that it will remove attributes named haskellType or haskellTypeVersion
 toPublicXml :: Xml a => a -> [Element]
 toPublicXml x = clean $ toXml x
     where
@@ -80,7 +86,7 @@ toPublicXml x = clean $ toXml x
     clean (CData s:rest)=CData s:clean rest
     clean (Attr n v:rest) = if n `elem` [typeAttr,versionAttr] then clean rest
                             else Attr n v:clean rest
-
+-- | Rigidity is used to designate the result of a failed Xml parsing.
 data Rigidity m where
     Rigid :: Rigidity Maybe
     Flexible :: Rigidity Identity
@@ -99,7 +105,7 @@ class (Data XmlD a,
     toXml :: a -> [Element]
     toXml = defaultToXml
 
-    -- readXml is like readXml' except it normalises the Elements and
+   -- readXml is like readXml' except it normalises the Elements and
     -- the result
     readXml :: Monad m => Rigidity m -> [Element] -> Maybe ([Element], a)
     readXml = defaultReadXml
@@ -127,6 +133,7 @@ data XmlD a = XmlD { toXmlD :: a -> [Element],
                      readMXmlNoRootDefaultD :: forall m . Monad m
                                             => Rigidity m -> ReadM Maybe a }
 
+-- | Used as a type witness for usage with syb-with-class Data class.
 xmlProxy :: Proxy XmlD
 xmlProxy = error "xmlProxy"
 
@@ -135,10 +142,16 @@ instance Xml t => Sat (XmlD t) where
                   readMXmlD = readMXml,
                   readMXmlNoRootDefaultD = readMXmlNoRootDefault }
 
+-- | Applies function to only first element of the list.  Safe on empty lists.
 first :: (a -> a) -> [a] -> [a]
 first _ [] = []
 first f (x:xs) = f x : xs
 
+
+{- | Converts the argument to an Xml element with the constructor 
+   name as the root of the Elem and the additional attributes corresponding 
+   to haskellType and haskellTypeVersion added
+-}
 defaultToXml :: Xml t => t -> [Element]
 defaultToXml x
  = let me = first toLower $ constring $ toConstr xmlProxy x
@@ -149,9 +162,12 @@ defaultToXml x
                    Just v -> Attr versionAttr v : rest
    in [Elem me rest']
 
+-- | 
 transparentToXml :: Xml t => t -> [Element]
 transparentToXml = concat . gmapQ xmlProxy (toXmlD dict)
 
+-- | Attempts to parse the set of elements and return the first constructor it
+-- can successfully parse of the inferred type.
 transparentReadXml :: forall m t . (Monad m, Xml t)
                    => Rigidity m -> [Element] -> Maybe ([Element], t)
 transparentReadXml r es
@@ -159,6 +175,7 @@ transparentReadXml r es
    where resType :: t
          resType = typeNotValue resType
 
+-- | Create an Xml instance using transparentToXml and transparentReadXml
 transparentXml :: Name -> Q [Dec]
 transparentXml n
  = do i <- reify n
@@ -250,18 +267,22 @@ readVersionedElement r (Elem n es)
           resType = typeNotValue resType
 readVersionedElement _ _ = Nothing
 
+-- | Matches the provided string to the key of an attribute.  Returns False if any other Element constructor is given.
 isTheAttr :: String -> Element -> Bool
 isTheAttr a (Attr k _) = a == k
 isTheAttr _ _          = False
 
+-- | Fetch the value of the given attribute if present, if not present will return Nothing
 getAttr :: String -> [Element] -> Maybe (String, [Element])
 getAttr a es = case break (isTheAttr a) es of
                 (prefix, Attr _ v : suffix) -> Just (v, prefix ++ suffix)
                 _ -> Nothing
 
+-- | Attribute used for Xml class version information
 versionAttr :: String
 versionAttr = "haskellTypeVersion"
 
+-- | Attribute used for recording the actual Haskell type in the xml serialization 
 typeAttr :: String
 typeAttr = "haskellType"
 
@@ -295,6 +316,9 @@ readElement _ _ = Nothing
 --  * turning off defaulting recursively
 -- We choose the second option, and thus have to duplicate
 -- constrFromElements and readXml(D).
+
+-- | aConstrFromElements will return the results of the first constructor
+-- that parses correctly.
 aConstrFromElements :: forall m t . (Monad m, Xml t)
                     => Rigidity m -> [Constr] -> [Element]
                     -> Maybe ([Element], t)
@@ -302,6 +326,8 @@ aConstrFromElements r cs es
  = msum [ constrFromElementsNoRootDefault r c es | c <- cs ]
 
 
+-- | Like constrFromElements but does not allow defaulting in case of
+-- a parse error.
 constrFromElementsNoRootDefault :: forall m t . (Monad m, Xml t)
                                 => Rigidity m -> Constr -> [Element]
                                 -> Maybe ([Element], t)
@@ -313,6 +339,9 @@ constrFromElementsNoRootDefault r c es
       (x, st') <- runStateT m st
       return (xmls st', x)
 
+{- | Attempts to parse the given elements to build the particular type
+     given by the constructor argument.
+-}
 constrFromElements :: forall m t . (Monad m, Xml t)
                    => Rigidity m -> Constr -> [Element]
                    -> m ([Element], t)
@@ -330,14 +359,22 @@ data ReadState = ReadState {
                      xmls :: [Element]
                  }
 
+-- | Returns the elements currently in the state
 getXmls :: Monad m => ReadM m [Element]
 getXmls = do st <- get
              return $ xmls st
 
+-- | Sets the state of the xml parsing to the given value
 putXmls :: Monad m => [Element] -> ReadM m ()
 putXmls xs = do st <- get
                 put $ st { xmls = xs }
 
+{- | Attempts to parse the current set of elements.  If it fails the behavior
+is dependent on the Rigidity.  If it is Rigid, then it will return Nothing
+but if it is Flexible it will return the defaultValue.
+If the parsing succeeds, it will return the value and store the remaining
+XML elements in the parser state.
+-}
 readMXml :: (Monad m, Xml a) => Rigidity m -> ReadM m a
 readMXml r
  = do xs <- getXmls
@@ -349,7 +386,7 @@ readMXml r
           Just (xs', v) ->
               do putXmls xs'
                  return v
-
+-- | Identical to readMXml except that in the case of a failed parsing it will not use defaultValue.
 readMXmlNoRootDefault :: (Monad m, Xml a) => Rigidity m -> ReadM Maybe a
 readMXmlNoRootDefault r
  = do xs <- getXmls
@@ -402,9 +439,13 @@ xmlAttr newTypeName
                                  [toFun, readFun]
                return [inst]
 
+-- | xmlShowCData lifted to act on lists
 xmlShowCDatas :: [Name] -> Q [Dec]
 xmlShowCDatas = liftM concat . mapM xmlShowCData
 
+{- | automatically creates an Xml definition for a type that is an instance
+of Show and Read.  This will result in an instance that converts the type to and from CData.
+-}
 xmlShowCData :: Name -> Q [Dec]
 xmlShowCData newTypeName
  = do d <- instanceD' (cxt [])
@@ -423,9 +464,12 @@ xmlShowCData newTypeName
                         |]
       return [d]
 
+-- | xmlCDataLists lifted to act on lists
 xmlCDataLists :: [Name] -> Q [Dec]
 xmlCDataLists = liftM concat . mapM xmlCDataList
 
+{- | Creates an instance similar to xmlShowCData except for lists of the
+provided type -}
 xmlCDataList :: Name -> Q [Dec]
 xmlCDataList newTypeName
  = do d <- instanceD' (cxt [])
@@ -453,6 +497,7 @@ xmlCDataList newTypeName
 noCommas :: String -> String
 noCommas = map (\x -> if x == ',' then ' ' else x)
 
+-- | Throws an error when called
 typeNotValue :: Xml a => a -> a
 typeNotValue t = error ("Type used as value: " ++ typeName)
     where typeName = dataTypeName (dataTypeOf xmlProxy t)
