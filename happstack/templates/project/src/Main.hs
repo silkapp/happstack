@@ -1,21 +1,15 @@
 module Main where
-import Control.Concurrent
-  ( forkIO
-  , killThread
-  , MVar
-  )
-import Control.Monad
-  (msum)
-import Happstack.Util.Cron
-  (cron)
-import Happstack.State
-  (waitForTermination)
+
+import Control.Concurrent (MVar(..), forkIO, killThread)
+import Happstack.Util.Cron (cron)
+import Happstack.State (waitForTermination)
 import Happstack.Server
   ( Conf(port)
   , simpleHTTP
   , nullConf
   , validator
-  , wdgHTMLValidator)
+  , wdgHTMLValidator
+  )
 import Happstack.State
   ( Component
   , Proxy(..)
@@ -26,37 +20,34 @@ import Happstack.State
   , shutdownSystem
   , createCheckpoint
   )
-import System.Environment(getArgs, getProgName)
-import System.Log.Logger
-import System.Exit
-import System.Console.GetOpt
-import AppLogger
-  (setupLogger)
-import AppState
-  (AppState(..))
-import AppControl
-  (appHandler)
+import System.Environment (getArgs, getProgName)
+import System.Log.Logger (Priority(..), logM)
+import System.Exit (exitFailure)
+import System.Console.GetOpt 
+import AppLogger (setupLogger)
+import AppState (AppState(..))
+import AppControl (appHandler)
 
 stateProxy :: Proxy AppState
 stateProxy = Proxy
 
-main :: IO ()
 main = do
-  progName <- getProgName
+  -- progname effects where state is stored and what the logfile is named
+  let progName = "guestbook"
+  
   args <- getArgs
-
   setupLogger progName
 
   appConf <- case parseConfig args of
                (Left e) -> do logM progName ERROR (unlines e)
                               exitFailure
-               (Right f) -> return (f (defaultConf progName))
+               (Right f) -> return (f $ defaultConf progName)
   
   -- start the state system
   control <- startSystemState' (store appConf) stateProxy
   
   -- start the http server
-  httpTid <- forkIO $ simpleHTTP (httpConf appConf) $ msum appHandler
+  httpTid <- forkIO $ simpleHTTP (httpConf appConf) appHandler
 
   -- checkpoint the state once a day
   cronTid <- forkIO $ cron (60*60*24) (createCheckpoint control)
@@ -101,3 +92,4 @@ parseConfig args
 startSystemState' :: (Component st, Methods st) => String -> Proxy st -> IO (MVar TxControl)
 startSystemState' path proxy =
     runTxSystem (Queue (FileSaver path)) proxy
+

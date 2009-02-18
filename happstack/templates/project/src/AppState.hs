@@ -5,11 +5,8 @@
 module AppState where
 import Happstack.Data
 import Happstack.State
-import Control.Monad.Reader
-  (ask)
-import Control.Monad.State
-  (get
-  ,put)
+import Control.Monad.Reader (ask)
+import Control.Monad.State (get, put)
 import Happstack.State.ClockTime
 
 -- GuestBookEntry: simple guest book entry
@@ -59,3 +56,4 @@ addGuestBookEntry e = do
   
 -- create types for event serialization
 $(mkMethods ''AppState ['readGuestBook, 'addGuestBookEntry])
+
