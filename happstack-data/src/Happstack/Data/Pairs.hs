@@ -21,6 +21,10 @@ import Control.Monad.Identity
 
 type Pairs = [(String,String)]
 
+-- | Converts lists of string pairs into a list of Elements.
+-- The basic structure is 
+-- pairsToXml [("foo","bar")] = [Elem "foo" [CData "bar"]]
+-- pairsToXml [("foo/bar","baz")] = [Elem "foo" [Elem "bar" [CData "baz"]]] 
 pairsToXml :: Pairs -> [Element]
 pairsToXml = fst . formIntoEls "" . map slash
 
@@ -48,6 +52,12 @@ formIntoEls ctx pairs@((name,val):rest)
     isAttr = head top == '@'
     moreCtx el = let (restCtx,restPairs) = formIntoEls ctx rest
                  in (el:restCtx,restPairs)
+
+-- | Converts a list of Elements to a list of String pairs.
+-- xmlToPairs [CData _] = error
+-- xmlToPairs [Attr "foo" "bar"] = [("foo","bar")]
+-- xmlToPairs [Elem "foo" [CData "bar"]] = [("foo","bar")]
+-- xmlToPairs [Elem "foo" [Attr "bar" "baz"]] = [("foo/bar","baz")]
 xmlToPairs :: [Element] -> Pairs
 xmlToPairs =
     map (\(x,y)->(tail x,y)) .
@@ -73,6 +83,8 @@ xmlIntoPairs i ctx ((Elem n xs):xs') =
     thisElPairs = (xmlIntoPairs 0 (ctx++"/"++nName) xs)
     restPairs = (xmlIntoPairs iNext ctx xs')
 
+-- | Creates the Xml structure corresponding to the specification of an HTML
+-- form.  The provided pairs should be the spec of the inputs to the form.
 pairsToHTMLForm :: String -> String -> String -> Pairs -> [Element]
 pairsToHTMLForm iden action method pairs
  = [Elem "form" (Attr "action" action :
@@ -91,6 +103,7 @@ pToInput (n,v)=
                             ,CData $ map (\x->if x=='/' then ' ' else x) n]
                ,Elem "input" [Attr "name" n,Attr "value" v]]
 
+-- | Equivalent to pairsToHTMLForm but first converts the Xml instance to list of pairs.
 xmlToHTMLForm :: (Xml a, Show a, Data a, Eq a) =>
                  String -> String -> String -> a -> [Element]
 xmlToHTMLForm iden method action
@@ -125,11 +138,10 @@ toPairsX :: (Xml a, Show a, Data a, Eq a) => a -> Pairs
 toPairsX = map (\(n,v)->let (_,child)=break (=='/') n in
                             if null child then (n,v) else (tail child,v)) . toPairs
 
+-- | Equivalent to pairsToHTMLForm but first converts the Xml instance to list of pairs.  An alias for xmlToHTMLForm currently.
 toHTMLForm :: (Xml a, Show a, Data a, Eq a) =>
               String -> String -> String -> a -> [Element]
 toHTMLForm = xmlToHTMLForm
-
-
 
 --- example usage and tests here
 $( deriveAll [''Show,''Default,''Eq]

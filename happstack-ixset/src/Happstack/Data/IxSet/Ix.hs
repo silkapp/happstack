@@ -52,10 +52,14 @@ instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (Ix a)))
 
 -- modification operations
 
+-- | Convenience function for inserting into Maps of Sets
+-- as in the case of an Ix.  If they key did not already exist in the Map, then a new Set is added transparently.
 insert :: (Ord a, Ord k)
        => k -> a -> Map k (Set a) -> Map k (Set a)
 insert k v index = Map.insertWith Set.union k (Set.singleton v) index
 
+-- | Convenience function for deleting from Maps of Sets
+-- If the resulting Set is empty, then the entry is removed from the Map
 delete :: (Ord a, Ord k)
        => k -> a -> Map k (Set a) -> Map k (Set a)
 delete k v index = Map.update remove k index

@@ -33,4 +33,3 @@ gGet :: (Data s, Typeable a, MonadState s m, MonadPlus n) =>
 gGet f _ = do st <- get
               let y = gFind st 
               return $ maybe mzero f y
-

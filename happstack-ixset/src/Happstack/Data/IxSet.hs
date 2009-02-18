@@ -149,12 +149,14 @@ instance (Ord a,Show a) => Show (IxSet a) where show = show . toSet
 instance (Ord a,Read a,Data a,Indexable a b) => Read (IxSet a) where
     readsPrec n = mapFst fromSet . readsPrec n
 
-
+{- | empty defines what types are indexed and queryable.
+     calcs adds indexable values not found in the type
+-}
 class (Data b) => Indexable a b | a->b where
-    empty :: IxSet a -- defines what types are indexed and queryable
-    calcs :: a->b -- adds indexable values not found in the type
-           -- if you don't want calculated values use DB a ()
-           --should this be a fromDyn so we can provide a default impl?
+    empty :: IxSet a
+    calcs :: a->b
+        -- if you don't want calculated values use DB a ()
+        --should this be a fromDyn so we can provide a default impl?
            
 noCalcs :: t -> ()
 noCalcs _ = ()

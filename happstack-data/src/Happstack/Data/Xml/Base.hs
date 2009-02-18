@@ -162,7 +162,7 @@ defaultToXml x
                    Just v -> Attr versionAttr v : rest
    in [Elem me rest']
 
--- | 
+-- | Generically traverses an instance of Xml and converts it into a list of elements 
 transparentToXml :: Xml t => t -> [Element]
 transparentToXml = concat . gmapQ xmlProxy (toXmlD dict)
 
