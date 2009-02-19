@@ -92,6 +92,11 @@ Happstack 0.2 Release Notes
     simpleHTTP, dir, path, anyPath, withData, withDataFn, require, requireM,
     xslt, debugFilter, applyRequest, basicAuth, and errorHandlerSP
 
+  Gzip/Compress encoding
+  ------------------------------
+  There is now a ServerPartT for gzip/compress encoding, in
+  Happstack.Server.Parts.contentEncodingFilter
+
   Guidlines for porting existing HAppS and Happstack <= 0.1 code to 0.2
   -------------------------------
   The first change you should do is change the following functions
