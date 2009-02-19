@@ -55,9 +55,9 @@ formIntoEls ctx pairs@((name,val):rest)
 
 -- | Converts a list of Elements to a list of String pairs.
 -- xmlToPairs [CData _] = error
--- xmlToPairs [Attr "foo" "bar"] = [("foo","bar")]
 -- xmlToPairs [Elem "foo" [CData "bar"]] = [("foo","bar")]
--- xmlToPairs [Elem "foo" [Attr "bar" "baz"]] = [("foo/bar","baz")]
+-- xmlToPairs [Elem "foo" [Elem "bar" [CData "baz"]]] = [("foo/bar","baz")]
+-- xmlToPairs . pairsToXml = id
 xmlToPairs :: [Element] -> Pairs
 xmlToPairs =
     map (\(x,y)->(tail x,y)) .

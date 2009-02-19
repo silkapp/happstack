@@ -32,6 +32,7 @@ import Data.Binary.Get as B
 
 data Contained a = Contained {unsafeUnPack :: a}
 
+-- | Lifts the provided value into Contained
 contain :: a -> Contained a
 contain = Contained
 
@@ -101,9 +102,9 @@ safeGetVersioned wantedVersion mbPrevious storedVersion
                                    return $ migrate old
     where tStr = show (typeOf (error "huh?" :: b))
 
+-- | Compares the numeric value of the versions
 compareVersions :: VersionId a -> VersionId b -> Ordering
 compareVersions v1 v2 = compare (unVersion v1) (unVersion v2)
-
 
 serialize :: Serialize a => a -> L.ByteString
 serialize = runPut . safePut
@@ -112,7 +113,7 @@ deserialize :: Serialize a => L.ByteString -> (a, L.ByteString)
 deserialize bs = case runGetState safeGet bs 0 of
                    (val, rest, _offset) -> (val, rest)
 
--- Version lookups
+-- | Version lookups
 collectVersions :: forall a . (Typeable a, Version a) => Proxy a -> [L.ByteString]
 collectVersions prox
     = case mode :: Mode a of
