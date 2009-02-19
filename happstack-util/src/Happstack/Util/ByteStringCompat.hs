@@ -17,6 +17,7 @@ import Foreign
 #define STRICT2(f) f a b | a `seq` b `seq` False = undefined
 
 
+-- | Semantically equivalent to break on strings
 {-# INLINE breakChar #-}
 breakChar :: Char -> ByteString -> (ByteString, ByteString)
 breakChar ch = B.break ((==) x) where x = B.c2w ch
@@ -36,10 +37,12 @@ breakChar ch = B.break ((==) x) where x = B.c2w ch
 breakCharEnd :: Char -> ByteString -> (ByteString, ByteString)
 breakCharEnd c p = B.breakEnd ((==) x) p where x = B.c2w c
 
+-- | Drops leading spaces in the ByteString
 {-# INLINE dropSpace #-}
 dropSpace :: ByteString -> ByteString
 dropSpace = C.dropWhile isSpace
 
+-- | Drops trailing spaces in the ByteString
 {-# INLINE dropSpaceEnd #-}
 dropSpaceEnd :: ByteString -> ByteString
 dropSpaceEnd (B.PS x s l) = B.inlinePerformIO $ withForeignPtr x $ \p -> do

@@ -20,11 +20,13 @@ import Happstack.Data.Proxy
 logMM :: Priority -> String -> IO ()
 logMM = logM "Happstack.State.TxControl"
 
-
--- | Run a transaction system 
+-- Need to define WTF a transaction system is
+-- | Run a transaction system without multimaster support
 runTxSystem :: (Methods st, Component st) => Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem = runTxSystem' False
 
+-- | Runs a transaction system.  Multimaster support is turned on if the first
+-- argument is True.
 runTxSystem' :: (Methods st, Component st) => Bool -> Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem' withMultimaster saver stateProxy =
     do logMM NOTICE "Initializing system control."
@@ -48,6 +50,7 @@ runTxSystem' withMultimaster saver stateProxy =
        modifyMVar_ ctl $ \c -> return c{ctlChildren = children}
        return ctl
 
+-- | Shuts down a transaction system
 shutdownSystem :: MVar TxControl -> IO ()
 shutdownSystem ctl
     = do logMM NOTICE "Shutting down."

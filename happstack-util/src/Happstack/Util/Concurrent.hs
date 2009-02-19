@@ -19,21 +19,28 @@ import System.Mem
 #endif
 
 --generic utils
+-- | Equivalent to a composition of fork and foreverSt
 forkEverSt :: (t -> IO t) -> t -> IO ThreadId
 forkEverSt f = fork . foreverSt f
 
+-- | Similar to forever but with an explicit state parameter threaded through
+-- the computation.
 foreverSt :: (Monad m) => (t -> m t) -> t -> m b
 foreverSt f state= f state >>= foreverSt f
 
+-- | Equivalent to a composition of fork and forever
 forkEver :: IO a -> IO ThreadId
 forkEver = fork . forever
 
+-- | Lifts the argument with Right before writing it into the chan
 writeChanRight :: Chan (Either a b) -> b -> IO ()
 writeChanRight chan = writeChan chan . Right
 
+-- | Lifts the argument with Left before writing it into the chan
 writeChanLeft :: Chan (Either a b) -> a -> IO ()
 writeChanLeft chan = writeChan chan . Left
 
+-- | Fork that throws away the ThreadId
 fork_ :: IO a -> IO ()
 fork_ c = fork c >> return ()
 
@@ -45,6 +52,8 @@ registerResetAction :: IO () -> IO ()
 -- | Reset state
 reset :: IO ()
 
+-- | A version of forever that will gracefully catch IO exceptions and continue
+-- executing the provided action.
 forever :: IO a -> IO a
 
 #ifndef INTERACTIVE

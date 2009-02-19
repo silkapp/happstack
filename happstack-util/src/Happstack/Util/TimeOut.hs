@@ -98,10 +98,7 @@ catchTimeOutI :: TimeOutTId -> IO a -> IO a -> IO a
 catchTimeOutI toId op handler =
   op `catch'` (\e@(TimeOutExceptionI i) -> if i == toId then handler  else throw' e)
 
-
--- | This is the normal timeout handler. It throws a TimeOutException exception,
--- if the timeout occurs.
-
+-- | This handler returns Nothing if the timeout occurs.
 withTimeOutMaybe :: Int -> IO a -> IO (Maybe a)
 withTimeOutMaybe tout op = do 
   toId <- nextTimeOutId
@@ -111,6 +108,8 @@ withTimeOutMaybe tout op = do
                )
   (catchTimeOutI toId) (fmap Just (op >>= \r -> killThread ktid >> return  r)) (return Nothing)
 
+-- | This is the normal timeout handler. It throws a TimeOutException exception,
+-- if the timeout occurs.
 withTimeOut :: Int -> IO a -> IO a
 withTimeOut tout op = maybeToEx =<< withTimeOutMaybe tout op
 
