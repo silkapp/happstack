@@ -12,6 +12,8 @@ Happstack 0.2
  * Module Cron module moved from happstack-server to happstack-util
  * Moved Atom, HList, HListBase from happstack-data to happstack-contrib
  * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized (Daniel Rogers)
+ * New experimental gzip filter in happstack-server (similar to apache mod_deflate)
+ ? Builtin support for HSP, HStringTemplate (see example template / release notes)
  
 Happstack 0.1
  * Cabal packaging name change:
