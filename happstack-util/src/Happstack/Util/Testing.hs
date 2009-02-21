@@ -20,11 +20,11 @@ qcrun prop opts = TestCase $
          (TestOk _ _ _) -> return ()
          (TestExausted _ ntest _) -> 
              assertFailure $ "Arguments exhausted after" ++ show ntest ++ (if ntest == 1 then " test." else " tests.")
-         (TestFailed arguments ntest) ->
+         (TestFailed testArgs ntest) ->
              assertFailure $ ( "Falsifiable, after "
                    ++ show ntest
                    ++ " tests:\n"
-                   ++ unlines arguments
+                   ++ unlines testArgs
                     )
          (TestAborted e) ->
              assertFailure $ "Test failed with exception: " ++ show e

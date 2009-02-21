@@ -59,7 +59,7 @@ SUCH DAMAGE.
 
 > sha1_size :: (Integral a) => a -> String -> String
 > sha1_size l s = s5
->  where s1_2 = s ++ sha1_step_1_2_work (fromIntegral ((toInteger l) `mod` (2^64))) ""
+>  where s1_2 = s ++ sha1_step_1_2_work (fromIntegral ((toInteger l) `mod` (2^64::Integer))) ""
 >        abcde = sha1_step_3_init
 >        abcde' = sha1_step_4_main abcde s1_2
 >        s5 = sha1_step_5_display abcde'
@@ -71,7 +71,7 @@ SUCH DAMAGE.
 > sha1_step_1_2_work c64 "" = padding ++ len
 >  where padding = '\128':replicate' (shiftR (fromIntegral $ (440 - c64) `mod` 512) 3) '\000'
 >        len = map chr $ size_split 8 c64
-> sha1_step_1_2_work c64 (c:cs) = c:sha1_step_1_2_work ((c64 + 8) `mod` (2^64)) cs
+> sha1_step_1_2_work c64 (c:cs) = c:sha1_step_1_2_work (((c64 + 8) `mod` (2^64))::Integer) cs
 
 > replicate' :: Word16 -> a -> [a]
 > replicate' 0 _ = []

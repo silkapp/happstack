@@ -1,5 +1,5 @@
 > {-# LANGUAGE FlexibleInstances  #-}
-> {-# OPTIONS -fno-warn-missing-methods #-}
+> {-# OPTIONS -fno-warn-missing-methods -fno-warn-orphans #-}
 
 
 {--

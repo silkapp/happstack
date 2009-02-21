@@ -168,6 +168,10 @@ notMb v1 v2 = maybe (Just v1) (const Nothing) $ v2
 periodic :: [Int] -> IO () -> IO ThreadId
 periodic ts = forkIO . periodic' ts
 
+-- a little something to fix the types of ^
+infixr 8 .^
+(.^) :: Int->Int->Int
+a .^ b = a ^ b
 periodic' :: [Int] -> IO a -> IO a
 periodic' [] x = x
-periodic' (t:ts) x = x >> threadDelay (10^6*t) >> periodic' ts x
+periodic' (t:ts) x = x >> threadDelay ((10 .^ 6)*t) >> periodic' ts x
