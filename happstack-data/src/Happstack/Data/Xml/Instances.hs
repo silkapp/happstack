@@ -2,6 +2,10 @@
              OverlappingInstances, UndecidableInstances, CPP,
              TypeSynonymInstances, PatternGuards,
              MultiParamTypeClasses #-}
+{-# OPTIONS -fno-warn-orphans #-}
+-- These are orphaned instances This means the existance of this file causes
+-- ghc to visit its .hi every time any file that depends on it in any way is
+-- compiled, just to see if this instance is needed
 
 module Happstack.Data.Xml.Instances where
 

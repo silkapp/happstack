@@ -1,5 +1,6 @@
 
 {-# LANGUAGE OverlappingInstances, UndecidableInstances #-}
+{-# OPTIONS -fno-warn-orphans #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -22,5 +23,8 @@ import Happstack.Data.Default
 import Data.Generics.SYB.WithClass.Basics
 import Data.Generics.SYB.WithClass.Instances ()
 
+-- This is an orphaned instanced.  This means the existance of this file causes
+-- ghc to visit its .hi every time any files that depend on it are compiled,
+-- just to see if this instance is need
 instance Data DefaultD a => Default a
 

@@ -70,7 +70,7 @@ Library
               OverlappingInstances, MultiParamTypeClasses, CPP,
               FunctionalDependencies, DeriveDataTypeable, FlexibleContexts,
               ScopedTypeVariables, GADTs, GeneralizedNewtypeDeriving,
-              PatternSignatures, TypeSynonymInstances, PatternGuards,
+              TypeSynonymInstances, PatternGuards,
               PolymorphicComponents
   -- Should also have ", DeriveDataTypeable" but Cabal complains
   GHC-Options: -Wall

@@ -3,7 +3,7 @@
              ScopedTypeVariables, GADTs,
              PolymorphicComponents, FlexibleContexts,
              MultiParamTypeClasses, DeriveDataTypeable,
-             PatternGuards, PatternSignatures #-}
+             PatternGuards #-}
 
 module Happstack.Data.Xml.Base where
 
