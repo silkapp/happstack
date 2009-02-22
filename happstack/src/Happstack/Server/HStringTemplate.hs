@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables, FlexibleInstances, PatternSignatures #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HStringTemplate (webST) where
 
