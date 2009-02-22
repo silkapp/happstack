@@ -1,4 +1,4 @@
-{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs,
+{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs, PatternSignatures,
     GeneralizedNewtypeDeriving, DeriveDataTypeable #-}
 module Happstack.Data.Serialize
     ( Serialize(..), Version(..), Migrate(..), Mode(..), Contained, contain, extension,
