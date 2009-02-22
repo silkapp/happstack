@@ -13,7 +13,8 @@ Happstack 0.2
  * Moved Atom, HList, HListBase from happstack-data to happstack-contrib
  * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized (Daniel Rogers)
  * New experimental gzip filter in happstack-server (similar to apache mod_deflate)
- ? Builtin support for HSP, HStringTemplate (see example template / release notes)
+ * Builtin support for HSP, HStringTemplate (see example template / release notes)
+ * happstack-server once again builds on Windows
  
 Happstack 0.1
  * Cabal packaging name change:

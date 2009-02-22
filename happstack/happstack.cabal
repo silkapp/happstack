@@ -38,6 +38,7 @@ Flag base4
 
 Library
   exposed-modules:     Happstack.Server.HSP.HTML
+                       Happstack.Server.HStringTemplate
                        Happstack.State.ClockTime
   other-modules:       Paths_happstack
 
@@ -48,7 +49,9 @@ Library
                        happstack-server >= 0.1.9 && < 0.3,
                        happstack-state  >= 0.1.9 && < 0.3,
                        happstack-util   >= 0.1.9 && < 0.3,
+                       hslogger,
                        hsp              >= 0.4.5 && < 0.5,
+                       HStringTemplate  >= 0.4.3 && < 0.5,
                        mtl,
                        old-time,
                        utf8-string

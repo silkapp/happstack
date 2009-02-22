@@ -6,7 +6,18 @@ import AppState
 import HSP
 import System.Locale (defaultTimeLocale)
 import System.Time (formatCalendarTime, toUTCTime)
-  
+import Control.Monad.Trans (MonadIO)
+import Happstack.Server.HStringTemplate (webST)
+import Happstack.Server.HSP.HTML (webHSP)
+
+-- Convenience Functions
+dateStr ct =
+  formatCalendarTime
+    defaultTimeLocale
+    "%a, %B %d, %Y at %H:%M:%S (UTC)"
+    (toUTCTime ct)
+
+-- Main Implementation
 instance (XMLGenerator m) => (EmbedAsChild m (GuestBookEntry, Bool)) where
     asChild ((GuestBookEntry author message date), alt) =
         <%
@@ -17,9 +28,7 @@ instance (XMLGenerator m) => (EmbedAsChild m (GuestBookEntry, Bool)) where
             <small class="commentmetadata"><% dateStr date %></small> 
            </li>
          %>
-        where
-          p str = <p><% str %></p>
-          dateStr ct = formatCalendarTime defaultTimeLocale "%a, %B %d, %Y at %H:%M:%S (UTC)" (toUTCTime ct)
+        where p str = <p><% str %></p>
 
 instance (XMLGenerator m) => (EmbedAsChild m GuestBook) where
     asChild (GuestBook entries) = 
@@ -32,7 +41,8 @@ instance (XMLGenerator m) => (EmbedAsChild m GuestBook) where
           </ul>
          </div>
         %>
-        
+
+renderFromBody title body = webHSP $ pageFromBody title body
 pageFromBody :: (EmbedAsChild (HSPT' IO) xml) => String -> xml -> HSP XML
 pageFromBody title body =
     withMetaData html4Strict $
@@ -77,6 +87,11 @@ pageFromBody title body =
               This is a guestbook example which you can freely change to your
               whims and fancies.
             </p>
+            <p>
+              This page is written using Haskell Server Pages (HSP). For an example
+              of a page using HStringTemplate, look at the
+              <a href="/README">dynamic README</a>.
+            </p>
            <p>Leave a message for the next visitor here...</p>
            <form action="/entries" method="post" enctype="multipart/form-data:charset=UTF-8" accept-charset="UTF-8">
             <p><label for="author">A<span class="accesskey">u</span>thor</label><br /><input type="text" name="author" id="author" tabindex="1" accesskey="U" /></p>
@@ -97,3 +112,7 @@ pageFromBody title body =
 
      </body>
     </html>
+
+renderREADME now = do
+  webST "readme" [("time", dateStr now)]
+

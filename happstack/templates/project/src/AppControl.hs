@@ -9,7 +9,6 @@ import Control.Monad.Trans(liftIO, MonadIO)
 import Data.ByteString.Lazy.UTF8 (toString)
 import Happstack.Data (defaultValue)
 import Happstack.Server
-import Happstack.Server.HSP.HTML (webHSP)
 import Happstack.State (update,query)
 import System.Time (getClockTime)
 
@@ -17,13 +16,17 @@ appHandler :: ServerPartT IO Response
 appHandler = msum
   [ methodM GET >> seeOther "/entries" (toResponse ()) -- matches /
   , dir "entries" $ msum[postEntry, getEntries]        -- RESTful /entries
+  , dir "README" getREADME                             -- StringTemplate example
   , fileServe ["index.html"] "public"                  -- static files
   ]
 
 getEntries = methodM GET >> do
   gb <- query ReadGuestBook
-  webHSP $ pageFromBody "Happstack Guestbook Example" gb
+  renderFromBody "Happstack Guestbook Example" gb
 
+getREADME = methodM GET >> do
+  now <- liftIO getClockTime
+  renderREADME now
 
 postEntry = methodM POST >> do -- only accept a post method
   Just entry <- getData -- get the data
