@@ -9,6 +9,7 @@ Happstack 0.2
  * Creation of additional package 'happstack'
  * Code generation tool added for creating "quick start" project folders
  * Removed dependency of happstack-server on happstack-state
+ * Removed dependency of happstack-server on happstack-ixset
  * Module Cron module moved from happstack-server to happstack-util
  * Moved Atom, HList, HListBase from happstack-data to happstack-contrib
  * Monadic machinery for ServerPartT and WebT trimmed / cleaned / optimized (Daniel Rogers)
