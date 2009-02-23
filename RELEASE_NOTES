@@ -161,4 +161,11 @@ Happstack 0.2 Release Notes
         2. Click OK
         3. Restart and cmd windows you have open
     6. Now all the commands should work i.e. ghci, ghc-pkg, perl etc.
+    7. You will need happy to compile happstack
+      Follow these steps:
+        1. Install happy via cabal install or the manual method
+        2. Prepend "C:\Documents and Settings\user\Application Data\cabal\bin"
+           to your Environment Path variable where user is your username.
+        3. Now any binaries installed by cabal packages will also be in your
+           command path.
     
