@@ -31,6 +31,9 @@ newProject :: FilePath -> IO ()
 newProject destDir = do
   dataDir <- getDataDir
   
+  -- create destDir if needed
+  createDirectoryIfMissing True destDir
+  
   -- create folders
   mapM_ (createDirectoryIfMissing False) (destinationFolders destDir)
   
