@@ -147,3 +147,18 @@ Happstack 0.2 Release Notes
   - consider reading the newly minted documentation for
     Happstack.Server.SimpleHTTP.  Hopefully you'll learn something.
 
+  Windows Bin Path Caveats
+  ------------------------------
+  By default when you install say ghc 6.8.3 or 6.10.1, windows won't setup the paths.
+  You need to perform these steps after running the installer for ghc:
+    1. Right Click on "My Computer"
+    2. Left Click on "Properties"
+    3. Advanced Tab
+    4. Environmental Variables
+    5. Add or Edit existing 'PATH' variable
+      If you have ghc 6.8.3 for instance:
+        1. Prepend "C:\ghc\ghc-6.8.3;C:\ghc\ghc-6.8.3\bin;" to the Variable value
+        2. Click OK
+        3. Restart and cmd windows you have open
+    6. Now all the commands should work i.e. ghci, ghc-pkg, perl etc.
+    
