@@ -64,8 +64,11 @@ destinationFiles destDir =
 
 -- all files in the data dir
 projectFiles = 
-  [ "templates/project/bin/build.sh"
+  [ "templates/project/bin/build.bat"
+  , "templates/project/bin/build.sh"
+  , "templates/project/bin/run-interactive.bat"
   , "templates/project/bin/run-interactive.sh"
+  , "templates/project/bin/run.bat"
   , "templates/project/bin/run.sh"
   , "templates/project/guestbook.cabal"
   , "templates/project/public/theme/images/blockquote.gif"

@@ -11,8 +11,11 @@ Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-Version:       >= 1.2.3
 
-data-files:          templates/project/bin/build.sh
+data-files:          templates/project/bin/build.bat
+                     templates/project/bin/build.sh
+                     templates/project/bin/run-interactive.bat
                      templates/project/bin/run-interactive.sh
+                     templates/project/bin/run.bat
                      templates/project/bin/run.sh
                      templates/project/guestbook.cabal
                      templates/project/public/theme/images/blockquote.gif
