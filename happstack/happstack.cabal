@@ -57,9 +57,12 @@ Library
                        mtl,
                        old-time,
                        utf8-string
-
+                       
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
+  else
+    build-depends:     hsx              == 0.4.5,
+                       haskell-src-exts == 0.3.9
 
   hs-source-dirs:      src
 
