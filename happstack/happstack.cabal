@@ -11,27 +11,29 @@ Category:            Web, Distributed Computing
 Build-Type:          Simple
 Cabal-Version:       >= 1.2.3
 
-data-files:          templates/project/bin/run.sh
+data-files:          templates/project/bin/build.sh
                      templates/project/bin/run-interactive.sh
-                     templates/project/bin/build.sh
+                     templates/project/bin/run.sh
                      templates/project/guestbook.cabal
+                     templates/project/public/theme/images/blockquote.gif
+                     templates/project/public/theme/images/date.gif
+                     templates/project/public/theme/images/entrymeta.gif
+                     templates/project/public/theme/images/grunge.gif
+                     templates/project/public/theme/images/header_loop.gif
+                     templates/project/public/theme/images/logo.gif
+                     templates/project/public/theme/images/menu_hili.gif
+                     templates/project/public/theme/images/menu_hover.gif
+                     templates/project/public/theme/images/peel.gif
+                     templates/project/public/theme/images/ql_rss.gif
+                     templates/project/public/theme/readme.txt
+                     templates/project/public/theme/style.css
                      templates/project/Setup.hs
                      templates/project/src/AppControl.hs
                      templates/project/src/AppLogger.hs
                      templates/project/src/AppState.hs
+                     templates/project/src/AppView.hs
                      templates/project/src/Main.hs
-                     templates/project/public/theme/style.css
-                     templates/project/public/theme/images/date.gif
-                     templates/project/public/theme/images/ql_rss.gif
-                     templates/project/public/theme/images/header_loop.gif
-                     templates/project/public/theme/images/blockquote.gif
-                     templates/project/public/theme/images/menu_hili.gif
-                     templates/project/public/theme/images/grunge.gif
-                     templates/project/public/theme/images/entrymeta.gif
-                     templates/project/public/theme/images/logo.gif
-                     templates/project/public/theme/images/peel.gif
-                     templates/project/public/theme/images/menu_hover.gif
-                     templates/project/public/theme/readme.txt
+                     templates/project/templates/readme.st
 
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.

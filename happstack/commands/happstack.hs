@@ -1,22 +1,12 @@
 -- happstack command
 module Main where
-import Paths_happstack
-  (getDataFileName)
+
+import Paths_happstack (getDataDir)
 import System.Environment (getArgs)
-import System.Directory
-  (getDirectoryContents
-  ,getCurrentDirectory
-  ,setCurrentDirectory
-  ,createDirectoryIfMissing
-  ,copyFile
-  ,canonicalizePath)
-import System.FilePath
-  (takeFileName, combine)
-import Control.Monad
-  (mapM, mapM_)
-import Control.Exception
-  (finally)
-  
+import System.Directory (createDirectoryIfMissing, doesFileExist, copyFile)
+import System.FilePath ((</>))
+import Control.Monad (mapM_)
+
 data Command
   = NewProjectCmd FilePath
   | HelpCmd
@@ -38,41 +28,69 @@ processArgs ["help"]                = HelpCmd
 processArgs _                       = HelpCmd
     
 newProject :: FilePath -> IO ()
-newProject dir = do
-  -- create folders           
-  createDirectoryIfMissing True (combine dir "bin")
-  createDirectoryIfMissing True (combine dir "dist")
-  createDirectoryIfMissing True (combine dir "src")
-  createDirectoryIfMissing True (combine (combine dir "public") "entries")
-
-  -- FIXME: OMG THE REST OF THIS IS SO FRACKING HACKY!THIS IS SO HACKY.
-  -- ... but it should work on unix / win32
-
-  -- copy files over to current directory
-  binpaths <- ls =<< getDataFileName "templates/project/bin"
-  srcpaths <- ls =<< getDataFileName "templates/project/src"
-  let from = binpaths ++ srcpaths
-  let to   = map (combine (combine dir "bin") . takeFileName) binpaths ++
-             map (combine (combine dir "src") . takeFileName) srcpaths
-  mapM_ cp (zip from to)
+newProject destDir = do
+  dataDir <- getDataDir
   
-  index_html <- (getDataFileName "templates/project/public/index.html")
-  cp (index_html,
-      (combine (combine dir "public") "index.html")) 
-  new_html <- (getDataFileName "templates/project/public/entries/new.html")
-  cp (new_html,
-      (combine (combine (combine dir "public") "entries") "new.html")) 
+  -- create folders
+  mapM_ (createDirectoryIfMissing False) (destinationFolders destDir)
+  
+  -- copy files
+  mapM_ cp $ zip (sourceFiles dataDir) (destinationFiles destDir)
+      
+-- destination folders that need to be created
+destinationFolders destDir =
+  map
+    (destDir </>) 
+    [ "bin"
+    , "dist"
+    , "public"
+    , "public/theme"
+    , "public/theme/images"
+    , "src"
+    , "templates"
+    ]
+  
+-- source files for project skeleton (needs to know dataDir location)
+sourceFiles dataDir =
+  map (dataDir </>) projectFiles
+
+-- destination files for project skeleton
+destinationFiles destDir =
+  map ((destDir </>) . removePrefix) projectFiles
+  where removePrefix = drop $ length "templates/project/" 
+
+-- all files in the data dir
+projectFiles = 
+  [ "templates/project/bin/build.sh"
+  , "templates/project/bin/run-interactive.sh"
+  , "templates/project/bin/run.sh"
+  , "templates/project/guestbook.cabal"
+  , "templates/project/public/theme/images/blockquote.gif"
+  , "templates/project/public/theme/images/date.gif"
+  , "templates/project/public/theme/images/entrymeta.gif"
+  , "templates/project/public/theme/images/grunge.gif"
+  , "templates/project/public/theme/images/header_loop.gif"
+  , "templates/project/public/theme/images/logo.gif"
+  , "templates/project/public/theme/images/menu_hili.gif"
+  , "templates/project/public/theme/images/menu_hover.gif"
+  , "templates/project/public/theme/images/peel.gif"
+  , "templates/project/public/theme/images/ql_rss.gif"
+  , "templates/project/public/theme/readme.txt"
+  , "templates/project/public/theme/style.css"
+  , "templates/project/Setup.hs"
+  , "templates/project/src/AppControl.hs"
+  , "templates/project/src/AppLogger.hs"
+  , "templates/project/src/AppState.hs"
+  , "templates/project/src/AppView.hs"
+  , "templates/project/src/Main.hs"
+  , "templates/project/templates/readme.st"
+  ]
 
 -- does not work for folders
 cp :: (FilePath, FilePath) -> IO ()
-cp = uncurry copyFile
-
--- works only on dirs, list contents with canonical paths
-ls :: FilePath -> IO [FilePath]
-ls dir = do
-  cwd <- getCurrentDirectory
-  (do setCurrentDirectory dir
-      paths <- getDirectoryContents "."
-      let paths' = filter (not . (`elem` [".", ".."])) paths
-      mapM canonicalizePath paths') `finally` setCurrentDirectory cwd
+cp (src, dest) = do
+  exists <- doesFileExist dest
+  if exists
+    then putStrLn $ "File exists already, skipping: " ++ dest
+    else copyFile src dest
 
