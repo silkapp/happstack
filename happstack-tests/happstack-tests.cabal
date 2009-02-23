@@ -1,5 +1,5 @@
 Name:               happstack-tests
-Version:            0.1.9
+Version:            0.2
 License:            BSD3
 License-File:       COPYING
 Author:             Happstack team, HAppS LLC
@@ -27,8 +27,12 @@ Library
   else
     Build-Depends:    base < 4
 
-  Build-Depends:      happstack-util, happstack-data, happstack-ixset, 
-                      happstack-state, happstack-server, happstack-contrib
+  Build-Depends:      happstack-contrib == 0.2.*,
+                      happstack-data == 0.2.*,
+                      happstack-ixset == 0.2.*, 
+                      happstack-server == 0.2.*,
+                      happstack-state == 0.2.*,
+                      happstack-util == 0.2.*
                       
   hs-source-dirs:     src
   if flag(tests)

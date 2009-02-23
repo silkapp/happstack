@@ -1,5 +1,5 @@
 Name:                happstack-contrib
-Version:             0.1.9
+Version:             0.2
 Synopsis:            Web related tools and services.
 Description:         Collection of standalone applications
 License:             BSD3
@@ -34,11 +34,18 @@ Library
                        Happstack.Contrib.Tests.HList002                   
                        Happstack.Contrib.Tests.HasT001
 
-  build-depends:       base, network, old-time, bytestring,
-                       happstack-server >= 0.1.9, happstack-util >= 0.1.9,
-                       happstack-state >= 0.1.9, happstack-ixset >= 0.1.9,
-                       happstack-data >= 0.1.9, mtl, HTTP >= 4000.0.2,
-                       directory
+  build-depends:       base,
+                       bytestring,
+                       directory,
+                       happstack-server == 0.2.*,
+                       happstack-util == 0.2.*,
+                       happstack-state == 0.2.*,
+                       happstack-ixset == 0.2.*,
+                       happstack-data == 0.2.*,
+                       HTTP >= 4000.0.2,
+                       mtl,
+                       network,
+                       old-time
   
   if flag(tests)
     build-depends:     template-haskell

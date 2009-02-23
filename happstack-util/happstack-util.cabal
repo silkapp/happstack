@@ -1,6 +1,6 @@
 Cabal-version:       >=1.2.3
 Name:                happstack-util
-Version:             0.1.9
+Version:             0.2
 Synopsis:            Web framework
 License:             BSD3
 License-file:        COPYING
@@ -19,9 +19,18 @@ Flag tests
     Default: False
 
 Library
-  Build-Depends:       mtl, hslogger >= 1.0.2, template-haskell, array,
-                       bytestring, old-time, process, directory, extensible-exceptions, 
-                       HUnit, QuickCheck, random
+  Build-Depends:       array,
+                       bytestring,
+                       directory,
+                       extensible-exceptions, 
+                       hslogger >= 1.0.2,
+                       mtl,
+                       old-time,
+                       parsec < 3,
+                       process,
+                       QuickCheck,
+                       random,
+                       template-haskell
   if flag(base4)
     Build-Depends:       base >= 4
   else

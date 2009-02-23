@@ -1,5 +1,5 @@
 Name:                happstack
-Version:             0.1.9
+Version:             0.2
 Synopsis:            The haskell application server stack + code generation
 Description:         The haskell application server stack
 License:             BSD3
@@ -50,16 +50,16 @@ Library
                        Happstack.State.ClockTime
   other-modules:       Paths_happstack
 
-  build-depends:       base             >= 3,
+  build-depends:       base >= 3,
                        bytestring,
-                       happstack-data   >= 0.1.9 && < 0.3,
-                       happstack-ixset  >= 0.1.9 && < 0.3,
-                       happstack-server >= 0.1.9 && < 0.3,
-                       happstack-state  >= 0.1.9 && < 0.3,
-                       happstack-util   >= 0.1.9 && < 0.3,
+                       happstack-data == 0.2.*,
+                       happstack-ixset == 0.2.*,
+                       happstack-server == 0.2.*,
+                       happstack-state == 0.2.*,
+                       happstack-util == 0.2.*,
                        hslogger,
-                       hsp              >= 0.4.5 && < 0.5,
-                       HStringTemplate  >= 0.4.3 && < 0.5,
+                       hsp >= 0.4.5 && < 0.5,
+                       HStringTemplate >= 0.4.3 && < 0.5,
                        mtl,
                        old-time,
                        utf8-string
@@ -67,8 +67,8 @@ Library
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
   else
-    build-depends:     hsx              == 0.4.5,
-                       haskell-src-exts == 0.3.9
+    build-depends:     haskell-src-exts == 0.3.9,
+                       hsx == 0.4.5
 
   hs-source-dirs:      src
 

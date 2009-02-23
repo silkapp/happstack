@@ -1,5 +1,5 @@
 Name:                happstack-state
-Version:             0.1.9
+Version:             0.2
 Synopsis:            Event-based distributed state.
 Description:         Unplug your machine and restart and have your app recover to exactly where it left off. Happstack-State spares you the need to deal with all the marshalling, consistency, and configuration headache that you would have if you used an external DBMS for this purpose. Its component model makes it easy to compose big applications from smaller reliable parts. Use event subscription to trigger IO actions and support comet-style or irc-bot applications. 
 License:             BSD3
@@ -45,11 +45,23 @@ Library
                        Happstack.State.Types
                        Happstack.State.Util
                        Happstack.State.TxControl
-  Build-Depends:       mtl,stm, template-haskell, hslogger >= 1.0.2,
-                       happstack-util >= 0.1.9, happstack-data >= 0.1.9,
-                       bytestring, containers, random, old-time,
-                       directory, binary, filepath, hspread >=0.3,
-                       extensible-exceptions
+
+  Build-Depends:       binary,
+                       bytestring,
+                       containers,
+                       directory, 
+                       extensible-exceptions,
+                       filepath,
+                       hslogger >= 1.0.2,
+                       hspread >= 0.3,
+                       happstack-util == 0.2.*,
+                       happstack-data == 0.2.*,
+                       mtl,
+                       old-time,
+                       random,
+                       stm,
+                       template-haskell
+
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
   else
