@@ -1,6 +1,51 @@
 Happstack 0.2 Release Notes
 ================================================================================
 
+  Project / Code generation tool
+  -------------------------------
+  There is now a code generation tool for Happstack. This is inspired by the
+  'rails' command.
+  
+  1. First install happstack (cabal install happstack)
+  
+  2. Make sure the cabal bin dir is in your path
+     - in linux this is
+         ~/.cabal/bin
+     - in windows this is
+         C:\Documents and Settings\<username>\Application Data\cabal\bin
+       where <username> is your windows username.
+       
+  3. Run this command:
+       happstack new project <dir>
+     where <dir> is the folder you want to create the project in.
+     
+  4. It will create several folders:
+     - bin       (scripts for your project go here)
+     - dist      (where deployment files will go)
+     - public    (static files for the http server)
+     - src       (project source code goes here)
+     - templates (HStringTemplate files go here)
+     
+  5. There are three scripts to get your project kick-started
+     - bin/build           (build a static compiled binary at dist/app)
+     - bin/run             (run the project dynamically)
+     - bin/run-interactive (run the project interactively in ghci)
+     Each script has a .sh version if you are on *nix and a .bat version if
+     you are on windows.
+     
+  6. By default, your project will bind to port 8000 on every ip address your
+     machine has.
+     
+  7. There are five source files in the src folder by default
+     - AppControl.hs  (routing and controller code goes here)
+     - AppState.hs    (MACID state objects are defined here)
+     - AppView.hs     (presentation / view code goes here)
+     - AppLogger.hs   (controls logging for the hslogger system)
+     - Main.hs        (entry point to your app, is has the routines needed to
+                       run your application)
+                                     
+  8. Enjoy!
+  
   The WebT/ServerPartT change
   -------------------------------
   WebT and ServerPartT have been substantially refactored.  They are now built
