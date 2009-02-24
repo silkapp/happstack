@@ -16,6 +16,7 @@ Happstack 0.2
  * New experimental gzip filter in happstack-server (similar to apache mod_deflate)
  * Builtin support for HSP, HStringTemplate (see example template / release notes)
  * happstack-server once again builds on Windows
+ * Nearly all the exported functions have been documented!
  
 Happstack 0.1
  * Cabal packaging name change:
