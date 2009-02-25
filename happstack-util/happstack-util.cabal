@@ -25,9 +25,11 @@ Library
                        extensible-exceptions, 
                        hslogger >= 1.0.2,
                        mtl,
+                       old-locale,
                        old-time,
                        parsec < 3,
                        process,
+                       time,
                        QuickCheck,
                        random,
                        template-haskell
@@ -52,6 +54,7 @@ Library
                        Happstack.Util.Cron,
                        Happstack.Util.Daemonize,
                        Happstack.Util.HostAddress,
+                       Happstack.Util.LogFormat,
                        Happstack.Util.TimeOut,
                        Happstack.Util.TH,
                        Happstack.Util.Testing
