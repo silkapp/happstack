@@ -2,14 +2,24 @@ module AppLogger (setupLogger) where
 
 import System.Log.Logger
   ( Priority(..)
-  , updateGlobalLogger
   , setLevel
   , setHandlers
+  , getLogger
+  , getRootLogger
+  , saveGlobalLogger
   )
-import System.Log.Handler.Simple (fileHandler)
+import System.Log.Handler.Simple (fileHandler, streamHandler)
+import System.IO (stdout)
 
-setupLogger progName = do
-  h <- fileHandler (progName ++ ".log") DEBUG
-  updateGlobalLogger "Happstack.Server" (setLevel DEBUG . setHandlers [h])
-  updateGlobalLogger "Happstack.State" (setLevel DEBUG . setHandlers [h])
+setupLogger = do
+  logFileHandler <- fileHandler ("app.log") DEBUG
+  stdoutHandler <- streamHandler stdout DEBUG
+
+  -- Log Everything to app.log
+  server <- getRootLogger
+  saveGlobalLogger $ setLevel DEBUG $ setHandlers [logFileHandler] server
+
+  -- Log Happstack.Server messages of at least INFO priority to stdout
+  server <- getLogger "Happstack.Server"
+  saveGlobalLogger $ setLevel INFO $ setHandlers [stdoutHandler] server
   
