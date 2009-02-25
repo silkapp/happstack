@@ -7,4 +7,4 @@ cd ../happstack-ixset   && cabal install "$@" && \
 cd ../happstack-server  && cabal install "$@" && \
 cd ../happstack-contrib && cabal install "$@" && \
 cd ../happstack         && cabal install "$@" && \
-echo "Done"
+cd .. && echo "Done"

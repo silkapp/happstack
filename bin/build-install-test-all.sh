@@ -8,4 +8,4 @@ cd ../happstack-server  && cabal install -f tests "$@" && \
 cd ../happstack-contrib && cabal install -f tests "$@" && \
 cd ../happstack-tests   && cabal install -f tests "$@" && \
 cd ../happstack         && cabal install -f tests "$@" && \
-echo "Done"
+cd .. echo "Done"
