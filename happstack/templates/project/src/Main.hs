@@ -36,7 +36,7 @@ main = do
   let progName = "guestbook"
   
   args <- getArgs
-  setupLogger progName
+  setupLogger
 
   appConf <- case parseConfig args of
                (Left e) -> do logM progName ERROR (unlines e)
