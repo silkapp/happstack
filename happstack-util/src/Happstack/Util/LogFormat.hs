@@ -39,7 +39,7 @@ formatRequestCombined :: FormatTime t =>
   -> t
   -> String
   -> Int
-  -> Int
+  -> Integer
   -> String
   -> String
   -> String
