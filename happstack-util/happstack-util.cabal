@@ -30,7 +30,7 @@ Library
                        parsec < 3,
                        process,
                        time,
-                       QuickCheck,
+                       QuickCheck < 2,
                        random,
                        template-haskell
   if flag(base4)
