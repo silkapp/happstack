@@ -44,10 +44,16 @@ data-files:          CHANGELOG
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.
 
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: False
+
 Library
   exposed-modules:     Happstack.Server.HSP.HTML
                        Happstack.Server.HStringTemplate
                        Happstack.State.ClockTime
+  if flag(tests)
+    Exposed-modules:   Happstack.Tests
   other-modules:       Paths_happstack
 
   build-depends:       base >= 3,
@@ -71,6 +77,8 @@ Library
                        hsx == 0.4.5
 
   hs-source-dirs:      src
+  if flag(tests)
+    hs-source-dirs:    tests
 
   ghc-options:         -Wall
 
@@ -81,3 +89,13 @@ Executable happstack
   hs-source-dirs:      commands
   main-is:             happstack.hs
 
+
+Executable happstack-tests
+  Main-Is: Test.hs
+  GHC-Options: -threaded
+  Build-depends: HUnit
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+  else
+    Buildable: False
