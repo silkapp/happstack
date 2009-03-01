@@ -1,48 +1,29 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -F -pgmFtrhsx #-}
-module AppView where
+module App.View where
 
-import AppState
 import HSP
 import System.Locale (defaultTimeLocale)
-import System.Time (formatCalendarTime, toUTCTime)
+import System.Time (ClockTime(..), formatCalendarTime, toUTCTime)
 import Control.Monad.Trans (MonadIO)
+import Happstack.Server (Response)
 import Happstack.Server.HStringTemplate (webST)
 import Happstack.Server.HSP.HTML (webHSP)
 
--- Convenience Functions
+-- * Convenience Functions
+
+dateStr :: ClockTime -> String
 dateStr ct =
   formatCalendarTime
     defaultTimeLocale
     "%a, %B %d, %Y at %H:%M:%S (UTC)"
     (toUTCTime ct)
 
--- Main Implementation
-instance (XMLGenerator m) => (EmbedAsChild m (GuestBookEntry, Bool)) where
-    asChild ((GuestBookEntry author message date), alt) =
-        <%
-           <li class=(if alt then "alt" else "")>
-            <strong><% author %></strong> said:<br /><br />
-            <% map p (lines message) %>
-            <br />
-            <small class="commentmetadata"><% dateStr date %></small> 
-           </li>
-         %>
-        where p str = <p><% str %></p>
+-- * Main Implementation
 
-instance (XMLGenerator m) => (EmbedAsChild m GuestBook) where
-    asChild (GuestBook entries) = 
-        <% 
-         <div>
-          <h2 id="comments" class="h2comment">Words of Wisdom</h2>
-          <div class="clear" />
-          <ul class="commentlist">
-           <% zip entries (cycle [False,True]) %>
-          </ul>
-         </div>
-        %>
-
+renderFromBody :: (MonadIO m, EmbedAsChild (HSPT' IO) xml) => String -> xml -> m Response
 renderFromBody title body = webHSP $ pageFromBody title body
+
 pageFromBody :: (EmbedAsChild (HSPT' IO) xml) => String -> xml -> HSP XML
 pageFromBody title body =
     withMetaData html4Strict $
@@ -113,6 +94,7 @@ pageFromBody title body =
      </body>
     </html>
 
+renderREADME :: (MonadIO m) => ClockTime -> m Response
 renderREADME now = do
   webST "readme" [("time", dateStr now)]
 

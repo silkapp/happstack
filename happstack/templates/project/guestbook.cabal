@@ -30,9 +30,13 @@ Flag base4
 
 Library
  Exposed-Modules:
-  AppControl,
-  AppLogger,
-  AppState
+  App.Control,
+  App.Logger,
+  App.State,
+  App.View,
+  GuestBook.Control,
+  GuestBook.State,
+  GuestBook.View
  hs-source-dirs: src
 
  GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports

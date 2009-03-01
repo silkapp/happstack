@@ -1,4 +1,4 @@
-module AppLogger (setupLogger) where
+module App.Logger (setupLogger) where
 
 import System.Log.Logger
     ( Priority(..)

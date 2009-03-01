@@ -1,6 +1,6 @@
 module Main where
 
-import Control.Concurrent (MVar(..), forkIO, killThread)
+import Control.Concurrent (MVar, forkIO, killThread)
 import Happstack.Util.Cron (cron)
 import Happstack.State (waitForTermination)
 import Happstack.Server
@@ -20,13 +20,13 @@ import Happstack.State
   , shutdownSystem
   , createCheckpoint
   )
-import System.Environment (getArgs, getProgName)
+import System.Environment (getArgs)
 import System.Log.Logger (Priority(..), logM)
 import System.Exit (exitFailure)
 import System.Console.GetOpt 
-import AppLogger (setupLogger)
-import AppState (AppState(..))
-import AppControl (appHandler)
+import App.Logger (setupLogger)
+import App.State (AppState(..))
+import App.Control (appHandler)
 
 stateProxy :: Proxy AppState
 stateProxy = Proxy
