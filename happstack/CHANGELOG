@@ -17,6 +17,7 @@ Happstack 0.2
  * Builtin support for HSP, HStringTemplate (see example template / release notes)
  * happstack-server once again builds on Windows
  * Nearly all the exported functions have been documented!
+ * Cookie fix from happstack-helpers was integrated into the main code
  
 Happstack 0.1
  * Cabal packaging name change:
