@@ -11,17 +11,17 @@ An efficient implementation of queryable sets.
 
 Assume you have a type like:
 
-  data Entry = Entry Author [Author] Updated Id Content
+ @data Entry = Entry Author [Author] Updated Id Content
   newtype Updated = Updated EpochTime
   newtype Id = Id Int64
   newtype Content = Content String
   newtype Author = Author Email
-  type Email = String
+  type Email = String@
 
 1. Decide what parts of your type you want indexed, and
    make your type an instance of Indexable
 
-    instance Indexable Entry () where
+  @instance Indexable Entry () where
     empty = IxSet[
                 ,Ix (Map.empty::Map Author (Set Entry)) --out of order
                 ,Ix (Map.empty::Map Id (Set Entry))
@@ -29,20 +29,20 @@ Assume you have a type like:
                 ,Ix (Map.empty::Map Test (Set Entry)) -- bogus index
                 ,Ix (Map.empty::Map Word (Set Entry)) -- text index
                 ]
-    calcs entry = () -- words for text indexing purposes
+    calcs entry = () -- words for text indexing purposes @
 
-3. Use insert/delete/replace and empty to build up an IxSet collection
+3. Use insert,delete,replace and empty to build up an IxSet collection
 
-    entries = foldr insert empty [e1,e2,e3,e4]
-    entries' = foldr delete entries [e1,e3]
-    entries'' = update e4 e5 entries
+    @entries = foldr insert empty [e1,e2,e3,e4]@
+    @entries' = foldr delete entries [e1,e3]@
+    @entries'' = update e4 e5 entries@
 
 4. Use the query functions below to grab data from it.  e.g.
 
-     entries @< (Updated t1) @= (Author "john@doe.com")
+     @entries \@< (Updated t1) \@= (Author \"john\@doe.com\")@
 
   will find all items in entries updated earlier than t1 by
-  john@doe.com.
+  john\@doe.com.
 
 5. Text Index
 
@@ -50,20 +50,20 @@ If you want to do add a text index extract the words in entry and pass
 them in the calc method of the Indexable class.  Then if you want
 all entries with either word1 or word2, you change the instance to
 
-    getWords entry = let Just (Content s) =
-                                     gGet entry in map Word $ words s
+    @getWords entry = let Just (Content s) =
+                                     gGet entry in map Word $ words s@
 
-    instance Indexable Entry [Word] where
+    @instance Indexable Entry [Word] where
     ....
-    calcs entry = getWords entry
+    calcs entry = getWords entry@
 
 Now you can do this query to find entries with any of the words
 
-   entries @+ [Word "word1",Word "word2"]
+   @entries \@+ [Word \"word1\",Word \"word2\"]@
 
 And if you want all entries with both:
 
-   entries @* [Word "word1",Word "word2"]
+   @entries \@* [Word \"word1\",Word \"word2\"]@
 
 6. Find the only the first author
 
@@ -72,16 +72,16 @@ on the first author, define a FirstAuthor datatype and add it to the
 result of calc.  calc e=(toWords e,getFirstAuthor e) and now you can
 do
 
-   newtype FirstAuthor = FirstAuthor Email
-   getFirstAuthor = let Just (Author a)=gGet Entry in FirstAuthor a
+   @newtype FirstAuthor = FirstAuthor Email@
+   @getFirstAuthor = let Just (Author a)=gGet Entry in FirstAuthor a@
 
-   instance Indexable Entry ([Word],FirstAuthor)
+   @instance Indexable Entry ([Word],FirstAuthor)
     ...
     empty = ....
              Ix (Map.empty::Map FirstAuthor (Set Entry))]
     calcs entry = (getWords Entry,getFirstAuthor entry)
 
-    entries @= (FirstAuthor "john@doe.com")  -- guess what this does
+    entries \@= (FirstAuthor \"john\@doe.com\")  -- guess what this does@
 
 -}
 

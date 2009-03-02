@@ -39,7 +39,7 @@ nubCxt tsQ
    into Methods.
    This TH splice needs to be executed for any MACID state type in order to 
    have the necessary code for event handling generated.
-   Ex:  @$(mkMethods ''Foo ['fooUpdate,'fooQuery'])
+   Ex:  @$(mkMethods ''Foo ['fooUpdate,'fooQuery'])@
 -}
 mkMethods :: Name -> [Name] -> Q [Dec]
 mkMethods componentName componentMethods

@@ -80,10 +80,14 @@ getSafePut = case mode :: Mode a of
                                return (unsafeUnPack . putCopy)
 
 
+-- | Equivalent of Data.Binary.put for instances of Serialize.  
+-- Takes into account versioning of types.
 safePut :: forall a. Serialize a => a -> Put
 safePut val = do fn <- getSafePut
                  fn val
 
+-- | Equivalent of Data.Binary.get for instances of Serialize
+-- Takes into account versioning of types.
 safeGet :: forall a. Serialize a => Get a
 safeGet = join getSafeGet
 
@@ -106,9 +110,12 @@ safeGetVersioned wantedVersion mbPrevious storedVersion
 compareVersions :: VersionId a -> VersionId b -> Ordering
 compareVersions v1 v2 = compare (unVersion v1) (unVersion v2)
 
+-- | Pure version of 'safePut'.  Serializes to a ByteString
 serialize :: Serialize a => a -> L.ByteString
 serialize = runPut . safePut
 
+-- | Pure version of 'safeGet'.  Parses a ByteString into the expected type
+-- and a remainder.
 deserialize :: Serialize a => L.ByteString -> (a, L.ByteString)
 deserialize bs = case runGetState safeGet bs 0 of
                    (val, rest, _offset) -> (val, rest)
@@ -248,11 +255,12 @@ instance (Serialize a) => Serialize (IntMap.IntMap a) where
 --------------------------------------------------------------
 
 
-
+-- | 'deserialize' specialized to Objects 
 deserializeObject :: L.ByteString -> (Object, L.ByteString)
 deserializeObject = deserialize
 
-
+-- | Attempts to convert an Object back into its base type.
+-- If the conversion fails 'error' will be called.
 parseObject :: Serialize a => Object -> a
 parseObject (Object objType objData)
     = let res = runGet safeGet objData
@@ -261,6 +269,7 @@ parseObject (Object objType objData)
          then error $ "Failed to parse object of type '" ++ objType ++ "'. Expected type '" ++ resType ++ "'"
          else res
 
+-- | Serializes data and stores it along with its type name in an Object
 mkObject :: Serialize a => a -> Object
 mkObject obj = Object { objectType = show (typeOf obj)
                       , objectData = serialize obj }

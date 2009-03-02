@@ -20,11 +20,11 @@ import Happstack.Data.Proxy
 logMM :: Priority -> String -> IO ()
 logMM = logM "Happstack.State.TxControl"
 
--- | Run a transaction system without multimaster support
+-- | Run the MACID system without multimaster support and with the given Saver.
 runTxSystem :: (Methods st, Component st) => Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem = runTxSystem' False
 
--- | Runs a transaction system.  Multimaster support is turned on if the first
+-- | Run the MACID system with multimaster support turned on if the first
 -- argument is True.
 runTxSystem' :: (Methods st, Component st) => Bool -> Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem' withMultimaster saver stateProxy =
