@@ -44,6 +44,7 @@ data State = State
 instance Version State
 $(deriveSerialize ''State)
 
+-- | Starts a new TxControl
 createTxControl :: (Methods state, Component state) =>
                    Saver -> Proxy state -> IO (MVar TxControl)
 createTxControl saver prox
@@ -56,6 +57,7 @@ createTxControl saver prox
                        , ctlComponentVersions = componentVersions prox
                        , ctlChildren          = [] }
 
+-- | Saves and ends the TxControl
 closeTxControl :: MVar TxControl -> IO ()
 closeTxControl ctlVar
     = do ctl <- takeMVar ctlVar
@@ -158,6 +160,11 @@ saveCheckpoints saver checkpoints
 -- Hence, events may be written to the log after we make the cut
 -- and before the state is saved. This means that some events
 -- may need to be discarded next time the state is restored.
+-- | Creates a checkpoint using the provided TxControl.
+-- This checkpoint may be used as a safe state with which to start the system,
+-- e.g. one may delete all the serialized events that took place after the last
+-- checkpoint and start the application fresh from the checkpoint.
+-- Calling this function manually is the only way to create checkpoints. 
 createCheckpoint :: MVar TxControl -> IO ()
 createCheckpoint ctlVar
     = withMVar ctlVar $ \ctl ->

@@ -32,6 +32,15 @@ nubCxt tsQ
     Checked: method using a tyvar that isn't a key.
     Checked: method is not a function.
 -}
+
+{- | This function will derive, for the provided type name and the provided
+   list of methods, an instance of Methods for the given type and necessary
+   instance of UpdateEvent and QueryEvent to make the provided list of functions
+   into Methods.
+   This TH splice needs to be executed for any MACID state type in order to 
+   have the necessary code for event handling generated.
+   Ex:  @$(mkMethods ''Foo ['fooUpdate,'fooQuery'])
+-}
 mkMethods :: Name -> [Name] -> Q [Dec]
 mkMethods componentName componentMethods
     = do keys <- liftM (requireSimpleCon componentName) $ reify componentName

@@ -20,7 +20,6 @@ import Happstack.Data.Proxy
 logMM :: Priority -> String -> IO ()
 logMM = logM "Happstack.State.TxControl"
 
--- Need to define WTF a transaction system is
 -- | Run a transaction system without multimaster support
 runTxSystem :: (Methods st, Component st) => Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem = runTxSystem' False

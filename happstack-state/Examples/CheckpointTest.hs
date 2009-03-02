@@ -1,8 +1,8 @@
 {-# OPTIONS -fglasgow-exts -fth #-}
-module Test where
+module Main where
 
-import HAppS.State
-import HAppS.State.ComponentTH    ( mkMethods )
+import Happstack.State
+import Happstack.State.ComponentTH    ( mkMethods )
 
 import Control.Exception          ( bracket )
 
@@ -37,11 +37,12 @@ instance (Serialize a) => Component (Test a) where
 rootState :: Proxy (Test Int)
 rootState = Proxy
 
-test :: IO ()
-test = bracket (startSystemState rootState) closeTxControl $ \ctl ->
+main :: IO ()
+main = bracket (startSystemState rootState) closeTxControl $ \ctl ->
        do n <- query $ GetTest 0
           update (SetTest (n+1 :: Int))
           print =<< query (GetTest (0 :: Int))
           createCheckpoint ctl -- Checkpoints are just an optimization.
                                -- Removing the line should give the same results.
+          update (SetTest (n+2 :: Int))
           return ()

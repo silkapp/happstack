@@ -15,7 +15,12 @@ import qualified Data.ByteString.Lazy.Char8 as L
 --------------------------------------------------------------
 -- Type level list
 -------------------------------------------------------------
+
+-- | Equivalent of [] for type level lists.  Used for Components that have no
+-- dependencies
 data End = End
+
+-- | Type level Cons for enumerating type dependencies of a Component
 data h :+: t = h :+: t
 infixr 6 :+:
 
@@ -39,7 +44,7 @@ data Method st where
 instance Show (Method st) where
     show method = "Method: " ++ methodType method
 
-
+-- | Displays the type of a Method
 methodType :: Method t -> String
 methodType m = case m of
                 Update fn -> let ev :: (ev -> Update st res) -> ev
@@ -49,6 +54,8 @@ methodType m = case m of
                                  ev _ = undefined
                              in show (typeOf (ev fn))
 
+-- | Class for enumerating the set of defined methods by the type of the state.
+-- Instances should not be defined directly, but using 'mkMethods'
 class Methods a where
     methods :: Proxy a -> [Method a]
 
@@ -58,10 +65,10 @@ data MethodMap where
 instance Show MethodMap where
     show (MethodMap m) = show m
 
--- State type -> method map
+-- | State type -> method map
 type ComponentTree = Map String MethodMap
 
--- State type -> all versions
+-- | State type -> all versions
 type ComponentVersions = Map String [L.ByteString]
 
 --------------------------------------------------------------
@@ -70,6 +77,12 @@ type ComponentVersions = Map String [L.ByteString]
 -- The methods are in a different class so they can be generated
 -- separately.
 --------------------------------------------------------------
+-- | In order to be used as a part of Happstack's MACID state, a data type
+-- needs to be an instance of Component.  The minimal definition is 
+-- an initialValue and the type corresponding to the set of Dependencies.
+-- Note that the SubHandlers condition will be automatically met if the
+-- Dependencies is built from 'End' and ':+:' with other instances of 
+-- Component and Methods
 class (SubHandlers (Dependencies a),Serialize a) => Component a where
     type Dependencies a
     initialValue :: a
