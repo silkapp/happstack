@@ -76,7 +76,7 @@ Library
     build-depends:     haskell-src-exts == 0.3.9,
                        hsx == 0.4.5
 
-  hs-source-dirs:      src
+  hs-source-dirs:      src,dist/build/autogen
   if flag(tests)
     hs-source-dirs:    tests
 
