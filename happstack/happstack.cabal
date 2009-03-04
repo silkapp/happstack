@@ -9,7 +9,7 @@ Maintainer:          Happstack team <happs@googlegroups.com>
 homepage:            http://happstack.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
-Cabal-Version:       >= 1.2.3
+Cabal-Version:       >= 1.4
 
 data-files:          CHANGELOG
                      CREDITS
@@ -76,7 +76,7 @@ Library
     build-depends:     haskell-src-exts == 0.3.9,
                        hsx == 0.4.5
 
-  hs-source-dirs:      src,dist/build/autogen
+  hs-source-dirs:      src
   if flag(tests)
     hs-source-dirs:    tests
 
