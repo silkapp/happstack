@@ -1,5 +1,5 @@
 Name:                happstack-ixset
-Version:             0.2.1
+Version:             0.3
 Synopsis:            Efficient relational queries on Haskell sets. 
 Description:         Just pick which parts of your data structures you want indexed using an easy to use template-haskell function. Spare yourself the need to write, run, and maintain code that marshalls your data to/from an external relational database just for efficient queries. happstack-ixset relies on generics and TH to spare you the boilerplate normally required for such tasks. 
 License:             BSD3
@@ -24,8 +24,8 @@ Library
     Build-Depends:     base < 4
 
   Build-Depends:       containers,
-                       happstack-data >= 0.2.1 && < 0.3,
-                       happstack-util >= 0.2.1 && < 0.3,
+                       happstack-data >= 0.3 && < 0.4,
+                       happstack-util >= 0.3 && < 0.4,
                        mtl,
                        syb-with-class,
                        template-haskell
