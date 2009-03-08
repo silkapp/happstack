@@ -1,3 +1,6 @@
+Happstack 0.3
+ * Moved Combined Logging from Happstack.Server to Happstack.Server.AccessLog.Combined
+
 Happstack 0.2
  * Module namespace refactoring from HAppS to Happstack
    HAppS.Server  -> Happstack.Server
@@ -18,6 +21,7 @@ Happstack 0.2
  * happstack-server once again builds on Windows
  * Nearly all the exported functions have been documented!
  * Cookie fix from happstack-helpers was integrated into the main code
+ * Combined Logging via Happstack.Server NOTICE
  
 Happstack 0.1
  * Cabal packaging name change:
