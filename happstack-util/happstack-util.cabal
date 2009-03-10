@@ -32,6 +32,8 @@ Library
                        time,
                        QuickCheck < 2,
                        random,
+                       SMTPClient >= 1.0 && < 1.1,
+                       network >= 2.2 && < 3,
                        template-haskell
   if flag(base4)
     Build-Depends:       base >= 4
@@ -55,6 +57,7 @@ Library
                        Happstack.Util.Daemonize,
                        Happstack.Util.HostAddress,
                        Happstack.Util.LogFormat,
+                       Happstack.Util.Mail,
                        Happstack.Util.TimeOut,
                        Happstack.Util.TH,
                        Happstack.Util.Testing
