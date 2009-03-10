@@ -3,7 +3,8 @@
 module GuestBook.View where
 
 import GuestBook.State (GuestBook(..),GuestBookEntry(..))
-import HSP 
+import HSP
+import qualified HSX.XMLGenerator as HSX (XML)
 import System.Locale (defaultTimeLocale)
 import System.Time(ClockTime(..), formatCalendarTime, toUTCTime)
 
@@ -41,3 +42,6 @@ instance (XMLGenerator m) => (EmbedAsChild m GuestBook) where
           </ul>
          </div>
         %>
+
+seeOtherXML :: (XMLGenerator m) => String -> XMLGenT m (HSX.XML m)
+seeOtherXML url = <a href=url alt="303 see other"><% url %></a>

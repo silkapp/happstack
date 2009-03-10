@@ -11,7 +11,7 @@ import System.Time (getClockTime)
 appHandler :: ServerPartT IO Response
 appHandler = msum
   [ methodM GET >> seeOther "/entries" (toResponse ()) -- matches /
-  , guestBookHandler renderFromBody
+  , renderFromBody "GuestBook" =<< guestBookHandler
   , dir "README" getREADME                             -- StringTemplate example
   , fileServe ["index.html"] "public"                  -- static files
   ]
