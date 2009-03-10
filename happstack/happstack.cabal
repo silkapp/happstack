@@ -14,32 +14,37 @@ Cabal-Version:       >= 1.4
 data-files:          CHANGELOG
                      CREDITS
                      RELEASE_NOTES
-                     templates/project/bin/build.bat
-                     templates/project/bin/build.sh
-                     templates/project/bin/run-interactive.bat
-                     templates/project/bin/run-interactive.sh
                      templates/project/bin/run.bat
+                     templates/project/bin/run-interactive.bat
+                     templates/project/bin/build.sh
+                     templates/project/bin/run-interactive.sh
                      templates/project/bin/run.sh
+                     templates/project/bin/build.bat
+                     templates/project/Setup.hs
+                     templates/project/templates/readme.st
+                     templates/project/src/GuestBook.hs
+                     templates/project/src/Main.hs
+                     templates/project/src/App/Control.hs
+                     templates/project/src/App/View.hs
+                     templates/project/src/App/State.hs
+                     templates/project/src/App/Logger.hs
+                     templates/project/src/GuestBook/Control.hs
+                     templates/project/src/GuestBook/View.hs
+                     templates/project/src/GuestBook/State.hs
                      templates/project/guestbook.cabal
-                     templates/project/public/theme/images/blockquote.gif
-                     templates/project/public/theme/images/date.gif
-                     templates/project/public/theme/images/entrymeta.gif
-                     templates/project/public/theme/images/grunge.gif
-                     templates/project/public/theme/images/header_loop.gif
-                     templates/project/public/theme/images/logo.gif
-                     templates/project/public/theme/images/menu_hili.gif
                      templates/project/public/theme/images/menu_hover.gif
+                     templates/project/public/theme/images/grunge.gif
+                     templates/project/public/theme/images/entrymeta.gif
+                     templates/project/public/theme/images/date.gif
+                     templates/project/public/theme/images/logo.gif
                      templates/project/public/theme/images/peel.gif
+                     templates/project/public/theme/images/menu_hili.gif
                      templates/project/public/theme/images/ql_rss.gif
+                     templates/project/public/theme/images/blockquote.gif
+                     templates/project/public/theme/images/header_loop.gif
                      templates/project/public/theme/readme.txt
                      templates/project/public/theme/style.css
-                     templates/project/Setup.hs
-                     templates/project/src/AppControl.hs
-                     templates/project/src/AppLogger.hs
-                     templates/project/src/AppState.hs
-                     templates/project/src/AppView.hs
-                     templates/project/src/Main.hs
-                     templates/project/templates/readme.st
+
 
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.
