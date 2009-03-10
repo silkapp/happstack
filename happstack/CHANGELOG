@@ -1,5 +1,6 @@
 Happstack 0.3
  * Moved Combined Logging from Happstack.Server to Happstack.Server.AccessLog.Combined
+ * Added Happstack.Util.Mail: a simple email interface which utilizes a smarthost
 
 Happstack 0.2
  * Module namespace refactoring from HAppS to Happstack
