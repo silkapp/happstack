@@ -1,4 +1,4 @@
-Cabal-version:       >=1.2.3
+Cabal-version:       >=1.6
 Name:                happstack-util
 Version:             0.3
 Synopsis:            Web framework
@@ -32,7 +32,7 @@ Library
                        time,
                        QuickCheck < 2,
                        random,
-                       SMTPClient >= 1.0 && < 1.1,
+                       SMTPClient >= 1.0.1 && < 1.1,
                        network >= 2.2 && < 3,
                        template-haskell
   if flag(base4)
