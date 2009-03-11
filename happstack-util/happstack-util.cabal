@@ -1,4 +1,3 @@
-Cabal-version:       >=1.6
 Name:                happstack-util
 Version:             0.3
 Synopsis:            Web framework
@@ -10,6 +9,12 @@ homepage:            http://happstack.com
 Category:            Web, Distributed Computing
 Description:         Miscellaneous utilities for Happstack packages.
 Build-type:          Simple
+Cabal-version:       >=1.6
+
+source-repository head
+    type:     darcs
+    subdir:   happstack-util
+    location: http://patch-tag.com/publicrepos/happstack
 
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.

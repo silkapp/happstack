@@ -9,7 +9,12 @@ Maintainer:          Happstack Team <happs@googlegroups.com>
 homepage:            http://happstack.com
 Category:            Web, Distributed Computing
 Build-Type:          Simple
-Cabal-Version:       >= 1.2.3
+Cabal-Version:       >= 1.6
+
+source-repository head
+    type:     darcs
+    subdir:   happstack-contrib
+    location: http://patch-tag.com/publicrepos/happstack
 
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.

@@ -22,7 +22,12 @@ Description:
      * Marshalling Haskell values to and from HTML forms.
 Tested-With:        GHC==6.6.1, GHC==6.8.2
 Build-Type:         Simple
-Cabal-Version:      >= 1.2.3
+Cabal-Version:      >= 1.6
+
+source-repository head
+    type:     darcs
+    subdir:   happstack-data
+    location: http://patch-tag.com/publicrepos/happstack
 
 flag base4
 
