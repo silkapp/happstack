@@ -36,6 +36,6 @@ getEntries =
 -- this tells happstack how to turn post data into a datatype using 'withData'
 instance FromData GuestBookEntry where
   fromData = do
-    author  <- toString <$> lookBS "author"
-    message <- toString <$> lookBS "message"
+    author  <- look "author"
+    message <- look "message"
     return $ GuestBookEntry (if (null author) then "Anonymous" else author) message defaultValue
