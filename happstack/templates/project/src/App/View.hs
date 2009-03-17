@@ -74,7 +74,7 @@ pageFromBody title body =
               <a href="/README">dynamic README</a>.
             </p>
            <p>Leave a message for the next visitor here...</p>
-           <form action="/entries" method="post" enctype="multipart/form-data:charset=UTF-8" accept-charset="UTF-8">
+           <form action="/entries" method="post" enctype="multipart/form-data;charset=UTF-8" accept-charset="UTF-8">
             <p><label for="author">A<span class="accesskey">u</span>thor</label><br /><input type="text" name="author" id="author" tabindex="1" accesskey="U" /></p>
             <p><label for="message"><span class="accesskey">M</span>essage</label><br /><textarea cols="80" rows="10" name="message" id="message" tabindex="2" accesskey="M"></textarea></p>
             <p><input type="submit" tabindex="3" accesskey="L" value="Leave GuestBook Entry" /></p>
