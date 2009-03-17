@@ -16,6 +16,8 @@ data Saver = NullSaver        -- ^ A saver that discards all output
            | Queue Saver      -- ^ Enable queueing.
            | Memory (MVar Store)
 
+-- | Dispatches over the Saver type provided to return a 'ReaderStream' for the inferred
+-- type. 
 createReader :: Serialize a => Saver -> String -> Int -> IO (ReaderStream a)
 createReader (FileSaver prefix) key cutoff = fileReader prefix key cutoff
 createReader (Memory store) key cutoff = memoryReader store key cutoff
@@ -26,6 +28,8 @@ createReader NullSaver _key _cutoff
                , readerGet   = fail "NullSaver: readerGet"
                , readerGetUncut = fail "NullSaver: readerGetUncut" }
 
+-- | Dispatches over the Saver type provided to return a WriterStream for the
+-- inferred type. 
 createWriter :: Serialize a => Saver -> String -> Int -> IO (WriterStream a)
 createWriter (FileSaver prefix) key cutoff = fileWriter prefix key cutoff
 createWriter (Memory store) key cutoff = memoryWriter store key cutoff

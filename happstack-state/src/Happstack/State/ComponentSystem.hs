@@ -37,6 +37,8 @@ class (Serialize ev, Serialize res) => QueryEvent ev res | ev -> res
 -- Methods contain the query and update handlers for a component
 --------------------------------------------------------------
 
+-- | Method is the actual type that all Updates and Querys eventually
+-- get lifted into via 'mkMethods'.
 data Method st where
     Update :: (UpdateEvent ev res) => (ev -> Update st res) -> Method st
     Query  :: (QueryEvent ev res) => (ev -> Query st res) -> Method st
@@ -92,11 +94,19 @@ class (SubHandlers (Dependencies a),Serialize a) => Component a where
 --------------------------------------------------------------
 -- Class for walking the component tree.
 --------------------------------------------------------------
+-- | SubHandlers is used to build up the set of components corresponding to
+-- the instance type.
 class SubHandlers a where
     subHandlers :: a -> Collect ()
 
+-- | In correspondence with its role as [] in the type level list,
+-- the instance for End does not add any components to the set.
 instance SubHandlers End where
     subHandlers ~End = return ()
+
+-- | This is the instance that completes the definition of :+: and End as being
+-- the constructors of a type level list in SubHandlers.  Note that since b
+-- needs to be an instance of SubHandlers, the list needs to be terminated with End.
 instance (Methods a, Component a, SubHandlers b) => SubHandlers (a :+: b) where
     subHandlers ~(a :+: b) = do collectHandlers' (proxy a)
                                 subHandlers b
@@ -129,5 +139,6 @@ collectHandlers' prox
     where sub :: Component a => Proxy a -> Dependencies a
           sub _ = undefined
 
+-- | An error is thrown when this is evaluated.
 dup :: String -> b
 dup key = error $ "Duplicate component: " ++ key
