@@ -41,6 +41,10 @@ data Previous a = forall b. (Serialize b, Migrate b a) => Previous (Proxy b)
 mkPrevious :: forall a b. (Serialize b, Migrate b a) => Proxy b -> Previous a
 mkPrevious Proxy = Previous (Proxy :: Proxy b)
 
+-- | Creates a Mode that is a new version of the type carried by the provided proxy
+-- and with the provided version number.  Note that since VersionId is an instance of
+-- Num that you may use int literals when calling extension, e.g. 
+-- @extension 1 (Proxy :: Proxy OldState)@
 extension :: forall a b. (Serialize b, Migrate b a) => VersionId a -> Proxy b -> Mode a
 extension vs prox = Versioned vs (Just (mkPrevious prox))
 
@@ -53,6 +57,11 @@ instance Binary (VersionId a) where
 data Mode a = Primitive -- ^ Data layout won't change. Used for types like Int and Char.
             | Versioned (VersionId a) (Maybe (Previous a))
 
+-- | The Version type class is used to describe whether a type is fundamental
+-- or if it is meant to extend another type.  For a user defined type that
+-- does not extend any others, one can use the default instance of Version, e.g.
+-- @instance Version MyType@ to define it has having a version id of 0 and previous
+-- type.
 class Version a where
     mode :: Mode a
     mode = Versioned 0 Nothing
@@ -274,6 +283,8 @@ mkObject :: Serialize a => a -> Object
 mkObject obj = Object { objectType = show (typeOf obj)
                       , objectData = serialize obj }
 
+-- | Uniform container for any serialized data.  It contains a string rep of the type
+-- and the actual data serialized to a byte string.
 data Object = Object { objectType :: String
                      , objectData :: L.ByteString
                      }  deriving (Typeable,Show)
