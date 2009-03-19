@@ -12,6 +12,10 @@ import Data.Binary
 
 data Class = Tagged [(Name, Int)] Cxt [Name]
 
+-- | Derives an instance of Serialize for the provided type
+-- Should work in most cases if the type is already and instance
+-- of Version.  
+-- Ex: @$(deriveSerialize ''Foo)
 deriveSerialize :: Name -> Q [Dec]
 deriveSerialize name
     = do c <- parseInfo name
@@ -50,7 +54,7 @@ deriveSerialize name
                                 [ noBindS [| return $(foldl appE (conE conName) (map varE args)) |] ]
                 in funD 'getCopy [clause [] (normalB getCopyBody) []]
 
-
+-- | Derives Serialize for a list of types
 deriveSerializeFor :: [Name] -> Q [Dec]
 deriveSerializeFor = liftM concat . mapM deriveSerialize
 

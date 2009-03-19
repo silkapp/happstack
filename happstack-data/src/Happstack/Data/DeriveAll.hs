@@ -54,7 +54,7 @@ mkDefaultInstance name
 
 -- | The 'deriveAll' function takes a list of classes to derive and
 -- a block of declarations. It will additionally derive instances for
--- 'Typeable', 'Old.Data' and 'New.Data'.
+-- Typeable, Old.Data and New.Data.
 --
 -- Example:
 --
