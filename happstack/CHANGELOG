@@ -1,4 +1,7 @@
 Happstack 0.3
+ * Modularization of the example application using the component system
+ * All packages now require Cabal >= 1.6
+ * Repository metadata added to cabal description
  * Moved Combined Logging from Happstack.Server to Happstack.Server.AccessLog.Combined
  * Added Happstack.Util.Mail: a simple email interface which utilizes a smarthost
  * SimpleHTTP: look and lookPairs now assume utf-8 from the browser
