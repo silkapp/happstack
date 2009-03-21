@@ -1,11 +1,18 @@
 -- happstack command
 module Main where
 
+import Control.Monad (filterM, liftM, mapM, mapM_)
 import Paths_happstack (getDataDir)
 import System.Environment (getArgs)
-import System.Directory (createDirectoryIfMissing, doesFileExist, copyFile)
-import System.FilePath ((</>))
-import Control.Monad (mapM_)
+import System.Directory
+    ( canonicalizePath
+    , createDirectoryIfMissing
+    , doesFileExist
+    , doesDirectoryExist
+    , copyFile
+    )
+import System.FilePath ((</>), makeRelative)
+import System.FilePath.Find (always, find)
 
 data Command
   = NewProjectCmd FilePath
@@ -29,68 +36,35 @@ processArgs _                       = HelpCmd
     
 newProject :: FilePath -> IO ()
 newProject destDir = do
-  dataDir <- getDataDir
+    dataDir <- liftM (</> "templates" </> "project") getDataDir
+
+    -- create destDir if needed
+    createDirectoryIfMissing True destDir
   
-  -- create destDir if needed
-  createDirectoryIfMissing True destDir
-  
-  -- create folders
-  mapM_ (createDirectoryIfMissing False) (destinationFolders destDir)
-  
-  -- copy files
-  mapM_ cp $ zip (sourceFiles dataDir) (destinationFiles destDir)
+    -- create dirs
+    srcDirs <- getSourceDirs dataDir
+    let destDirs = map ((destDir </>) . makeRelative dataDir) srcDirs
+    mapM_ (createDirectoryIfMissing False) destDirs
+
+    -- create files
+    srcFiles <- getSourceFiles dataDir
+    let destFiles = map ((destDir </>) . makeRelative dataDir) srcFiles
+    mapM_ cp $ zip srcFiles destFiles
       
--- destination folders that need to be created
-destinationFolders destDir =
-  map
-    (destDir </>) 
-    [ "bin"
-    , "dist"
-    , "public"
-    , "public/theme"
-    , "public/theme/images"
-    , "src"
-    , "templates"
-    ]
-  
--- source files for project skeleton (needs to know dataDir location)
-sourceFiles dataDir =
-  map (dataDir </>) projectFiles
+-- only source dirs
+getSourceDirs :: FilePath -> IO [FilePath]
+getSourceDirs dataDir = filterM doesDirectoryExist =<< getSourceData dataDir
 
--- destination files for project skeleton
-destinationFiles destDir =
-  map ((destDir </>) . removePrefix) projectFiles
-  where removePrefix = drop $ length "templates/project/" 
+-- only source files
+getSourceFiles :: FilePath -> IO [FilePath]
+getSourceFiles dataDir = filterM doesFileExist =<< getSourceData dataDir
 
--- all files in the data dir
-projectFiles = 
-  [ "templates/project/bin/build.bat"
-  , "templates/project/bin/build.sh"
-  , "templates/project/bin/run-interactive.bat"
-  , "templates/project/bin/run-interactive.sh"
-  , "templates/project/bin/run.bat"
-  , "templates/project/bin/run.sh"
-  , "templates/project/guestbook.cabal"
-  , "templates/project/public/theme/images/blockquote.gif"
-  , "templates/project/public/theme/images/date.gif"
-  , "templates/project/public/theme/images/entrymeta.gif"
-  , "templates/project/public/theme/images/grunge.gif"
-  , "templates/project/public/theme/images/header_loop.gif"
-  , "templates/project/public/theme/images/logo.gif"
-  , "templates/project/public/theme/images/menu_hili.gif"
-  , "templates/project/public/theme/images/menu_hover.gif"
-  , "templates/project/public/theme/images/peel.gif"
-  , "templates/project/public/theme/images/ql_rss.gif"
-  , "templates/project/public/theme/readme.txt"
-  , "templates/project/public/theme/style.css"
-  , "templates/project/Setup.hs"
-  , "templates/project/src/AppControl.hs"
-  , "templates/project/src/AppLogger.hs"
-  , "templates/project/src/AppState.hs"
-  , "templates/project/src/AppView.hs"
-  , "templates/project/src/Main.hs"
-  , "templates/project/templates/readme.st"
-  ]
+-- source data for project skeleton
+getSourceData :: FilePath -> IO [FilePath]
+getSourceData rawDataDir = do
+    dataDir <- canonicalizePath rawDataDir
+    all <- mapM canonicalizePath =<< (find always always dataDir)
+    return $ filter (/= dataDir) all
 
 -- does not work for folders
 cp :: (FilePath, FilePath) -> IO ()

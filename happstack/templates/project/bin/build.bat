@@ -1,1 +1,1 @@
-ghc -isrc src\Main.hs --make -o dist\app
+ghc -isrc src\Main.hs --make -o app
