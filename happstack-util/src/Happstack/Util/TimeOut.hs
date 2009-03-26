@@ -1,4 +1,5 @@
-{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable, RecursiveDo #-}
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable, RecursiveDo,
+             BangPatterns, UnboxedTuples #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -47,9 +48,9 @@ module Happstack.Util.TimeOut
     ) where
 
 import Control.Concurrent
+import qualified Control.Concurrent.MVar.Strict as SM
 import Control.Exception.Extensible as E
 import Data.Typeable(Typeable)
-import Data.IORef
 import Data.Maybe
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Monad (when)
@@ -59,16 +60,18 @@ import Happstack.Util.Concurrent
 type TimeOutTId = Int -- must be distinct within a thread only 
 
 {-# NOINLINE timeOutIdState #-}
-timeOutIdState :: IORef TimeOutTId
-timeOutIdState = unsafePerformIO $ newIORef minBound
+timeOutIdState :: SM.MVar TimeOutTId
+timeOutIdState = unsafePerformIO $ SM.newMVar minBound
 
 nextTimeOutId :: IO TimeOutTId
 nextTimeOutId = 
-  atomicModifyIORef timeOutIdState (\a -> let nid =nextId a in (nid,nid))
-  where nextId i | i == maxBound = minBound
-        nextId i = i + 1
+  SM.modifyMVar timeOutIdState $ \a ->
+      let nid = nextId a in return (nid `seq` (nid,nid))
 
-data TimeOutExceptionI = TimeOutExceptionI TimeOutTId -- internal exception, should only be used within this module 
+  where nextId !i | i == maxBound = minBound
+        nextId !i = i + 1
+
+data TimeOutExceptionI = TimeOutExceptionI !TimeOutTId -- internal exception, should only be used within this module 
   deriving(Typeable)
 
 data TimeOutException = TimeOutException -- that's the exception the user may catch 
