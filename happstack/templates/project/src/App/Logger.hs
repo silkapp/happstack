@@ -12,7 +12,7 @@ import System.IO (stdout)
 
 setupLogger = do
     appLog <- fileHandler ("app.log") INFO
-    accessLog <- fileHandler ("access.log") NOTICE
+    accessLog <- fileHandler ("access.log") INFO
     stdoutLog <- streamHandler stdout NOTICE
 
     -- Root Log
