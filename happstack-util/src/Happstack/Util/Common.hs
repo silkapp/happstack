@@ -21,6 +21,7 @@ import System.IO.Error
 import System.Process
 import System.IO.Unsafe
 import System.Time
+import Control.Arrow
 
 type Seconds = Int
 type EpochSeconds = Int64
@@ -63,19 +64,27 @@ hGetLn handle = do
 
 
 unBracket, ltrim, rtrim, trim :: String -> String
+-- | Removes the whitespace surrounding a string as well
+-- as the first and last character.
+-- @unBracket "  (asdf) " = "asdf"@
 unBracket = tail . init . trim
 
+-- | Drops the whitespace at the start of the string
 ltrim = dropWhile isSpace
 
+-- | Drops the whitespace at the end of the string
 rtrim = reverse.ltrim.reverse
 
+-- | Trims the beginning and ending whitespace of a string
 trim=ltrim.rtrim
 
+-- | Repeadly splits a list by the provided separator and collects the results
 splitList :: Eq a => a -> [a] -> [[a]]
 splitList _   [] = []
 splitList sep list = first:splitList sep rest
 	where (first,rest)=split (==sep) list
 
+-- | Repeatedly splits a list and collects the results
 splitListBy :: (a -> Bool) -> [a] -> [[a]]
 splitListBy _ [] = []
 splitListBy f list = first:splitListBy f rest
@@ -95,18 +104,11 @@ mbReadFile noth just path  =
 	(do text <- readFile path;return $ just text)
 	`catch` \err -> if isDoesNotExistError err then return noth else ioError err
 
-doSnd :: (a -> b) -> (c,a) -> (c,b)
-doSnd f (x,y) = (x,f y)
-
-doFst :: (a -> b) -> (a,c) -> (b,c)
-doFst f (x,y) = (f x,y)
-
-
 mapFst :: (a -> b) -> [(a,x)] -> [(b,x)]
-mapFst f = map (\ (x,y)->(f x,y))
+mapFst = map . first
 
 mapSnd :: (a -> b) -> [(x,a)] -> [(x,b)]
-mapSnd f = map (\ (x,y)->(x,f y)) 
+mapSnd = map . second 
 
 -- | applies the list of functions to the provided argument 
 revmap :: a -> [a -> b] -> [b]

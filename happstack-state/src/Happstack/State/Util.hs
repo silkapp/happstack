@@ -41,8 +41,10 @@ getRandomR z = do r <- sel evRandoms
 
 
 -- FIXME: Throw a decent error message if the input isn't a record.
--- | Infer updating functions for a record @a_foo :: component -> record -> record@ and
---   @withFoo = localState foo a_foo@.
+-- | Infer updating functions for a record.  Given a data declaration
+-- of @data Foo = Foo {bar :: String, baz :: Int}@ then @$(inferRecordUpdaters ''Foo)@
+-- will define functions @a_bar :: String -> Foo -> Foo@, @withBar :: Update String a -> Update Foo a@,
+-- etc. that can be used as convenience updaters.  
 inferRecordUpdaters :: Name -> Q [Dec]
 inferRecordUpdaters typeName = do
     con <- decToSimpleRecord =<< nameToDec typeName
