@@ -35,7 +35,8 @@ import Happstack.State.TxControl
 import Happstack.State.ComponentSystem
 import Happstack.Data.Proxy hiding (proxy)
 
--- | Starts the MACID system without multimaster support.  Uses the default Saver.
+-- | Starts the MACID system without multimaster support.  Uses the default behavior
+-- of saving the state into the _local directory.
 startSystemState :: (Methods a, Component a) =>
                     Proxy a -> IO (MVar TxControl)
 startSystemState proxy
@@ -43,7 +44,8 @@ startSystemState proxy
          saver <- stdSaver
          runTxSystem saver proxy
 
--- | Starts the MACID system with multimaster support.  Uses the default Saver.
+-- | Starts the MACID system with multimaster support.  Uses the default behavior
+-- of saving the state into the _local directory.
 startSystemStateMultimaster :: (Methods a, Component a) =>
                                Proxy a -> IO (MVar TxControl)
 startSystemStateMultimaster proxy
@@ -51,7 +53,8 @@ startSystemStateMultimaster proxy
          saver <- stdSaver
          runTxSystem' True saver proxy
 
--- | Returns the default Saver.
+-- | Returns the default Saver.  It will save the application state into
+-- the _local directory.
 stdSaver :: IO Saver
 stdSaver = do pn <- getProgName
               return $ Queue (FileSaver ("_local/" ++pn++"_state"))

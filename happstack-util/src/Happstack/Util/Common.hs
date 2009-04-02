@@ -68,6 +68,7 @@ unBracket = tail . init . trim
 ltrim = dropWhile isSpace
 
 rtrim = reverse.ltrim.reverse
+
 trim=ltrim.rtrim
 
 splitList :: Eq a => a -> [a] -> [[a]]
@@ -102,13 +103,17 @@ doFst f (x,y) = (f x,y)
 
 
 mapFst :: (a -> b) -> [(a,x)] -> [(b,x)]
-mapFst f = map (\ (x,y)->(f x,y)) 
+mapFst f = map (\ (x,y)->(f x,y))
+
 mapSnd :: (a -> b) -> [(x,a)] -> [(x,b)]
 mapSnd f = map (\ (x,y)->(x,f y)) 
 
+-- | applies the list of functions to the provided argument 
 revmap :: a -> [a -> b] -> [b]
 revmap item = map (\f->f item)
 
+-- | @comp f a b@ compares @a@ and @b@ after apply
+-- @f@.
 comp :: Ord t => (a -> t) -> a -> a -> Ordering
 comp f e1 e2 = f e1 `compare` f e2
 
@@ -152,19 +157,25 @@ readM s = case readsPrec 0 s of
             [(v,"")] -> return v
             _        -> fail "readM: parse error"
 
--- | Convert Maybe into an another monad.
+-- | Convert Maybe into an another monad.  This is a simple injection that calls
+-- fail when given a Nothing.
 maybeM :: Monad m => Maybe a -> m a
 maybeM (Just x) = return x
 maybeM _        = fail "maybeM: Nothing"
 
--- ! Convert Bool into another monad
+-- | Lifts a bool into a MonadPlus, with False mapped to the mzero.
 boolM :: (MonadPlus m) => Bool -> m Bool
 boolM False = mzero
 boolM True  = return True
 
+-- | @notMb a b@ returns @Just a@ if @b@ is @Nothing@ and @Nothing@ if
+-- @b@ is @Just _@.
 notMb :: a-> Maybe a-> Maybe a
 notMb v1 v2 = maybe (Just v1) (const Nothing) $ v2
 
+-- | Takes a list of delays, in seconds, and an action to execute
+-- repeatedly.  The action is then executed repeatedly in a separate thread
+-- until the list has been consumed.  The first action takes place immediately.  
 periodic :: [Int] -> IO () -> IO ThreadId
 periodic ts = forkIO . periodic' ts
 
@@ -172,6 +183,8 @@ periodic ts = forkIO . periodic' ts
 infixr 8 .^
 (.^) :: Int->Int->Int
 a .^ b = a ^ b
+
+-- | Similar to 'periodic' but runs in the same thread
 periodic' :: [Int] -> IO a -> IO a
 periodic' [] x = x
 periodic' (t:ts) x = x >> threadDelay ((10 .^ 6)*t) >> periodic' ts x

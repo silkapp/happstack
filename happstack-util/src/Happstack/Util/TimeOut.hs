@@ -98,7 +98,8 @@ catchTimeOutI :: TimeOutTId -> IO a -> IO a -> IO a
 catchTimeOutI toId op handler =
   op `catch'` (\e@(TimeOutExceptionI i) -> if i == toId then handler  else throw' e)
 
--- | This handler returns Nothing if the timeout occurs.
+-- | This handler returns @Nothing@ if the timeout occurs and @Just a@ if computation 
+-- returns @a@.
 withTimeOutMaybe :: Int -> IO a -> IO (Maybe a)
 withTimeOutMaybe tout op = do 
   toId <- nextTimeOutId

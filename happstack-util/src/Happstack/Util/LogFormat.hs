@@ -6,7 +6,7 @@ module Happstack.Util.LogFormat
 import System.Locale (defaultTimeLocale)
 import Data.Time.Format (FormatTime(..), formatTime)
 
--- Format the time as describe in the Apache combined log format.
+-- | Format the time as describe in the Apache combined log format.
 --   http://httpd.apache.org/docs/2.2/logs.html#combined
 --
 -- The format is:
@@ -21,7 +21,7 @@ import Data.Time.Format (FormatTime(..), formatTime)
 formatTimeCombined :: FormatTime t => t -> String
 formatTimeCombined = formatTime defaultTimeLocale "%d/%b/%Y:%H:%M:%S %z"
 
--- Format the request as describe in the Apache combined log format.
+-- | Format the request as describe in the Apache combined log format.
 --   http://httpd.apache.org/docs/2.2/logs.html#combined
 -- 
 -- The format is: "%h - %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""

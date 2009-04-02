@@ -44,7 +44,9 @@ data State = State
 instance Version State
 $(deriveSerialize ''State)
 
--- | Starts a new TxControl
+-- | Given a Saver and a Proxy, createTxControl will 
+-- initialize a TxControl.  This does not actually start the
+-- state system.
 createTxControl :: (Methods state, Component state) =>
                    Saver -> Proxy state -> IO (MVar TxControl)
 createTxControl saver prox
@@ -57,7 +59,7 @@ createTxControl saver prox
                        , ctlComponentVersions = componentVersions prox
                        , ctlChildren          = [] }
 
--- | Saves and ends the TxControl
+-- | Saves the state and closes the serialization
 closeTxControl :: MVar TxControl -> IO ()
 closeTxControl ctlVar
     = do ctl <- takeMVar ctlVar
