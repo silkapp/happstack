@@ -8,8 +8,12 @@ type Seconds = Int
 -- f every t seconds with the first execution t seconds after cron is called.
 -- cron does not spawn a new thread.
 cron :: Seconds -> IO () -> IO a
-cron seconds action
-    = loop
-    where loop = do threadDelay (10^(6 :: Int) * seconds)
-                    action
-                    loop
+cron seconds0 action = loop seconds0
+    where maxSeconds = (maxBound :: Int) `div`  10^(6 ::Int)
+          loop seconds =
+            do if seconds <= maxSeconds
+                then do threadDelay (10^(6 :: Int) * seconds)
+                        action
+                        loop seconds0
+                else do threadDelay (10^(6 :: Int) * maxSeconds)
+                        loop (seconds - maxSeconds)
