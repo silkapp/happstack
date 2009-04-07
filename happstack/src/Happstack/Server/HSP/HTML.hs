@@ -7,6 +7,7 @@ module Happstack.Server.HSP.HTML
 import Control.Monad.Trans (MonadIO(), liftIO)
 import qualified Data.ByteString.Char8 as P
 import qualified Data.ByteString.Lazy.UTF8 as L
+import Control.Monad (liftM)
 import Happstack.Server
   ( ToMessage(toMessage, toContentType, toResponse)
   , Response()
@@ -37,5 +38,5 @@ instance ToMessage (Maybe XMLMetaData, XML) where
 -- with HSP, you can wrap up your HTML as webHSP $ <html>...</html>
 -- to use it with Happstack.
 webHSP :: (MonadIO m) => HSP XML -> m Response
-webHSP hsp = return . toResponse =<< liftIO (evalHSP Nothing hsp)
+webHSP hsp = toResponse `liftM` liftIO (evalHSP Nothing hsp)
 
