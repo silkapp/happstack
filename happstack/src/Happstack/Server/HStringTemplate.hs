@@ -26,7 +26,7 @@ instance ToMessage (StringTemplate String) where
     toContentType _ = B.pack "text/plain;charset=utf-8"
     toMessage = L.pack . render
 
--- renders a name template with attrs
+-- | @webST name attrs@ renders a name template with attrs
 webST :: (MonadIO m) => String -> [(String, String)] -> m Response
 webST name attrs = do
   grp :: STGroup String <- liftIO $ directoryGroupLazy "templates"

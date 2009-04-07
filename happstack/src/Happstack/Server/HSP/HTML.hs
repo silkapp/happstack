@@ -32,6 +32,10 @@ instance ToMessage (Maybe XMLMetaData, XML) where
     toMessage (Nothing, xml) =
         L.fromString (renderAsHTML xml)
 
+-- | Converts a @HSP XML@ to a Happstack Response.
+-- Since @HSP XML@ is the type returned by using literal HTML syntax
+-- with HSP, you can wrap up your HTML as webHSP $ <html>...</html>
+-- to use it with Happstack.
 webHSP :: (MonadIO m) => HSP XML -> m Response
 webHSP hsp = return . toResponse =<< liftIO (evalHSP Nothing hsp)
 

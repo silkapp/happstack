@@ -163,6 +163,12 @@ class (Data b) => Indexable a b | a->b where
 noCalcs :: t -> ()
 noCalcs _ = ()
 
+{- | Helper function for automatically building an Indexable instance
+   from a data type, e.g. @data Foo = Foo Int String@ and
+   @$(inferIxSet "FooDB" ''Foo 'noCalcs [''Int,''String])@ will 
+   build a type synonym @type FooDB = IxSet Foo@ with @Int@ and
+   @String@ as indexes.
+-} 
 inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
 inferIxSet ixset typeName calName entryPoints
     = do calInfo <- reify calName
