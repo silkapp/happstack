@@ -35,7 +35,7 @@ fileReader prefix key cutoff
     = do let file = prefix </> formatFilePath cutoff key
          tryE $ createDirectoryIfMissing True prefix
          return $ ReaderStream
-                    { readerClose = do return ()
+                    { readerClose = return ()
                     , readerGet   = do logMF NOTICE "fileReader: readerGet"
                                        allFiles <- getAllFiles prefix key cutoff
                                        allData <- mapM B.readFile allFiles
@@ -58,7 +58,7 @@ fileWriter prefix key cutoffInit = do
   let getFileName = do cutoff <- readMVar cutoffVar
                        return $ prefix </> formatFilePath cutoff key
   file <- getFileName
-  logMF NOTICE ("fileWrter: "++key++" @ "++prefix)
+  logMF NOTICE ("fileWriter: "++key++" @ "++prefix)
   tryE  $ createDirectoryIfMissing True prefix
   hmv <- newMVar =<< openBinaryFile file WriteMode
   return $ WriterStream
