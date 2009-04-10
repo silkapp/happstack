@@ -44,7 +44,7 @@ formatRequestCombined :: FormatTime t =>
   -> String
   -> String
 formatRequestCombined host user time requestLine responseCode size referer userAgent =
-  unwords $
+  unwords 
     [ host
     , user
     , "[" ++ formattedTime ++ "]"

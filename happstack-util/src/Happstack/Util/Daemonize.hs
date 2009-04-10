@@ -26,7 +26,7 @@ daemonize binarylocation main =
     tid1 <- exitIfAlreadyRunning startTime
     mId <- myThreadId
     tid2 <- appCheck binarylocation startTime mId
-    main `finally` (mapM killThread [tid1,tid2])
+    main `finally` mapM killThread [tid1,tid2]
     where 
     seconds n = noTimeDiff { tdSec = n }
     exitIfAlreadyRunning startTime = 
@@ -46,11 +46,7 @@ daemonize binarylocation main =
         fe <- doesFileExist bl
         if not fe then return () else do
         appModTime <- getModificationTime bl
-        if startTime < appModTime then 
-             E.throwTo mId $ 
-                              ExitSuccess -- throws to the main thread
-
-           else return ()
+        when (startTime < appModTime) (E.throwTo mId ExitSuccess) -- throws to the main thread
 
 getDaemonizedId :: IO String
 getDaemonizedId

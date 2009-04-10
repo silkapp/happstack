@@ -9,4 +9,4 @@ import qualified Happstack.Server.Tests     as Contrib
 import Test.HUnit
 
 allTests :: Test
-allTests = ("happstack" ~: [ Util.allTests, Data.allTests, IxSet.allTests, State.allTests, Server.allTests, Contrib.allTests ])
+allTests = "happstack" ~: [ Util.allTests, Data.allTests, IxSet.allTests, State.allTests, Server.allTests, Contrib.allTests ]

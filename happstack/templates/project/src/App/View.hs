@@ -22,7 +22,7 @@ dateStr ct =
 -- * Main Implementation
 
 renderFromBody :: (MonadIO m, EmbedAsChild (HSPT' IO) xml) => String -> xml -> m Response
-renderFromBody title body = webHSP $ pageFromBody title body
+renderFromBody title = webHSP . pageFromBody title
 
 pageFromBody :: (EmbedAsChild (HSPT' IO) xml) => String -> xml -> HSP XML
 pageFromBody title body =
@@ -95,6 +95,5 @@ pageFromBody title body =
     </html>
 
 renderREADME :: (MonadIO m) => ClockTime -> m Response
-renderREADME now = do
-  webST "readme" [("time", dateStr now)]
+renderREADME now = webST "readme" [("time", dateStr now)]
 

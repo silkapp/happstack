@@ -21,7 +21,7 @@ qcrun prop opts = TestCase $
          (TestExausted _ ntest _) -> 
              assertFailure $ "Arguments exhausted after" ++ show ntest ++ (if ntest == 1 then " test." else " tests.")
          (TestFailed testArgs ntest) ->
-             assertFailure $ ( "Falsifiable, after "
+             assertFailure ( "Falsifiable, after "
                    ++ show ntest
                    ++ " tests:\n"
                    ++ unlines testArgs
@@ -41,11 +41,11 @@ tests config gen rnd0 ntest nfail stamps
            Just True  ->
              tests config gen rnd1 (ntest+1) nfail (stamp result:stamps)
            Just False ->
-             assertFailure $ ( "Falsifiable, after "
+             assertFailure ("Falsifiable, after "
                    ++ show ntest
                    ++ " tests:\n"
                    ++ unlines (arguments result)
-                    )
+                   )
      where
       result      = generate (configSize config ntest) rnd2 gen
       (rnd1,rnd2) = split rnd0

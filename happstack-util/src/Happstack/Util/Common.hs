@@ -21,7 +21,7 @@ import System.IO.Error
 import System.Process
 import System.IO.Unsafe
 import System.Time
-import Control.Arrow
+import Control.Arrow (first,second)
 
 type Seconds = Int
 type EpochSeconds = Int64
@@ -39,9 +39,8 @@ logMC = logM "Happstack.Util.Common"
 
 -- | Put a line into a handle followed by "\r\n" and echo to stdout
 hPutLine :: Handle -> String -> IO ()
-hPutLine handle line = 
-	do
-	hPutStr handle $ line
+hPutLine handle line = do
+	hPutStr handle line
 	hPutStr handle "\r\n"
 	hFlush handle
 	logMC DEBUG line
@@ -81,14 +80,14 @@ trim=ltrim.rtrim
 -- | Repeadly splits a list by the provided separator and collects the results
 splitList :: Eq a => a -> [a] -> [[a]]
 splitList _   [] = []
-splitList sep list = first:splitList sep rest
-	where (first,rest)=split (==sep) list
+splitList sep list = h:splitList sep t
+	where (h,t)=split (==sep) list
 
 -- | Repeatedly splits a list and collects the results
 splitListBy :: (a -> Bool) -> [a] -> [[a]]
 splitListBy _ [] = []
-splitListBy f list = first:splitListBy f rest
-	where (first,rest)=split f list
+splitListBy f list = h:splitListBy f t
+	where (h,t)=split f list
 
 -- | Split is like break, but the matching element is dropped.
 split :: (a -> Bool) -> [a] -> ([a], [a])
@@ -138,7 +137,7 @@ runCommand cmd args = do
           do hPutStrLn stderr ("Running process "++unwords (cmd:args)++" FAILED ("++show e++")")
              hPutStrLn stderr os
              hPutStrLn stderr es
-             hPutStrLn stderr ("Raising error...")
+             hPutStrLn stderr "Raising error..."
              fail "Running external command failed"
 
 
@@ -155,7 +154,7 @@ debugM msg = unsafePerformIO (P.hPutStr stderr (P.pack (msg++"\n")) >> hFlush st
 
 -- | Read in any monad.
 readM :: (Monad m, Read t) => String -> m t
-readM s = case readsPrec 0 s of
+readM s = case reads s of
             [(v,"")] -> return v
             _        -> fail "readM: parse error"
 
@@ -173,7 +172,7 @@ boolM True  = return True
 -- | @notMb a b@ returns @Just a@ if @b@ is @Nothing@ and @Nothing@ if
 -- @b@ is @Just _@.
 notMb :: a-> Maybe a-> Maybe a
-notMb v1 v2 = maybe (Just v1) (const Nothing) $ v2
+notMb v1 v2 = maybe (Just v1) (const Nothing) v2
 
 -- | Takes a list of delays, in seconds, and an action to execute
 -- repeatedly.  The action is then executed repeatedly in a separate thread

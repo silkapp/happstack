@@ -14,6 +14,6 @@ main =
                   else do (c,st) <- runTestText putTextToShowS allTests
                           putStrLn (st "")
                           return c
-       case (failures c) + (errors c) of
+       case failures c + errors c of
          0 -> return ()
          n -> exitFailure

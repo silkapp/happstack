@@ -38,4 +38,4 @@ instance FromData GuestBookEntry where
   fromData = do
     author  <- look "author"
     message <- look "message"
-    return $ GuestBookEntry (if (null author) then "Anonymous" else author) message defaultValue
+    return $ GuestBookEntry (if null author then "Anonymous" else author) message defaultValue

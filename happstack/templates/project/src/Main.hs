@@ -90,6 +90,5 @@ parseConfig args
         (_,_,errs)   -> Left errs
 
 startSystemState' :: (Component st, Methods st) => String -> Proxy st -> IO (MVar TxControl)
-startSystemState' path proxy =
-    runTxSystem (Queue (FileSaver path)) proxy
+startSystemState' = runTxSystem . Queue . FileSaver
 

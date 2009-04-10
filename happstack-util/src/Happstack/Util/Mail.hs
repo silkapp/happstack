@@ -91,4 +91,4 @@ sendRawMessages smtpSockAddr heloDomain messages = do
         Nothing ->
             return ()
         Just status ->
-            log' ERROR $ "message failed: " ++ (show status)
+            log' ERROR $ "message failed: " ++ show status

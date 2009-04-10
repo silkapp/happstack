@@ -15,8 +15,7 @@ instance Arbitrary Word32 where
 instance Random Word32 where
   randomR (a,b) g = (fromInteger i,g)
     where (i,_) = randomR (toInteger a, toInteger b) g
-  random g =
-    randomR (minBound,maxBound) g
+  random = randomR (minBound,maxBound)
 
 propShowHostAddress :: HostAddress -> Bool
 propShowHostAddress a = new == old

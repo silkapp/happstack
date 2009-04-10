@@ -21,9 +21,8 @@ data Command
 main :: IO ()
 main = do
   args <- getArgs
-  case (processArgs args) of
-    NewProjectCmd dir -> do
-      newProject dir
+  case processArgs args of
+    NewProjectCmd dir -> newProject dir
     HelpCmd -> do
       putStrLn "Usage: happstack <command>"
       putStrLn "Possible commands:"

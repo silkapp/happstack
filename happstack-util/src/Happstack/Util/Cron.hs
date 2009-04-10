@@ -10,8 +10,8 @@ type Seconds = Int
 cron :: Seconds -> IO () -> IO a
 cron seconds0 action = loop seconds0
     where maxSeconds = (maxBound :: Int) `div`  10^(6 ::Int)
-          loop seconds =
-            do if seconds <= maxSeconds
+          loop seconds = 
+              if seconds <= maxSeconds
                 then do threadDelay (10^(6 :: Int) * seconds)
                         action
                         loop seconds0

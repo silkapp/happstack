@@ -17,6 +17,5 @@ appHandler = msum
   ]
 
 getREADME :: ServerPartT IO Response
-getREADME = methodM GET >> do
-  now <- liftIO getClockTime
-  renderREADME now
+getREADME = 
+    methodM GET >> liftIO getClockTime >>= renderREADME

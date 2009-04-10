@@ -110,7 +110,7 @@ withTimeOutMaybe tout op = do
   ktid <- fork ( do threadDelay tout 
                     throwTo' wtid (TimeOutExceptionI toId)
                )
-  (catchTimeOutI toId) (fmap Just (op >>= \r -> killThread ktid >> return  r)) (return Nothing)
+  catchTimeOutI toId (fmap Just (op >>= \r -> killThread ktid >> return  r)) (return Nothing)
 
 -- | This is the normal timeout handler. It throws a TimeOutException exception,
 -- if the timeout occurs.
