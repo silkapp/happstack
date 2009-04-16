@@ -12,7 +12,7 @@ import System.Directory
     , copyFile
     )
 import System.FilePath ((</>), makeRelative)
-import System.FilePath.Find (always, find)
+import Happstack.Util.FileManip (always, find)
 
 data Command
   = NewProjectCmd FilePath

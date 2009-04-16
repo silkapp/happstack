@@ -40,7 +40,9 @@ Library
                        SMTPClient >= 1.0.1 && < 1.1,
                        strict-concurrency,
                        network >= 2.2 && < 3,
-                       template-haskell
+                       template-haskell,
+                       unix-compat,
+                       filepath
   if flag(base4)
     Build-Depends:       base >= 4
   else
@@ -66,7 +68,8 @@ Library
                        Happstack.Util.Mail,
                        Happstack.Util.TimeOut,
                        Happstack.Util.TH,
-                       Happstack.Util.Testing
+                       Happstack.Util.Testing,
+                       Happstack.Util.FileManip
   if flag(tests)
     Exposed-modules:   Happstack.Util.Tests
     Exposed-modules:   Happstack.Util.Tests.HostAddress
