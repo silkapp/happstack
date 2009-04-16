@@ -5,6 +5,13 @@ Happstack 0.3
  * Moved Combined Logging from Happstack.Server to Happstack.Server.AccessLog.Combined
  * Added Happstack.Util.Mail: a simple email interface which utilizes a smarthost
  * SimpleHTTP: look and lookPairs now assume utf-8 from the browser
+ * Space leak fixed in Happstack.Util.Timeout
+ * A fix for an issue where alphanumeric Accept-Encoding Requests made the parser fail
+ * Fixes for some command-line browsers such as links
+ * Guards now have fall-through semantics
+ * Various updates & additions to documentation
+ * Code beautification
+ * Bugfix to Happstack.Util.Cron to accept intervals up to maxBound
 
 Happstack 0.2
  * Module namespace refactoring from HAppS to Happstack
