@@ -34,21 +34,23 @@ processArgs ["help"]                = HelpCmd
 processArgs _                       = HelpCmd
     
 newProject :: FilePath -> IO ()
-newProject destDir = do
+newProject destDir' = do
     dataDir <- liftM (</> "templates" </> "project") getDataDir
-
+    destDir <- canonicalizePath destDir'
+    
     -- create destDir if needed
-    createDirectoryIfMissing True destDir
-  
+    createDir destDir
+
     -- create dirs
     srcDirs <- getSourceDirs dataDir
     let destDirs = map ((destDir </>) . makeRelative dataDir) srcDirs
-    mapM_ (createDirectoryIfMissing False) destDirs
+    mapM_ createDir destDirs
 
     -- create files
     srcFiles <- getSourceFiles dataDir
     let destFiles = map ((destDir </>) . makeRelative dataDir) srcFiles
     mapM_ cp $ zip srcFiles destFiles
+    where createDir = createDirectoryIfMissing True
       
 -- only source dirs
 getSourceDirs :: FilePath -> IO [FilePath]
