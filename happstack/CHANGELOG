@@ -12,6 +12,8 @@ Happstack 0.3
  * Various updates & additions to documentation
  * Code beautification
  * Bugfix to Happstack.Util.Cron to accept intervals up to maxBound
+ * addition of a strict version of fileServe "fileServeStrict"
+ * fileServe (lazy) behaves more reliably now and escapes before any filters can be applied
 
 Happstack 0.2
  * Module namespace refactoring from HAppS to Happstack
