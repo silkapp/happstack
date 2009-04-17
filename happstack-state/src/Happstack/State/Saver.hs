@@ -43,9 +43,7 @@ createWriter NullSaver _key _cutoff
 
 -- | Returns True if the lock was obtained correctly
 lock :: Saver -> IO Bool
-lock (FileSaver prefix) = do
-  putStrLn prefix
-  fileLocker prefix
+lock (FileSaver prefix) = fileLocker prefix
 lock (Queue saver) = lock saver
 lock _ = return True
 

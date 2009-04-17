@@ -30,7 +30,6 @@ runTxSystem' :: (Methods st, Component st) => Bool -> Saver -> Proxy st -> IO (M
 runTxSystem' withMultimaster saver stateProxy =
     do logMM NOTICE "Initializing system control."
        isLocked <- lock saver
-       print isLocked
        if isLocked 
          then aux
          else do putStrLn "There may already be an instance of this application running, which could result in a loss of data."

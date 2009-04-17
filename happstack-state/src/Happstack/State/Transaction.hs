@@ -40,8 +40,12 @@ getTime :: (Integral epochTime) => AnyEv epochTime
 getTime = sel (fromIntegral . txTime . evContext)
 
 getEventClockTime :: AnyEv ClockTime
-getEventClockTime = do milliSeconds <- sel (txTime . evContext)
-                       return $ TOD (fromIntegral milliSeconds) 0
+getEventClockTime = do 
+  milliSeconds <- sel (txTime . evContext)
+  let (seconds, justMilliSeconds) = (fromIntegral milliSeconds) `divMod` 1000
+  return $ TOD seconds (justMilliSeconds * 1000000000)
+
+
 
 getEventId :: (Integral txId) => AnyEv txId
 getEventId = sel (fromIntegral . txId . evContext)
