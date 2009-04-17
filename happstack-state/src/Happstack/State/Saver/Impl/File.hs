@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 module Happstack.State.Saver.Impl.File
-    ( fileReader, fileWriter
+    ( fileReader, fileWriter, fileLocker, fileUnlocker
     ) where
 
 import Happstack.State.Saver.Types
@@ -10,8 +10,9 @@ import Control.Concurrent
 import Control.Exception.Extensible as E
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as B
-import System.Directory         ( createDirectoryIfMissing, renameFile, doesFileExist )
+import System.Directory         ( createDirectoryIfMissing, renameFile, doesFileExist, removeFile )
 import System.IO
+import qualified System.IO.Error as SE
 import System.Random            ( randomIO )
 import System.Log.Logger
 import Text.Printf
@@ -96,3 +97,19 @@ atomicWriteFile path string = do
   let p' = path ++ ".atomic-tmp-" ++ show (abs r)
   L.writeFile p' string
   renameFile p' path
+
+fileLocker :: FilePath -> IO Bool
+fileLocker fp = checkLockFile (fp++".lock")
+
+fileUnlocker :: FilePath -> IO ()
+fileUnlocker fp = SE.catch (removeFile (fp++".lock")) (const $ return ())
+
+checkLockFile :: FilePath -> IO Bool
+checkLockFile fp = flip SE.catch aux $ do
+                     openFile fp ReadMode
+                     return False
+  where aux e | SE.isAlreadyInUseError e = return False
+              | SE.isPermissionError e = return False
+              | SE.isDoesNotExistError e = do
+                                      writeFile fp fp
+                                      return True

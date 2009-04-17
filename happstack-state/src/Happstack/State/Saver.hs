@@ -1,7 +1,7 @@
 module Happstack.State.Saver
     ( module Happstack.State.Saver.Types
     , Saver(..)
-    , createReader, createWriter ) where
+    , createReader, createWriter, lock, unlock ) where
 
 import Control.Concurrent
 import Happstack.State.Saver.Impl.File
@@ -40,4 +40,18 @@ createWriter NullSaver _key _cutoff
                , writerAdd   = \_ io -> io
                , writerAtomicReplace = fail "NullSaver: writerAtomicReplace"
                , writerCut   = fail "NullSaver: writerCut" }
+
+-- | Returns True if the lock was obtained correctly
+lock :: Saver -> IO Bool
+lock (FileSaver prefix) = do
+  putStrLn prefix
+  fileLocker prefix
+lock (Queue saver) = lock saver
+lock _ = return True
+
+-- | Reverses the effects of 'lock'
+unlock :: Saver -> IO ()
+unlock (FileSaver prefix) = fileUnlocker prefix
+unlock (Queue saver) = unlock saver
+unlock _ = return ()
 
