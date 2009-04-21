@@ -105,11 +105,10 @@ fileUnlocker :: FilePath -> IO ()
 fileUnlocker fp = SE.catch (removeFile (fp++".lock")) (const $ return ())
 
 checkLockFile :: FilePath -> IO Bool
-checkLockFile fp = flip SE.catch aux $ do
-                     openFile fp ReadMode
-                     return False
-  where aux e | SE.isAlreadyInUseError e = return False
-              | SE.isPermissionError e = return False
-              | SE.isDoesNotExistError e = do
-                                      writeFile fp fp
-                                      return True
+checkLockFile fp = do
+    exists <- doesFileExist fp
+    if exists then return False
+              else do createDirectoryIfMissing True (takeDirectory fp)
+                      writeFile fp ""
+                      return True
+
