@@ -1,5 +1,5 @@
 Name:                happstack
-Version:             0.3
+Version:             0.3.1
 Synopsis:            The haskell application server stack + code generation
 Description:         The haskell application server stack
 License:             BSD3

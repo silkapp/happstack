@@ -1,5 +1,5 @@
 Name:                happstack-contrib
-Version:             0.3
+Version:             0.3.1
 Synopsis:            Web related tools and services.
 Description:         Collection of standalone applications
 License:             BSD3
@@ -42,11 +42,11 @@ Library
   build-depends:       base,
                        bytestring,
                        directory,
-                       happstack-server >= 0.3 && < 0.4,
-                       happstack-util >= 0.3 && < 0.4,
-                       happstack-state >= 0.3 && < 0.4,
-                       happstack-ixset >= 0.3 && < 0.4,
-                       happstack-data >= 0.3 && < 0.4,
+                       happstack-server >= 0.3.1 && < 0.4,
+                       happstack-util >= 0.3.1 && < 0.4,
+                       happstack-state >= 0.3.1 && < 0.4,
+                       happstack-ixset >= 0.3.1 && < 0.4,
+                       happstack-data >= 0.3.1 && < 0.4,
                        HTTP >= 4000.0.2,
                        mtl,
                        network,
