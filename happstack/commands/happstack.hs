@@ -1,5 +1,5 @@
 -- happstack command
-module Main where
+module Main (main) where
 
 import Control.Monad (filterM, liftM, mapM, mapM_)
 import Paths_happstack (getDataDir)
@@ -12,10 +12,12 @@ import System.Directory
     , copyFile
     )
 import System.FilePath ((</>), makeRelative)
+import Happstack.Util.AutoBuild (autoBuild)
 import Happstack.Util.FileManip (always, find)
 
 data Command
   = NewProjectCmd FilePath
+  | BuildAutoCmd String String [String]
   | HelpCmd
 
 main :: IO ()
@@ -23,16 +25,23 @@ main = do
   args <- getArgs
   case processArgs args of
     NewProjectCmd dir -> newProject dir
+    BuildAutoCmd buildCmd binPath binArgs -> buildAuto buildCmd binPath binArgs
     HelpCmd -> do
       putStrLn "Usage: happstack <command>"
       putStrLn "Possible commands:"
+      putStrLn "  build auto <buildCmd> <binPath> <binArgs>...: invoke the auto-builder"
       putStrLn "  new project <dir>: create a new happstack project"
   
 processArgs :: [String] -> Command
+processArgs ("build" : "auto" : buildCmd : binPath : binArgs) =
+    BuildAutoCmd buildCmd binPath binArgs
 processArgs ["new", "project", dir] = NewProjectCmd dir
 processArgs ["help"]                = HelpCmd
 processArgs _                       = HelpCmd
     
+buildAuto :: String -> String -> [String] -> IO ()
+buildAuto = autoBuild
+
 newProject :: FilePath -> IO ()
 newProject destDir' = do
     dataDir <- liftM (</> "templates" </> "project") getDataDir

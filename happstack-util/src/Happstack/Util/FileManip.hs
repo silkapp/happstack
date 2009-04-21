@@ -119,3 +119,4 @@ find = findWithHandler warnOnError
 -- | Unconditionally return 'True'.
 always :: FindClause Bool
 always = return True
+

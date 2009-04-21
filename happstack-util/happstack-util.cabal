@@ -26,6 +26,7 @@ Flag tests
 Library
   Build-Depends:       array,
                        bytestring,
+                       control-timeout >= 0.1.2 && < 0.2,
                        directory,
                        extensible-exceptions, 
                        hslogger >= 1.0.2,
@@ -58,6 +59,7 @@ Library
                        Happstack.Crypto.SHA1,
                        Happstack.Crypto.MD5,
                        Happstack.Crypto.W64,
+                       Happstack.Util.AutoBuild,
                        Happstack.Util.ByteStringCompat,
                        Happstack.Util.Common,
                        Happstack.Util.Concurrent,

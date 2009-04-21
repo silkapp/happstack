@@ -53,3 +53,4 @@ getDaemonizedId
     = do prog <- getProgName
          args <- getArgs
          return (sha1 (prog ++ unwords args))
+
