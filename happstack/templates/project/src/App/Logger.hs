@@ -1,4 +1,4 @@
-module App.Logger (setupLogger) where
+module App.Logger (LoggerHandle, setupLogger, teardownLogger) where
 
 import System.Log.Logger
     ( Priority(..)
@@ -7,8 +7,16 @@ import System.Log.Logger
     , setHandlers
     , updateGlobalLogger
     )
-import System.Log.Handler.Simple (fileHandler, streamHandler)
-import System.IO (stdout)
+import System.Log.Handler (close)
+import System.Log.Handler.Simple (GenericHandler, fileHandler, streamHandler)
+import System.IO (stdout, Handle)
+
+-- | Opaque type covering all information needed to teardown the logger.
+data LoggerHandle = LoggerHandle { 
+    rootLogHandler   :: GenericHandler Handle
+  , accessLogHandler :: GenericHandler Handle
+  , serverLogHandler :: GenericHandler Handle
+  }
 
 setupLogger = do
     appLog <- fileHandler "app.log" INFO
@@ -29,3 +37,15 @@ setupLogger = do
     updateGlobalLogger
         "Happstack.Server"
         (setLevel NOTICE . setHandlers [stdoutLog])
+    -- return opaque AppLogger handle
+    return $ LoggerHandle appLog accessLog stdoutLog
+
+-- | Tear down the application logger; i.e. close all associated log handlers.
+teardownLogger handle = do
+  close $ serverLogHandler handle
+  close $ accessLogHandler handle
+  close $ rootLogHandler   handle
+
+  
+  
+  

@@ -24,7 +24,7 @@ import System.Environment (getArgs)
 import System.Log.Logger (Priority(..), logM)
 import System.Exit (exitFailure)
 import System.Console.GetOpt 
-import App.Logger (setupLogger)
+import App.Logger (setupLogger, teardownLogger)
 import App.State (AppState(..))
 import App.Control (appHandler)
 
@@ -36,10 +36,11 @@ main = do
   let progName = "guestbook"
   
   args <- getArgs
-  setupLogger
+  logger <- setupLogger
 
   appConf <- case parseConfig args of
                (Left e) -> do logM progName ERROR (unlines e)
+	                      teardownLogger logger
                               exitFailure
                (Right f) -> return (f $ defaultConf progName)
   
@@ -60,6 +61,7 @@ main = do
   killThread cronTid
   createCheckpoint control
   shutdownSystem control 
+  teardownLogger logger
 
 
 data AppConf
