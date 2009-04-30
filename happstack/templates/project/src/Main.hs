@@ -24,7 +24,7 @@ import System.Environment (getArgs)
 import System.Log.Logger (Priority(..), logM)
 import System.Exit (exitFailure)
 import System.Console.GetOpt 
-import App.Logger (setupLogger, teardownLogger)
+import App.Logger (withLogger)
 import App.State (AppState(..))
 import App.Control (appHandler)
 
@@ -36,32 +36,31 @@ main = do
   let progName = "guestbook"
   
   args <- getArgs
-  logger <- setupLogger
+  -- ensure logger is in place and being cleaned up afterwards
+  withLogger $ do
+    -- parse command-line arguments
+    appConf <- case parseConfig args of
+		 (Left e) -> do logM progName ERROR (unlines e)
+				exitFailure
+		 (Right f) -> return (f $ defaultConf progName)
+    
+    -- start the state system
+    control <- startSystemState' (store appConf) stateProxy
+    
+    -- start the http server
+    httpTid <- forkIO $ simpleHTTP (httpConf appConf) appHandler
 
-  appConf <- case parseConfig args of
-               (Left e) -> do logM progName ERROR (unlines e)
-	                      teardownLogger logger
-                              exitFailure
-               (Right f) -> return (f $ defaultConf progName)
-  
-  -- start the state system
-  control <- startSystemState' (store appConf) stateProxy
-  
-  -- start the http server
-  httpTid <- forkIO $ simpleHTTP (httpConf appConf) appHandler
-
-  -- checkpoint the state once a day
-  cronTid <- forkIO $ cron (60*60*24) (createCheckpoint control)
-  
-  -- wait for termination signal
-  waitForTermination
-  
-  -- cleanup
-  killThread httpTid
-  killThread cronTid
-  createCheckpoint control
-  shutdownSystem control 
-  teardownLogger logger
+    -- checkpoint the state once a day
+    cronTid <- forkIO $ cron (60*60*24) (createCheckpoint control)
+    
+    -- wait for termination signal
+    waitForTermination
+    
+    -- cleanup
+    killThread httpTid
+    killThread cronTid
+    createCheckpoint control
+    shutdownSystem control 
 
 
 data AppConf

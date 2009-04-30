@@ -1,4 +1,11 @@
-module App.Logger (LoggerHandle, setupLogger, teardownLogger) where
+module App.Logger (
+      LoggerHandle
+    , setupLogger
+    , teardownLogger
+    , withLogger
+) where
+
+import qualified Control.Exception.Extensible as E (SomeException, catch, throw)
 
 import System.Log.Logger
     ( Priority(..)
@@ -13,11 +20,13 @@ import System.IO (stdout, Handle)
 
 -- | Opaque type covering all information needed to teardown the logger.
 data LoggerHandle = LoggerHandle { 
-    rootLogHandler   :: GenericHandler Handle
-  , accessLogHandler :: GenericHandler Handle
-  , serverLogHandler :: GenericHandler Handle
-  }
+      rootLogHandler   :: GenericHandler Handle
+    , accessLogHandler :: GenericHandler Handle
+    , serverLogHandler :: GenericHandler Handle
+    }
 
+-- | Install the loggers required by the application. 
+setupLogger :: IO LoggerHandle
 setupLogger = do
     appLog <- fileHandler "app.log" INFO
     accessLog <- fileHandler "access.log" INFO
@@ -41,11 +50,21 @@ setupLogger = do
     return $ LoggerHandle appLog accessLog stdoutLog
 
 -- | Tear down the application logger; i.e. close all associated log handlers.
+teardownLogger :: LoggerHandle -> IO ()
 teardownLogger handle = do
-  close $ serverLogHandler handle
-  close $ accessLogHandler handle
-  close $ rootLogHandler   handle
+    close $ serverLogHandler handle
+    close $ accessLogHandler handle
+    close $ rootLogHandler   handle
 
-  
+-- | Bracket an IO action which denotes the whole scope where the loggers of
+-- the application are needed to installed. Sets them up before running the action
+-- and tears them down afterwards. Even in case of an exception. 
+withLogger :: IO a -> IO a
+withLogger cmd = do
+    logger <- setupLogger
+    cmd `E.catch` \e -> do
+	teardownLogger logger
+	E.throw (e::E.SomeException)
+
   
   
