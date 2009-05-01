@@ -15,7 +15,6 @@ Data-files:
         public/theme/images/date.gif
         public/theme/images/ql_rss.gif
         public/theme/images/header_loop.gif
-        public/theme/images/Thumbs.db
         public/theme/images/blockquote.gif
         public/theme/images/menu_hili.gif
         public/theme/images/grunge.gif
@@ -40,7 +39,7 @@ Library
  hs-source-dirs: src
 
  GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
- Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data
+ Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data, extensible-exceptions
  if flag(base4)
     Build-Depends: base >= 4 && < 5, syb
 
