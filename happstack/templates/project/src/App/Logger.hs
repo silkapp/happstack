@@ -5,7 +5,7 @@ module App.Logger (
     , withLogger
 ) where
 
-import qualified Control.Exception.Extensible as E (SomeException, catch, throw)
+import Control.Exception.Extensible (bracket)
 
 import System.Log.Logger
     ( Priority(..)
@@ -60,11 +60,7 @@ teardownLogger handle = do
 -- the application are needed to installed. Sets them up before running the action
 -- and tears them down afterwards. Even in case of an exception. 
 withLogger :: IO a -> IO a
-withLogger cmd = do
-    logger <- setupLogger
-    cmd `E.catch` \e -> do
-	teardownLogger logger
-	E.throw (e::E.SomeException)
+withLogger = bracket setupLogger teardownLogger . const
 
   
   
