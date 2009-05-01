@@ -293,6 +293,13 @@ getOne ixset = case toList ixset of
 getOneOr :: Ord a => a -> IxSet a -> a
 getOneOr def = fromMaybe def . getOne
 
+-- | return True if the IxSet is empty, False otherwise.
+null :: IxSet a -> Bool
+null (IxSet (Ix ix:_)) = Map.null ix
+null (ISet lst)        = List.null lst
+null (IxSet [])        = True
+null _ = error "IxSet.null: unexpected match"
+
 -- set operations
 
 -- | An infix intersection operation
@@ -475,4 +482,3 @@ Optimization todo:
 instance (Show a,Indexable a b,Data a,Ord a) => Monoid (IxSet a) where
     mempty=empty
     mappend = union
-
