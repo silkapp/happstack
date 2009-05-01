@@ -9,7 +9,7 @@ import Control.Monad.State hiding (State)
 import Control.Monad.Reader
 
 import Happstack.Data
-import Happstack.Data.IxSet
+import Happstack.Data.IxSet hiding (null)
 import Happstack.Contrib.Atom
 import Happstack.State
 import Happstack.Server.Facebook as FB 
