@@ -1,2 +1,2 @@
 #!/bin/sh
-ghci -isrc src/Main.hs
+ghci -isrc -isrc-interactive-only src/Main.hs
