@@ -1,7 +1,12 @@
 module Happstack.State.Saver
     ( module Happstack.State.Saver.Types
+    , PrefixLock
     , Saver(..)
-    , createReader, createWriter, lock, unlock ) where
+    , createReader
+    , createWriter
+    , obtainLock
+    , releaseLock
+    ) where
 
 import Control.Concurrent
 import Happstack.State.Saver.Impl.File
@@ -12,7 +17,6 @@ import Happstack.Data.Serialize
 
 data Saver = NullSaver        -- ^ A saver that discards all output
            | FileSaver String -- ^ A saver that operates on files. The parameter is the prefix for the files.
-                              --   Creates the prefix directory.
            | Queue Saver      -- ^ Enable queueing.
            | Memory (MVar Store)
 
@@ -41,15 +45,12 @@ createWriter NullSaver _key _cutoff
                , writerAtomicReplace = fail "NullSaver: writerAtomicReplace"
                , writerCut   = fail "NullSaver: writerCut" }
 
--- | Returns True if the lock was obtained correctly
-lock :: Saver -> IO Bool
-lock (FileSaver prefix) = fileLocker prefix
-lock (Queue saver) = lock saver
-lock _ = return True
+obtainLock :: Saver -> IO (Maybe PrefixLock)
+obtainLock (Queue saver) = obtainLock saver
+obtainLock (FileSaver prefix) = fmap Just (obtainPrefixLock prefix)
+obtainLock _ = return Nothing
 
--- | Reverses the effects of 'lock'
-unlock :: Saver -> IO ()
-unlock (FileSaver prefix) = fileUnlocker prefix
-unlock (Queue saver) = unlock saver
-unlock _ = return ()
+releaseLock :: Maybe PrefixLock -> IO ()
+releaseLock (Just lock) = releasePrefixLock lock
+releaseLock Nothing = return ()
 

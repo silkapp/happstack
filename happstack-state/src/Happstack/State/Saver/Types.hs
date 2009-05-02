@@ -14,3 +14,4 @@ data WriterStream a
     , writerAtomicReplace :: a -> IO ()
     , writerCut           :: IO Int
     }
+

@@ -441,6 +441,7 @@ data TxControl = TxControl
     , ctlAllComponents   :: [String]   -- ^ Types of each component used.
     , ctlComponentVersions :: M.Map String [L.ByteString] -- ^ Map listing all versions of a component
     , ctlChildren   :: [(ThreadId, MVar ())] -- 
+    , ctlPrefixLock :: Maybe PrefixLock -- ^ Stores exclusive prefix lock (implemented in filesystem)
     }
 
 data EventLogEntry = EventLogEntry TxContext Object deriving (Typeable, Show)

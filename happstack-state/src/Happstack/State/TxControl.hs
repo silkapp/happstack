@@ -29,34 +29,26 @@ runTxSystem = runTxSystem' False
 runTxSystem' :: (Methods st, Component st) => Bool -> Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem' withMultimaster saver stateProxy =
     do logMM NOTICE "Initializing system control."
-       isLocked <- lock saver
-       if isLocked 
-         then aux
-         else do putStrLn "There may already be an instance of this application running, which could result in a loss of data."
-                 putStrLn "You need to manually remove the lock file in order to start the application."
-                 error "Lock file error"
- where aux = do
-         ctl <- createTxControl saver stateProxy
-         -- insert code to lock based on the saver
-         logMM NOTICE "Creating event mapper."
-         localEventMap <- createEventMap ctl stateProxy
-         setNewEventMap localEventMap
-         logMM NOTICE "Restoring state."
-         enableLogging <- restoreState ctl
-         when withMultimaster
-                  $ do logMM NOTICE "Multimaster mode"
-                       cluster <- connectToCluster
-                       eventMap <- changeEventMapping ctl localEventMap cluster
-                       setNewEventMap eventMap
-         enableLogging
-         let ioActions = componentIO stateProxy
-         logMM NOTICE "Forking children."
-         children <- forM ioActions $ \action -> do mv <- newEmptyMVar
-                                                    tid <- forkIO (action `finally` putMVar mv ())
-                                                    return (tid,mv)
-         modifyMVar_ ctl $ \c -> return c{ctlChildren = children}
-         return ctl
-
+       ctl <- createTxControl saver stateProxy
+       -- insert code to lock based on the saver
+       logMM NOTICE "Creating event mapper."
+       localEventMap <- createEventMap ctl stateProxy
+       setNewEventMap localEventMap
+       logMM NOTICE "Restoring state."
+       enableLogging <- restoreState ctl
+       when withMultimaster
+                $ do logMM NOTICE "Multimaster mode"
+                     cluster <- connectToCluster
+                     eventMap <- changeEventMapping ctl localEventMap cluster
+                     setNewEventMap eventMap
+       enableLogging
+       let ioActions = componentIO stateProxy
+       logMM NOTICE "Forking children."
+       children <- forM ioActions $ \action -> do mv <- newEmptyMVar
+                                                  tid <- forkIO (action `finally` putMVar mv ())
+                                                  return (tid,mv)
+       modifyMVar_ ctl $ \c -> return c{ctlChildren = children}
+       return ctl
 
 -- | Shuts down a transaction system
 shutdownSystem :: MVar TxControl -> IO ()
@@ -69,4 +61,4 @@ shutdownSystem ctl
          mapM_ (takeMVar . snd) children -- FIXME: Use a timeout.
          logMM NOTICE "Shutdown complete"
          closeTxControl ctl
-         unlock saver
+

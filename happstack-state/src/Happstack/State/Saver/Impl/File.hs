@@ -1,6 +1,10 @@
 {-# LANGUAGE CPP #-}
 module Happstack.State.Saver.Impl.File
-    ( fileReader, fileWriter, fileLocker, fileUnlocker
+    ( PrefixLock
+    , fileReader
+    , fileWriter
+    , obtainPrefixLock
+    , releasePrefixLock
     ) where
 
 import Happstack.State.Saver.Types
@@ -10,7 +14,7 @@ import Control.Concurrent
 import Control.Exception.Extensible as E
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as B
-import System.Directory         ( createDirectoryIfMissing, renameFile, doesFileExist, removeFile )
+import System.Directory         ( createDirectoryIfMissing, removeFile, renameFile, doesFileExist )
 import System.IO
 import qualified System.IO.Error as SE
 import System.Random            ( randomIO )
@@ -18,12 +22,18 @@ import System.Log.Logger
 import Text.Printf
 import Control.Monad
 import System.FilePath
+import Happstack.Util.OpenExclusively (openExclusively)
+
+type PrefixLock = (FilePath, Handle)
 
 tryE :: IO a -> IO (Either SomeException a)
 tryE = E.try
 
 catchE :: IO a -> (SomeException -> IO a) -> IO a
 catchE = E.catch
+
+catchIO :: IO a -> (IOException -> IO a) -> IO a
+catchIO = E.catch
 
 logMF :: Priority -> String -> IO ()
 logMF = logM "Happstack.State.Saver.Impl.File"
@@ -60,7 +70,6 @@ fileWriter prefix key cutoffInit = do
                        return $ prefix </> formatFilePath cutoff key
   file <- getFileName
   logMF NOTICE ("fileWriter: "++key++" @ "++prefix)
-  tryE  $ createDirectoryIfMissing True prefix
   hmv <- newMVar =<< openBinaryFile file WriteMode
   return $ WriterStream
              { writerClose = withMVar hmv hClose
@@ -98,17 +107,24 @@ atomicWriteFile path string = do
   L.writeFile p' string
   renameFile p' path
 
-fileLocker :: FilePath -> IO Bool
-fileLocker fp = checkLockFile (fp++".lock")
+obtainPrefixLock :: FilePath -> IO PrefixLock
+obtainPrefixLock prefix = do
+    createDirectoryIfMissing True prefix
+    -- catchIO obtainLock onError
+    catchIO obtainLock onError
+    where fp = prefix ++ ".lock" 
+          obtainLock = do
+              h <- openExclusively fp
+              return (fp, h)
+          onError e = do
+              putStrLn "There may already be an instance of this application running, which could result in a loss of data."
+              putStrLn ("Please make sure there is no other application attempting to access '" ++ prefix ++ "'")
+              throw e
 
-fileUnlocker :: FilePath -> IO ()
-fileUnlocker fp = SE.catch (removeFile (fp++".lock")) (const $ return ())
+releasePrefixLock :: PrefixLock -> IO ()
+releasePrefixLock (fp, h) = do
+     tryE $ hClose h
+     tryE $ removeFile fp
+     return ()
 
-checkLockFile :: FilePath -> IO Bool
-checkLockFile fp = do
-    exists <- doesFileExist fp
-    if exists then return False
-              else do createDirectoryIfMissing True (takeDirectory fp)
-                      writeFile fp ""
-                      return True
 
