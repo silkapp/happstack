@@ -48,7 +48,10 @@ Library
     Build-Depends:       base >= 4
   else
     Build-Depends:       base < 4
-
+    
+  if !os(windows)
+    build-depends: unix
+    
   hs-source-dirs:      src
   if flag(tests)
     hs-source-dirs:    tests
@@ -68,6 +71,7 @@ Library
                        Happstack.Util.HostAddress,
                        Happstack.Util.LogFormat,
                        Happstack.Util.Mail,
+                       Happstack.Util.OpenExclusiveWrite,
                        Happstack.Util.TimeOut,
                        Happstack.Util.TH,
                        Happstack.Util.Testing,
