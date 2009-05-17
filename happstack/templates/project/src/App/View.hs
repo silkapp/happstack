@@ -64,7 +64,7 @@ pageFromBody title body =
           <div class="storycontent">
            <p>
               Hey congrats! You're using
-              <a href="http://happstack.com">Happstack</a> 0.2.
+              <a href="http://happstack.com">Happstack</a> 0.3.
               This is a guestbook example which you can freely change to your
               whims and fancies.
             </p>
