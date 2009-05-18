@@ -92,6 +92,7 @@ Library
   ghc-options:         -Wall
 
 Executable happstack
+  ghc-options: -threaded
   build-depends:       directory >= 1,
                        filepath >= 1
                        

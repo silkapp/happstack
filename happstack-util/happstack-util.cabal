@@ -26,7 +26,6 @@ Flag tests
 Library
   Build-Depends:       array,
                        bytestring,
-                       control-timeout >= 0.1.2 && < 0.2,
                        directory,
                        extensible-exceptions, 
                        hslogger >= 1.0.2,
