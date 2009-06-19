@@ -12,8 +12,8 @@ import Happstack.Data.Serialize
 
 import Control.Concurrent
 import Control.Exception.Extensible as E
-import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import System.Directory         ( createDirectoryIfMissing, removeFile, renameFile, doesFileExist )
 import System.IO
 import qualified System.IO.Error as SE
