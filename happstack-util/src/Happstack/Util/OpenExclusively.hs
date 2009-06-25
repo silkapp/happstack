@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
  -- | Cross platform way to open a file exclusively
 module Happstack.Util.OpenExclusively
     ( -- | Cross platform way to open a file exclusively
