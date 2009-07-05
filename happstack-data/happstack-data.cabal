@@ -1,5 +1,5 @@
 Name:               happstack-data
-Version:            0.3.2
+Version:            0.4
 License:            BSD3
 License-File:       COPYING
 Author:             Happstack team, HAppS LLC
@@ -44,7 +44,7 @@ Library
   Build-Depends:      binary,
                       bytestring,
                       containers,
-                      happstack-util >= 0.3.2 && < 0.4, 
+                      happstack-util >= 0.4 && < 0.5, 
                       HaXml >= 1.13 && < 1.14,
                       mtl,
                       pretty,
