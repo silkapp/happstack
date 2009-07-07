@@ -15,7 +15,7 @@ data Class = Tagged [(Name, Int)] Cxt [Name]
 -- | Derives an instance of Serialize for the provided type
 -- Should work in most cases if the type is already and instance
 -- of Version.  
--- Ex: @$(deriveSerialize ''Foo)
+-- Ex: @$(deriveSerialize ''Foo)@
 deriveSerialize :: Name -> Q [Dec]
 deriveSerialize name
     = do c <- parseInfo name
