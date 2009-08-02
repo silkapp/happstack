@@ -17,6 +17,7 @@ Happstack 0.4
                       deriving (Show,Typeable) 
  * happstack-server: fileServe uses SendFile so the memory efficiency & performance should be much better
  * happstack-server: added guards 'host' and 'withHost' to SimpleHTTP
+ * happstack-server: nuked Happstack.Server.S3 since other hackage libraries cover this functionality these days
 Happstack 0.3
  * Modularization of the example application using the component system
  * All packages now require Cabal >= 1.6
