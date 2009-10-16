@@ -59,6 +59,7 @@ Flag tests
 
 Library
   exposed-modules:     Happstack.Server.HSP.HTML
+                       Happstack.Server.HSX
                        Happstack.Server.HStringTemplate
                        Happstack.State.ClockTime
   if flag(tests)
@@ -73,6 +74,7 @@ Library
                        happstack-state >= 0.4 && < 0.5,
                        happstack-util >= 0.4 && < 0.5,
                        hslogger,
+                       hsx >= 0.5.5 && < 0.6,
                        hsp >= 0.4.5 && < 0.5,
                        HStringTemplate >= 0.4.3 && < 0.5,
                        mtl,
