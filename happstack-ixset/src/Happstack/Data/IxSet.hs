@@ -168,6 +168,13 @@ noCalcs _ = ()
    @$(inferIxSet "FooDB" ''Foo 'noCalcs [''Int,''String])@ will 
    build a type synonym @type FooDB = IxSet Foo@ with @Int@ and
    @String@ as indexes.
+
+   WARNING: The type specified as the first index must be a type which
+   appears in all values in the 'IxSet' or 'toList' and 'toSet' will
+   not function properly. You can always use the element type
+   itself. For example,    
+   @$(inferIxSet "FooDB" ''Foo 'noCalcs [''Foo, ''Int,''String])@
+
 -} 
 inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
 inferIxSet ixset typeName calName entryPoints
