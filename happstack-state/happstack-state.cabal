@@ -32,6 +32,7 @@ Library
                        Happstack.State.Transaction
                        Happstack.State.ComponentTH
                        Happstack.State.ComponentSystem
+                       Happstack.State.CentralLogServer
   if flag(tests)
     Exposed-modules:   
                        Happstack.State.Tests
@@ -41,6 +42,7 @@ Library
   Other-modules:       
                        Happstack.State.Checkpoint
                        Happstack.State.Spread
+                       Happstack.State.NetworkChan
                        Happstack.State.Monad
                        Happstack.State.Saver.Impl.File
                        Happstack.State.Saver.Impl.Memory
@@ -65,7 +67,11 @@ Library
                        old-time,
                        random,
                        stm,
-                       template-haskell
+                       template-haskell,
+                       hS3 >= 0.5.1 && < 0.6 ,
+                       bencode >= 0.5,
+                       process,
+                       SHA >= 1.4.0 && < 2
 
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb

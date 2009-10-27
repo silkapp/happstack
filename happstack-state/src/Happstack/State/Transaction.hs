@@ -91,7 +91,7 @@ type TypeString = String
 
 data EventHandler where
     UpdateHandler :: UpdateEvent ev res =>
-                     (TxContext -> ev -> IO ()) ->
+                     (TxContext -> ev -> IO res) ->
                      (ev -> IO res) ->
                      (Object -> ev) ->
                      EventHandler
@@ -185,7 +185,7 @@ createEventMap ctlVar componentProxy
                              case me of
                                  Left e -> throwIO e
                                  Right e -> return e
-                    updateCold cxt ev = do updateCold' cxt ev; return ()
+                    updateCold cxt ev = do updateCold' cxt ev
                     updateHot ev
                         = do cxt <- atomically . addTxId tx =<< newTxContext
                              updateCold' cxt ev
@@ -260,6 +260,10 @@ getStateType str = "GetState: " ++ str
 setNewState :: TypeString -> L.ByteString -> IO ()
 setNewState stateType state
     = emitEvent' (setNewStateType stateType) (SetCheckpointState state)
+
+setNewState' :: EventMap -> TypeString -> L.ByteString -> IO ()
+setNewState' eventMap stateType state
+    = emitFunc eventMap (setNewStateType stateType) (SetCheckpointState state)
 
 getState :: TypeString -> IO L.ByteString
 getState stateType
@@ -346,19 +350,19 @@ runObjectEventFunc obj eventMap
                -> do res <- runHot (parse obj)
                      return $ mkObject res
 
-runColdEvent :: TxContext -> Object -> IO ()
+runColdEvent :: TxContext -> Object -> IO Object
 runColdEvent cxt obj
     = do EmitInternal eventMap <- readIORef emitRef
          runColdEventFunc cxt obj eventMap
 
-runColdEventFunc :: TxContext -> Object -> EventMap -> IO ()
+runColdEventFunc :: TxContext -> Object -> EventMap -> IO Object
 runColdEventFunc cxt obj eventMap
     = do handler <- lookupEventHandler (objectType obj) eventMap
          case handler of
            QueryHandler{} -> error $ "Cold event was a query: " ++ objectType obj
            UpdateHandler runCold _runHotObj parse
-               -> do runCold cxt (parse obj)
-                     return ()
+               -> do res <- runCold cxt (parse obj)
+                     return $ mkObject res
 
 lookupEventHandler :: TypeString -> EventMap -> IO EventHandler
 lookupEventHandler eventType eventMap
@@ -442,6 +446,7 @@ data TxControl = TxControl
     , ctlComponentVersions :: M.Map String [L.ByteString] -- ^ Map listing all versions of a component
     , ctlChildren   :: [(ThreadId, MVar ())] -- 
     , ctlPrefixLock :: Maybe PrefixLock -- ^ Stores exclusive prefix lock (implemented in filesystem)
+    , ctlCreateCheckpoint :: IO ()
     }
 
 data EventLogEntry = EventLogEntry TxContext Object deriving (Typeable, Show)

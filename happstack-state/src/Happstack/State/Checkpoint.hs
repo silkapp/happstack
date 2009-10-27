@@ -62,7 +62,8 @@ createTxControl saver prox
                        , ctlAllComponents     = allStateTypes prox
                        , ctlComponentVersions = componentVersions prox
                        , ctlChildren          = []
-                       , ctlPrefixLock = lock }
+                       , ctlPrefixLock        = lock
+                       , ctlCreateCheckpoint  = return () }
                        
 
 -- | Saves the state and closes the serialization
