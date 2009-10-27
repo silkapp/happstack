@@ -95,6 +95,7 @@ data Cluster
               , clusterBucket :: String
               , clusterLastId :: MVar EntryId }
 
+-- FIXME: The logging service should have a domain name.
 logServerAddress = "174.129.13.114"
 
 -- Connect to the central log server via SSH.
@@ -131,10 +132,13 @@ connectToCluster appName localEventMap
                         , clusterBucket = bucket
                         , clusterLastId = lastId }
 
+-- Update a snapshot of the component states to S3 and notify the log-server about it.
 createCheckpoint :: MVar TxControl -> Cluster -> IO ()
 createCheckpoint ctlVar cluster
     = withMVar ctlVar $ \ctl ->
-      do lastId <- readMVar (clusterLastId cluster)
+      do -- This ID number is used as the cutoff for the checkpoint. After this checkpoint has been
+         -- saved, events younger than this ID will not be sent when restoring the state.
+         lastId <- readMVar (clusterLastId cluster)
          allStates <- mapM getState (ctlAllComponents ctl)
          let stateMap = Map.fromList (zip (ctlAllComponents ctl) allStates)
              checkpoint = serialize stateMap
@@ -163,7 +167,14 @@ initiateBucket conn
                                          Left err -> error (show err)
                                          Right bucket -> return bucket
 
-
+{-
+  The new event mapping pipes Update events through the logging server. Query events
+  do not need to be sequenced and are therefore executed normally.
+  Incoming Update events may have been sent from another client and hence will not
+  have a local listener attached. Those alien events are still executed (to update the
+  state) but their computed result is discarded. For events that originated locally,
+  the computed response is sent to the appropriate listener.
+-}
 changeEventMapping :: MVar TxControl -> EventMap -> Cluster -> IO EventMap
 changeEventMapping ctlVar localEventMap cluster
     = do logLS NOTICE "Create new event mapper"
@@ -211,6 +222,7 @@ type UserName = String
 type ServerAddress = String
 type Command = String
 
+-- Run a command through an SSH tunnel.
 sshConnect :: UserName -> ServerAddress -> Command -> IO (Handle, Handle)
 sshConnect userName serverAddress command
     = do (inh, outh, errh, pid) <- runInteractiveProcess "ssh" ["-o", "BatchMode=yes", userName ++ "@" ++ serverAddress, command] Nothing Nothing
