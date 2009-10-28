@@ -58,22 +58,22 @@ test = do print =<< query GetMyData
           print =<< query GetMyData
 
 main :: IO ()
-main = do args <- getArgs
+main = processLoggingFlags $
+       do args <- getArgs
           case args of
             (app_name : rest) -> do control <- startSystemStateAmazon app_name (Proxy :: Proxy MyState)
                                     threadDelay (10^6) -- Wait 1sec to sync with central server.
                                     case rest of
-                                      ("get":_)
+                                      ["get"]
                                         -> do print =<< query GetMyData
-                                      ("set": int: string:_)
+                                      ["set", int, string]
                                         -> do update $ SetMyData (read int) string
-                                      ("checkpoint":_)
+                                      ["checkpoint"]
                                         -> do createCheckpoint control
                                       _
                                         -> do printUsage
                                      `finally` shutdownSystem control
             _ -> printUsage
-
 
 printUsage
     = do prog <- getProgName
