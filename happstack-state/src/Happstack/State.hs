@@ -3,7 +3,7 @@ module Happstack.State
      Ev, AnyEv,
      TxControl, query, update, Update, Query,
      -- * Types
-     TxId, EpochMilli, TxConfig(..),nullTxConfig,Saver(..),
+     TxId, EpochMilli, Saver(..),
      -- * Misc utilities
      module Happstack.State.Monad,
      getEventId, getTime, getEventClockTime, getEventStream, EventItem(..),

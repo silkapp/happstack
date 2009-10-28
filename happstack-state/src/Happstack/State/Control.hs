@@ -3,6 +3,7 @@
 module Happstack.State.Control
     ( startSystemState
     , startSystemStateAmazon
+    , processLoggingFlags
     , stdSaver
     , waitForTermination
     ) where
@@ -41,14 +42,12 @@ import Happstack.Data.Proxy hiding (proxy)
 startSystemState :: (Methods a, Component a) =>
                     Proxy a -> IO (MVar TxControl)
 startSystemState proxy
-    = do _txConfig <- parseArgs
-         saver <- stdSaver
+    = do saver <- stdSaver
          runTxSystem saver proxy
 
 startSystemStateAmazon :: (Methods a, Component a) => ApplicationName -> Proxy a -> IO (MVar TxControl)
 startSystemStateAmazon appName proxy
-    = do _txConfig <- parseArgs
-         runTxSystemAmazon appName proxy
+    = runTxSystemAmazon appName proxy
 
 -- | Returns the default Saver.  It will save the application state into
 -- the _local directory.
@@ -76,12 +75,6 @@ waitForTermination
              loop _   = getChar >>= loop
          loop 'c'
 #endif
-
-mkTxConfig :: [Flag] -> TxConfig
-mkTxConfig = foldr worker nullTxConfig
-    where worker (Cluster serv) c = c{txcOperationMode = ClusterMode (fromMaybe "" serv)}
-          worker (ClusterPort port) c = c{txcClusterPort = port}
-          worker _ c = c
 
 data NullLogger
 instance SLH.LogHandler NullLogger where
@@ -132,8 +125,8 @@ castOptions = flip map options $ \(Option c f desc help) -> Option c f (worker d
                     worker (ReqArg _ f) = ReqArg (const ()) f
                     worker (OptArg _ f) = OptArg (const ()) f
 
-parseArgs :: IO TxConfig
-parseArgs = do
+processLoggingFlags :: IO a -> IO a
+processLoggingFlags action = do
     args <- liftIO getArgs
     pn   <- liftIO getProgName
     let err n ls = -- XXX these next lines should be written to stderr!
@@ -142,8 +135,7 @@ parseArgs = do
                       putStrLn ("Usage "++usageInfo pn castOptions)
                       exitWith (ExitFailure 1)
     case getOpt' Permute options args of
-      (flags,_fs,_args',[]) -> do setLoggingSettings flags
-                                  -- FIXME: replace system args with fs++args'
-                                  return (mkTxConfig flags)
+      (flags,fs,args',[]) -> do setLoggingSettings flags
+                                withArgs (fs ++ args') action
       (_,_,_,es)          -> err "errors" es
 

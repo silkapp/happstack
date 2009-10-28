@@ -431,14 +431,6 @@ globalRandomGen :: MVar StdGen
 globalRandomGen = unsafePerformIO (newMVar =<< getStdGen)
 
 
-data TxConfig = TxConfig
-    { txcCheckpointSeconds   :: Seconds,   -- ^ Perform checkpoint at least every N seconds.
-      txcOperationMode       :: OperationMode,
-      txcClusterSize         :: Int,       -- ^ Number of active nodes in the cluster (not counting this node).
-      txcClusterPort         :: Int,       --
-      txcCommitFrequency     :: Int        -- ^ Commits per second. Only applies to cluster mode.
-    }
-
 data TxControl = TxControl
     { ctlSaver      :: Saver           -- ^ Saver given by the user.
     , ctlEventSaver :: MVar (WriterStream EventLogEntry)
@@ -457,17 +449,6 @@ instance Serialize EventLogEntry where
               do (context, obj) <- safeGet
                  return $ EventLogEntry context obj
 
-data OperationMode
-    = SingleMode
-    | ClusterMode String
-
-nullTxConfig :: TxConfig
-nullTxConfig = TxConfig { txcCheckpointSeconds   = 60*60*24,
-                          txcOperationMode       = SingleMode,
-                          txcClusterSize         = 0,
-                          txcClusterPort         = 8500,
-                          txcCommitFrequency     = 50
-                        }
 
 runTxLoop :: MVar (WriterStream EventLogEntry) -> ProcessQueue st -> st -> IO ()
 runTxLoop eventSaverVar queue st0 =
