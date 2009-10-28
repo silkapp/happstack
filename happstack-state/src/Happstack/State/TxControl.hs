@@ -22,11 +22,43 @@ import Happstack.Data.Proxy
 logMM :: Priority -> String -> IO ()
 logMM = logM "Happstack.State.TxControl"
 
+
+-- | Given a Saver and a Proxy, createTxControl will 
+-- initialize a TxControl.  This does not actually start the
+-- state system.
+createTxControl :: (Methods state, Component state) =>
+                   Saver -> Proxy state -> IO (MVar TxControl)
+createTxControl saver prox
+    = do 
+
+         -- The state hasn't been loaded yet. Ignore events.
+         eventSaverVar   <- newMVar =<< createWriter NullSaver "events" 0
+         -- obtain a prefix lock
+         lock <- obtainLock saver
+         newMVar $ TxControl
+                       { ctlSaver             = saver
+                       , ctlEventSaver        = eventSaverVar
+                       , ctlAllComponents     = allStateTypes prox
+                       , ctlComponentVersions = componentVersions prox
+                       , ctlChildren          = []
+                       , ctlPrefixLock        = lock
+                       , ctlCreateCheckpoint  = return () }
+
+
+-- | Saves the state and closes the serialization
+closeTxControl :: MVar TxControl -> IO ()
+closeTxControl ctlVar
+    = do ctl <- takeMVar ctlVar
+         writerClose =<< takeMVar (ctlEventSaver ctl)
+         releaseLock (ctlPrefixLock ctl)
+
+
+
 -- | Run the MACID system without multimaster support and with the given Saver.
 runTxSystem :: (Methods st, Component st) => Saver -> Proxy st -> IO (MVar TxControl)
 runTxSystem saver stateProxy =
     do logMM NOTICE "Initializing system control."
-       ctl <- Checkpoint.createTxControl saver stateProxy
+       ctl <- createTxControl saver stateProxy
        -- insert code to lock based on the saver
        logMM NOTICE "Creating event mapper."
        localEventMap <- createEventMap ctl stateProxy
@@ -47,7 +79,7 @@ runTxSystem saver stateProxy =
 runTxSystemAmazon :: (Methods st, Component st) => LogServer.ApplicationName -> Proxy st -> IO (MVar TxControl)
 runTxSystemAmazon appName stateProxy
     = do logMM NOTICE "Initializing system control"
-         ctl <- Checkpoint.createTxControl NullSaver stateProxy
+         ctl <- createTxControl NullSaver stateProxy
          logMM NOTICE "Creating local event mapper."
          localEventMap <- createEventMap ctl stateProxy
          logMM NOTICE "Connecting to central log server."
@@ -72,11 +104,10 @@ createCheckpoint
 shutdownSystem :: MVar TxControl -> IO ()
 shutdownSystem ctl
     = do logMM NOTICE "Shutting down."
-         saver <- liftM ctlSaver $ readMVar ctl
          children <- liftM ctlChildren $ readMVar ctl
          logMM NOTICE "Killing children."
          mapM_ (killThread . fst) children
          mapM_ (takeMVar . snd) children -- FIXME: Use a timeout.
          logMM NOTICE "Shutdown complete"
-         Checkpoint.closeTxControl ctl
+         closeTxControl ctl
 

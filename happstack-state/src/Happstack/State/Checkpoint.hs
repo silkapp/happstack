@@ -1,8 +1,6 @@
 {-# LANGUAGE CPP, TemplateHaskell, DeriveDataTypeable #-}
 module Happstack.State.Checkpoint
-    ( createTxControl
-    , closeTxControl
-    , restoreState
+    ( restoreState
     , createCheckpoint
     ) where
 
@@ -44,34 +42,8 @@ data State = State
 instance Version State
 $(deriveSerialize ''State)
 
--- | Given a Saver and a Proxy, createTxControl will 
--- initialize a TxControl.  This does not actually start the
--- state system.
-createTxControl :: (Methods state, Component state) =>
-                   Saver -> Proxy state -> IO (MVar TxControl)
-createTxControl saver prox
-    = do 
-
-         -- The state hasn't been loaded yet. Ignore events.
-         eventSaverVar   <- newMVar =<< createWriter NullSaver "events" 0
-         -- obtain a prefix lock
-         lock <- obtainLock saver
-         newMVar $ TxControl
-                       { ctlSaver             = saver
-                       , ctlEventSaver        = eventSaverVar
-                       , ctlAllComponents     = allStateTypes prox
-                       , ctlComponentVersions = componentVersions prox
-                       , ctlChildren          = []
-                       , ctlPrefixLock        = lock
-                       , ctlCreateCheckpoint  = return () }
                        
 
--- | Saves the state and closes the serialization
-closeTxControl :: MVar TxControl -> IO ()
-closeTxControl ctlVar
-    = do ctl <- takeMVar ctlVar
-         writerClose =<< takeMVar (ctlEventSaver ctl)
-         releaseLock (ctlPrefixLock ctl)
 
 -- FIXME: It may be nice to print out what components were saved on disk
 --        compared to the components actually used in the application.

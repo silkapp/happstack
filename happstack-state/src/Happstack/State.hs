@@ -28,7 +28,6 @@ import Happstack.State.Saver
 import Happstack.Data.Serialize
 import Happstack.Data.SerializeTH
 import Happstack.State.Transaction
---import Happstack.State.Checkpoint
 import Happstack.State.ComponentSystem
 import Happstack.State.Types
 import Happstack.State.Util
