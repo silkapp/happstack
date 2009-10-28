@@ -41,7 +41,6 @@ Library
                        Happstack.State.Tests.SaverProperties
   Other-modules:       
                        Happstack.State.Checkpoint
-                       Happstack.State.Spread
                        Happstack.State.NetworkChan
                        Happstack.State.Monad
                        Happstack.State.Saver.Impl.File
@@ -60,7 +59,6 @@ Library
                        extensible-exceptions,
                        filepath,
                        hslogger >= 1.0.2,
-                       hspread >= 0.3,
                        happstack-util >= 0.4 && < 0.5,
                        happstack-data >= 0.4 && < 0.5,
                        mtl,

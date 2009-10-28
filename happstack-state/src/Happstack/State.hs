@@ -13,11 +13,11 @@ module Happstack.State
      module Happstack.Data.SerializeTH,
 
      module Happstack.State.Control,
-     module Happstack.State.TxControl,
      module Happstack.State.ComponentTH,
      module Happstack.State.ComponentSystem,
      --closeTxControl,
      createCheckpoint,
+     shutdownSystem,
      -- * Unsafe things
      unsafeIOToEv
     ) where

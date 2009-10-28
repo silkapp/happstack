@@ -2,7 +2,6 @@
 
 module Happstack.State.Control
     ( startSystemState
-    , startSystemStateMultimaster
     , startSystemStateAmazon
     , stdSaver
     , waitForTermination
@@ -45,15 +44,6 @@ startSystemState proxy
     = do _txConfig <- parseArgs
          saver <- stdSaver
          runTxSystem saver proxy
-
--- | Starts the MACID system with multimaster support.  Uses the default behavior
--- of saving the state into the _local directory.
-startSystemStateMultimaster :: (Methods a, Component a) =>
-                               Proxy a -> IO (MVar TxControl)
-startSystemStateMultimaster proxy
-    = do _txConfig <- parseArgs
-         saver <- stdSaver
-         runTxSystem' True saver proxy
 
 startSystemStateAmazon :: (Methods a, Component a) => ApplicationName -> Proxy a -> IO (MVar TxControl)
 startSystemStateAmazon appName proxy
@@ -123,11 +113,6 @@ options = [Option "" ["log-level"] (ReqArg (LogLevel . read . map toUpper) "leve
                       "Log level: DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY. Default: WARNING"
           ,Option "" ["log-target"] (ReqArg (LogTarget . readTarget) "target")
                       "Log target: stdout, syslog, or a FilePath such as /home/foo/bar.log . Default: stdout"
-          -- FIXME: use a better flag name
-          ,Option "" ["cluster-mode"] (OptArg (Cluster) "servers")
-                      "Start in multimaster mode. Will join cluster if optional arg is given."
-          ,Option "" ["cluster-port"] (ReqArg (ClusterPort . read) "port")
-                      "Multimaster server will listen on this port."
           ]
 
 data Target = File FilePath | StdOut | SysLog deriving (Read,Show,Eq,Ord)

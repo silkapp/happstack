@@ -1,6 +1,5 @@
 module Happstack.State.TxControl
     ( runTxSystem
-    , runTxSystem'
     , runTxSystemAmazon
     , shutdownSystem
     , createCheckpoint
@@ -25,12 +24,7 @@ logMM = logM "Happstack.State.TxControl"
 
 -- | Run the MACID system without multimaster support and with the given Saver.
 runTxSystem :: (Methods st, Component st) => Saver -> Proxy st -> IO (MVar TxControl)
-runTxSystem = runTxSystem' False
-
--- | Run the MACID system with multimaster support turned on if the first
--- argument is True.
-runTxSystem' :: (Methods st, Component st) => Bool -> Saver -> Proxy st -> IO (MVar TxControl)
-runTxSystem' withMultimaster saver stateProxy =
+runTxSystem saver stateProxy =
     do logMM NOTICE "Initializing system control."
        ctl <- Checkpoint.createTxControl saver stateProxy
        -- insert code to lock based on the saver
@@ -39,11 +33,7 @@ runTxSystem' withMultimaster saver stateProxy =
        setNewEventMap localEventMap
        logMM NOTICE "Restoring state."
        enableLogging <- Checkpoint.restoreState ctl
-       {-when withMultimaster
-                $ do logMM NOTICE "Multimaster mode"
-                     cluster <- connectToCluster
-                     eventMap <- changeEventMapping ctl localEventMap cluster
-                     setNewEventMap eventMap-}
+       -- Multimaster support used to be here. --
        enableLogging
        let ioActions = componentIO stateProxy
        logMM NOTICE "Forking children."

@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances, TemplateHaskell,
     ExistentialQuantification, RankNTypes,
     FlexibleInstances, DeriveDataTypeable,
-    ScopedTypeVariables, PatternSignatures
+    ScopedTypeVariables
  #-}
 
 
