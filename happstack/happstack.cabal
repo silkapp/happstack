@@ -76,7 +76,7 @@ Library
                        hslogger,
                        hsx >= 0.5.5 && < 0.6,
                        hsp >= 0.4.5 && < 0.5,
-                       HStringTemplate >= 0.4.3 && < 0.5,
+                       HStringTemplate >= 0.4.3 && < 0.7,
                        mtl,
                        old-time,
                        utf8-string
