@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Happstack.State.TxControl
     ( runTxSystem
     , runTxSystemAmazon
