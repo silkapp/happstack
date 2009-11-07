@@ -89,7 +89,7 @@ runTxSystemAmazon appName stateProxy
          logMM NOTICE "Connecting to central log server."
          cluster <- LogServer.connectToCluster appName localEventMap
          logMM NOTICE "Modifying local event map."
-         eventMap <- LogServer.changeEventMapping ctl localEventMap cluster
+         eventMap <- LogServer.changeEventMapping localEventMap cluster
          setNewEventMap eventMap
          let ioActions = componentIO stateProxy
          logMM NOTICE "Forking children."

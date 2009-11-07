@@ -1,7 +1,11 @@
-module Happstack.State.CentralLogServer where
+module Happstack.State.CentralLogServer
+    ( ApplicationName
+    , connectToCluster
+    , changeEventMapping
+    , createCheckpoint
+    ) where
 
 import Data.Binary
-import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Concurrent
 import System.Process
@@ -10,14 +14,12 @@ import System.IO
 import Control.Applicative ((<$>), (<*>))
 import Data.Int
 import Data.List
-import Text.Printf
 import Control.Exception
 import qualified Data.Map as Map
 import Control.Monad
 import System.Random (mkStdGen)
 import Network.AWS.AWSConnection
-import Network.AWS.Authentication
-import Network.AWS.S3Bucket
+import Network.AWS.S3Bucket hiding (key)
 import Network.AWS.S3Object
 
 import Happstack.Data.Serialize
@@ -38,7 +40,7 @@ type ApplicationName = String
 
 data Entry = Entry EntryId EpochMilli EntryData deriving (Show)
 type EntryId = Int64
-type EntryData = ByteString
+type EntryData = L.ByteString
 type URL = String
 
 instance Binary Entry where
@@ -96,6 +98,7 @@ data Cluster
               , clusterLastId :: MVar EntryId }
 
 -- FIXME: The logging service should have a domain name.
+logServerAddress :: URL
 logServerAddress = "174.129.13.114"
 
 -- Connect to the central log server via SSH.
@@ -115,9 +118,9 @@ connectToCluster appName localEventMap
            NoCheckpoint       -> do putMVar lastId 0
                                     logLS NOTICE "No checkpoint available."
            Checkpoint eid url -> do putMVar lastId eid
-                                    let (bucket,key) = read url
-                                    logLS NOTICE $ "Checkpoint available from this location: " ++ show (bucket,key)
-                                    ret <- getObject conn (S3Object { obj_bucket = bucket
+                                    let (checkpoint_bucket,key) = read url
+                                    logLS NOTICE $ "Checkpoint available from this location: " ++ show (checkpoint_bucket,key)
+                                    ret <- getObject conn (S3Object { obj_bucket = checkpoint_bucket
                                                                     , obj_name   = key
                                                                     , content_type = ""
                                                                     , obj_headers = []
@@ -156,9 +159,10 @@ createCheckpoint ctlVar cluster
    Race conditions aren't important since we're just trying to keep the happs buckets to a 
    minimum (preferable just one).
 -}
+initiateBucket :: AWSConnection -> IO String
 initiateBucket conn
-    = do buckets <- listBuckets conn
-         case buckets of
+    = do response <- listBuckets conn
+         case response of
            Left err      -> error (show err)
            Right buckets -> case [ bucket_name bucket | bucket <- buckets, "happs_checkpoints" `isPrefixOf` bucket_name bucket ] of
                               (bucket:_) -> return bucket
@@ -175,8 +179,8 @@ initiateBucket conn
   state) but their computed result is discarded. For events that originated locally,
   the computed response is sent to the appropriate listener.
 -}
-changeEventMapping :: MVar TxControl -> EventMap -> Cluster -> IO EventMap
-changeEventMapping ctlVar localEventMap cluster
+changeEventMapping :: EventMap -> Cluster -> IO EventMap
+changeEventMapping localEventMap cluster
     = do logLS NOTICE "Create new event mapper"
          responseIndex <- newMVar Map.empty
          let chan = clusterChan cluster
@@ -225,7 +229,7 @@ type Command = String
 -- Run a command through an SSH tunnel.
 sshConnect :: UserName -> ServerAddress -> Command -> IO (Handle, Handle)
 sshConnect userName serverAddress command
-    = do (inh, outh, errh, pid) <- runInteractiveProcess "ssh" ["-o", "BatchMode=yes", userName ++ "@" ++ serverAddress, command] Nothing Nothing
+    = do (inh, outh, errh, _pid) <- runInteractiveProcess "ssh" ["-o", "BatchMode=yes", userName ++ "@" ++ serverAddress, command] Nothing Nothing
          tid <- myThreadId
          forkIO $ do errMsg <- hGetLine errh
                      hPutStrLn stderr $ "SSH tunneling failed: " ++ errMsg
