@@ -106,7 +106,6 @@ setLoggingSettings flags = do updateGlobalLogger "" (setHandlers ([] :: [NullLog
           worker (LogLevel pri) = do updateGlobalLogger "Happstack" (setLevel pri)
                                      rlogger <- getLogger "Happstack"
                                      logM "" WARNING ("Set logging priority to " ++ show (getLevel rlogger))
-          worker _ = return ()
 
 -- order should not matter, though it does now.
 -- we should ALSO allow multiple loggers at the same time! --log-target=stdout --log-target=syslog
@@ -119,8 +118,7 @@ options = [Option "" ["log-level"] (ReqArg (LogLevel . read . map toUpper) "leve
 
 data Target = File FilePath | StdOut | SysLog deriving (Read,Show,Eq,Ord)
 
-data Flag = LogLevel Priority | LogTarget Target
-          | Cluster (Maybe String) | ClusterPort Int deriving Show
+data Flag = LogLevel Priority | LogTarget Target deriving Show
 
 readTarget :: String -> Target
 readTarget arg = case map toLower arg of
