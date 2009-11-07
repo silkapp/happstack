@@ -171,9 +171,10 @@ createEventMap ctlVar componentProxy
          return $ M.unions maps
     where (componentTree, _versions, _ioActions) = collectHandlers componentProxy
           eventHandler tx (Update fn)
-              = let updateCold' cxt ev
+              = let updateCold' ev getCxt
                         = do mv <- newEmptyMVar
-                             let handler = do lastCxt <- readTVar (txLastTxContext tx)
+                             let handler = do cxt <- getCxt
+                                              lastCxt <- readTVar (txLastTxContext tx)
                                               if txId lastCxt < txId cxt
                                                  then do writeTVar (txLastTxContext tx) cxt
                                                          writeTChan (txProcessQueue tx) $ IHR cxt ev $
@@ -185,10 +186,10 @@ createEventMap ctlVar componentProxy
                              case me of
                                  Left e -> throwIO e
                                  Right e -> return e
-                    updateCold cxt ev = do updateCold' cxt ev
+                    updateCold cxt ev = do updateCold' ev $ return cxt
                     updateHot ev
-                        = do cxt <- atomically . addTxId tx =<< newTxContext
-                             updateCold' cxt ev
+                        = do cxt <- newTxContext
+                             updateCold' ev $ addTxId tx cxt
                 in UpdateHandler updateCold updateHot parseObject
           eventHandler tx (Query fn)
               = let queryEmitter ev
