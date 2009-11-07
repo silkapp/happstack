@@ -14,8 +14,11 @@ import Control.Concurrent
 import qualified Happstack.State.Checkpoint as Checkpoint
 import Happstack.State.Saver
 import Happstack.State.Transaction
---import Happstack.State.Spread
+
+#ifdef REPLICATION
 import qualified Happstack.State.CentralLogServer as LogServer
+#endif
+
 import Happstack.State.ComponentSystem
 import Happstack.Data.Proxy
 
@@ -76,6 +79,7 @@ runTxSystem saver stateProxy =
                                        , ctlCreateCheckpoint = Checkpoint.createCheckpoint ctl }
        return ctl
 
+#ifdef REPLICATION
 runTxSystemAmazon :: (Methods st, Component st) => LogServer.ApplicationName -> Proxy st -> IO (MVar TxControl)
 runTxSystemAmazon appName stateProxy
     = do logMM NOTICE "Initializing system control"
@@ -95,6 +99,14 @@ runTxSystemAmazon appName stateProxy
          modifyMVar_ ctl $ \c -> return c{ ctlChildren = children
                                          , ctlCreateCheckpoint = LogServer.createCheckpoint ctl cluster }
          return ctl
+#else
+type ApplicationName = String -- Hm, this should actually be defined in CentralLogServer.hs
+
+runTxSystemAmazon :: (Methods st, Component st) => ApplicationName -> Proxy st -> IO (MVar TxControl)
+runTxSystemAmazon appName stateProxy
+    = error "Happstack-state has been built without replication support."
+#endif
+
 
 createCheckpoint :: MVar TxControl -> IO ()
 createCheckpoint

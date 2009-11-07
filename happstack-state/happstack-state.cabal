@@ -22,6 +22,10 @@ Flag tests
     Description: Build the testsuite, and include the tests in the library
     Default: False
 
+flag replication
+    Description: Enable state replication through a central serialization service.
+    Default: False
+
 Library
 
   Exposed-modules:     
@@ -32,7 +36,6 @@ Library
                        Happstack.State.Transaction
                        Happstack.State.ComponentTH
                        Happstack.State.ComponentSystem
-                       Happstack.State.CentralLogServer
   if flag(tests)
     Exposed-modules:   
                        Happstack.State.Tests
@@ -41,13 +44,11 @@ Library
                        Happstack.State.Tests.SaverProperties
   Other-modules:       
                        Happstack.State.Checkpoint
-                       Happstack.State.NetworkChan
                        Happstack.State.Monad
                        Happstack.State.Saver.Impl.File
                        Happstack.State.Saver.Impl.Memory
                        Happstack.State.Saver.Impl.Queue
                        Happstack.State.Saver.Types
---                     Happstack.State.OperationModes
                        Happstack.State.Types
                        Happstack.State.Util
                        Happstack.State.TxControl
@@ -65,11 +66,16 @@ Library
                        old-time,
                        random,
                        stm,
-                       template-haskell,
-                       hS3 >= 0.5.1 && < 0.6 ,
+                       template-haskell
+
+  if flag(replication)
+    Other-modules:     Happstack.State.CentralLogServer
+                       Happstack.State.NetworkChan
+    Build-Depends:     hS3 >= 0.5.1 && < 0.6,
                        bencode >= 0.5,
                        process,
                        SHA >= 1.4.0 && < 2
+    cpp-options:       -DREPLICATION
 
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb

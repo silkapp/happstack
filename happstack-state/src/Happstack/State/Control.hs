@@ -32,7 +32,9 @@ import System.Posix.Terminal ( queryTerminal )
 
 import Happstack.State.Transaction
 import Happstack.State.Saver
+#ifdef REPLICATION
 import Happstack.State.CentralLogServer (ApplicationName)
+#endif
 import Happstack.State.TxControl
 import Happstack.State.ComponentSystem
 import Happstack.Data.Proxy hiding (proxy)
@@ -45,9 +47,16 @@ startSystemState proxy
     = do saver <- stdSaver
          runTxSystem saver proxy
 
+#ifdef REPLICATION
 startSystemStateAmazon :: (Methods a, Component a) => ApplicationName -> Proxy a -> IO (MVar TxControl)
 startSystemStateAmazon appName proxy
     = runTxSystemAmazon appName proxy
+#else
+type ApplicationName = String
+startSystemStateAmazon :: (Methods a, Component a) => ApplicationName -> Proxy a -> IO (MVar TxControl)
+startSystemStateAmazon appName proxy
+    = runTxSystemAmazon appName proxy
+#endif
 
 -- | Returns the default Saver.  It will save the application state into
 -- the _local directory.
