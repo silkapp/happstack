@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -F -pgmFtrhsx #-}
 module GuestBook.View where
 
-import GuestBook.State (GuestBook(..),GuestBookEntry(..))
+import GuestBook.State2 (GuestBook(..),GuestBookEntry(..))
 import HSP
 import qualified HSX.XMLGenerator as HSX (XML)
 import System.Locale (defaultTimeLocale)
@@ -20,16 +20,18 @@ dateStr ct =
 -- * Main Implementation
 
 instance (XMLGenerator m) => (EmbedAsChild m (GuestBookEntry, Bool)) where
-    asChild ((GuestBookEntry author message date), alt) =
+    asChild ((GuestBookEntry author message date email), alt) = 
         <%
            <li class=(if alt then "alt" else "")>
-            <strong><% author %></strong> said:<br /><br />
+            <strong><% author ++ (displayemail email)  %></strong> said:<br /><br />
             <% map p (lines message) %>
             <br />
             <small class="commentmetadata"><% dateStr date %></small> 
            </li>
          %>
         where p str = <p><% str %></p>
+              displayemail "" = ""
+              displayemail x = "<" ++ x ++ ">"
 
 instance (XMLGenerator m) => (EmbedAsChild m GuestBook) where
     asChild (GuestBook entries) = 
