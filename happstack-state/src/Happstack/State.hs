@@ -16,6 +16,7 @@ module Happstack.State
      module Happstack.State.ComponentTH,
      module Happstack.State.ComponentSystem,
      --closeTxControl,
+     runTxSystem,
      createCheckpoint,
      shutdownSystem,
      -- * Unsafe things
