@@ -180,11 +180,14 @@ inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
 inferIxSet ixset typeName calName entryPoints
     = do calInfo <- reify calName
          typeInfo <- reify typeName
-         let (context,names) = case typeInfo of
+         let (context,binders) = case typeInfo of
                                  TyConI (DataD ctxt _ nms _ _) -> (ctxt,nms)
                                  TyConI (NewtypeD ctxt _ nms _ _) -> (ctxt,nms)
                                  TyConI (TySynD _ nms _) -> ([],nms)
                                  _ -> error "unexpected match"
+
+             names = map tyVarBndrToName binders
+
              typeCon = foldl appT (conT typeName) (map varT names)
          case calInfo of
            VarI _ t _ _ ->
@@ -192,7 +195,7 @@ inferIxSet ixset typeName calName entryPoints
                    getCalType (ForallT _names _ t') = getCalType t'
                    getCalType (AppT (AppT ArrowT _) t') = t'
                    getCalType t' = error ("Unexpected type: " ++ pprint t')
-                   mkEntryPoint n = appE (conE 'Ix) (sigE (varE 'Map.empty) (forallT names (return context) $
+                   mkEntryPoint n = appE (conE 'Ix) (sigE (varE 'Map.empty) (forallT binders (return context) $
                                                                              appT (appT (conT ''Map) (conT n)) (appT (conT ''Set) typeCon)))
                in do i <- instanceD' (return context) (appT (appT (conT ''Indexable) typeCon) (return calType))
                           [d| empty :: IxSet a
@@ -200,9 +203,18 @@ inferIxSet ixset typeName calName entryPoints
                               calcs :: a -> b
                               calcs = $(varE calName) |]
                      let ixType = appT (conT ''IxSet) typeCon
-                     ixType' <- tySynD (mkName ixset) names ixType
+                     ixType' <- tySynD (mkName ixset) binders ixType
                      return $ [i, ixType']  -- ++ d
            _ -> error "unexpected match"
+
+#if MIN_VERSION_template_haskell(2,4,0)
+tyVarBndrToName (PlainTV nm) = nm
+tyVarBndrToName (KindedTV nm _) = nm
+#else
+tyVarBndrToName = id
+#endif
+
+
 
 -- modification operations
 
