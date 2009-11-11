@@ -21,7 +21,7 @@ deriveSerialize name
     = do c <- parseInfo name
          case c of
            Tagged cons cx keys ->
-               do let context = [ mkType ''Serialize [varT key] | key <- keys ] ++ map return cx
+               do let context = [ mkCtx ''Serialize [varT key] | key <- keys ] ++ map return cx
                   i <- instanceD (sequence context) (mkType ''Serialize [mkType name (map varT keys)])
                        [ putCopyFn cons
                        , getCopyFn cons
@@ -54,6 +54,12 @@ deriveSerialize name
                                 [ noBindS [| return $(foldl appE (conE conName) (map varE args)) |] ]
                 in funD 'getCopy [clause [] (normalB getCopyBody) []]
 
+#if MIN_VERSION_template_haskell(2,4,0)
+          mkCtx = classP
+#else
+          mkCtx = mkType
+#endif
+
 -- | Derives Serialize for a list of types
 deriveSerializeFor :: [Name] -> Q [Dec]
 deriveSerializeFor = liftM concat . mapM deriveSerialize
@@ -66,10 +72,17 @@ parseInfo :: Name -> Q Class
 parseInfo name
     = do info <- reify name
          case info of
-           TyConI (DataD cx _ keys cs _)    -> return $ Tagged (map conInfo cs) cx keys
-           TyConI (NewtypeD cx _ keys con _)-> return $ Tagged [conInfo con] cx keys
+           TyConI (DataD cx _ keys cs _)    -> return $ Tagged (map conInfo cs) cx $ map conv keys
+           TyConI (NewtypeD cx _ keys con _)-> return $ Tagged [conInfo con] cx $ map conv keys
            _                            -> error "Invalid input"
     where conInfo (NormalC n args) = (n, length args)
           conInfo (RecC n args) = (n, length args)
           conInfo (InfixC _ n _) = (n, 2)
           conInfo (ForallC _ _ con) = conInfo con
+
+#if MIN_VERSION_template_haskell(2,4,0)
+          conv (PlainTV nm) = nm
+          conv (KindedTV nm _) = nm
+#else
+          conv = id
+#endif

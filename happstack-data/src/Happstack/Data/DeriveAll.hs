@@ -48,9 +48,19 @@ mkDefaultInstance :: Name -> Q [Dec]
 mkDefaultInstance name
  = do info <- reify name
       case info of
-          TyConI (NewtypeD _ nm tvs _ _) -> return $ deriveDefault True tvs nm
-          TyConI (DataD    _ nm tvs _ _) -> return $ deriveDefault True tvs nm
+          TyConI (NewtypeD _ nm tvs _ _) -> return $ deriveDefault True (conv tvs) nm
+          TyConI (DataD    _ nm tvs _ _) -> return $ deriveDefault True (conv tvs) nm
           _ -> fail ("mkDefaultInstance: Bad info: " ++ pprint info)
+ where conv = map tyVarBndrToName
+
+#if MIN_VERSION_template_haskell(2,4,0)
+tyVarBndrToName :: TyVarBndr -> Name
+tyVarBndrToName (PlainTV nm) = nm
+tyVarBndrToName (KindedTV nm _) = nm
+#else
+tyVarBndrToName :: Name -> Name
+tyVarBndrToName = id
+#endif
 
 -- | The 'deriveAll' function takes a list of classes to derive and
 -- a block of declarations. It will additionally derive instances for
@@ -76,10 +86,10 @@ deriveAll classes0 qdecs
 addDerivedClasses :: Bool -> [Name] -> Dec -> [Dec]
 addDerivedClasses def cs (DataD ctxt nm tvs cons derivs)
     = DataD ctxt nm tvs cons (cs ++ derivs)
-    : deriveDefault def tvs nm
+    : deriveDefault def (map tyVarBndrToName tvs) nm
 addDerivedClasses def cs (NewtypeD ctxt nm tvs con derivs)
     = NewtypeD ctxt nm tvs con (cs ++ derivs)
-    : deriveDefault def tvs nm
+    : deriveDefault def (map tyVarBndrToName tvs) nm
 addDerivedClasses _ _ d = [d]
 
 deriveDefault :: Bool -> [Name] -> Name -> [Dec]
@@ -87,8 +97,15 @@ deriveDefault False _ _ = []
 deriveDefault True tvs n = [InstanceD context instanceHead []]
     where tvs' = map VarT tvs
           mkDef x = ConT ''Default `AppT` x
-          context = map mkDef tvs'
+          context = map mkCtx tvs'
           instanceHead = mkDef $ foldl AppT (ConT n) tvs'
+
+#if MIN_VERSION_template_haskell(2,4,0)
+          mkCtx x = ClassP ''Default [x]
+#else
+          mkCtx = mkDef
+#endif
+
 
 isDataOrNewtype :: Dec -> Bool
 isDataOrNewtype (DataD {}) = True

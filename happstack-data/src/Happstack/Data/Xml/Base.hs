@@ -184,7 +184,12 @@ transparentXml n
               do argNames <- replicateM (length vs) (newName "a")
                  let args = map varT argNames
                      mkXml a = conT ''Xml `appT` a
+#if MIN_VERSION_template_haskell(2,4,0)
+                     mkXmlPred a = classP ''Xml [a]
+                     ctxt = cxt $ map mkXmlPred args
+#else
                      ctxt = cxt $ map mkXml args
+#endif
                      instanceHead = mkXml $ foldl appT (conT n) args
                      decs = [d|
                                 toXml :: Xml a => a -> [Element]
