@@ -19,7 +19,15 @@ import Data.List
 
 import Data.Generics.Basics
 
-nubCxt :: [TypeQ] -> Q [Type]
+#if MIN_VERSION_template_haskell(2,4,0)
+type CtxElemQ = PredQ
+type CtxElem  = Pred
+#else
+type CtxElemQ = TypeQ
+type CtxElem  = Type
+#endif
+
+nubCxt :: [CtxElemQ] -> Q [CtxElem]
 nubCxt tsQ
     = do ts <- cxt tsQ
          return $ nub ts
@@ -55,23 +63,38 @@ mkMethods componentName componentMethods
          ds5 <- genSerializeInstances methodInfos
          return (ds1 ++ [ds2] ++ ds4 ++  ds5 )
 
-mkKeyConstraints :: [Name] -> [TypeQ]
+mkKeyConstraints :: [Name] -> [CtxElemQ]
 mkKeyConstraints keys
-    = [ appT (conT ''Typeable) (varT key) | key <- keys ] ++
-      [ appT (conT ''Serialize) (varT key) | key <- keys ]
+    = [ mkCtxt ''Typeable (varT key) | key <- keys ] ++
+      [ mkCtxt ''Serialize (varT key) | key <- keys ]
 
-mkMethodConstraints :: [Name] -> MethodInfo -> [TypeQ]
+mkMethodConstraints :: [Name] -> MethodInfo -> [CtxElemQ]
 mkMethodConstraints keys method
     = map return (substMethodContext method keys)
 
-substMethodContext :: MethodInfo -> [Name] -> [Type]
+substMethodContext :: MethodInfo -> [Name] -> [CtxElem]
 substMethodContext method keys
     = let relation = zip (methodKeys method) keys
-          worker (VarT old) | Just new <- lookup old relation
+
+          workerT (VarT old) | Just new <- lookup old relation
                    = VarT new
-          worker (AppT l r) = AppT (worker l) (worker r)
-          worker (ForallT c names t) = ForallT c names (worker t)
-          worker t = t
+          workerT (AppT l r) = AppT (workerT l) (workerT r)
+          workerT (ForallT c names t) = ForallT c names (workerT t)
+          workerT t = t
+
+#if MIN_VERSION_template_haskell(2,4,0)
+          workerP (ClassP old typs)
+              = let new = case lookup old relation of
+                            Nothing -> old
+                            Just nm -> nm
+                in ClassP new $ map workerT typs
+          workerP p = p
+
+          worker = workerP
+#else
+          worker = workerT
+#endif
+
       in map worker (methodContext method)
 
 mkType :: Name -> [Name] -> TypeQ
@@ -120,14 +143,21 @@ genEventInstance :: MethodInfo -> Q Dec
 genEventInstance method
     = do let keys = methodKeys method
              eventType = foldl appT (conT (upperName (methodName method))) (map varT keys)
-         instanceD (nubCxt $ [appT (conT ''Serialize) eventType
-                             ,appT (conT ''Serialize) (return (methodResult method))]
+         instanceD (nubCxt $ [mkCtxt ''Serialize eventType
+                             ,mkCtxt ''Serialize (return (methodResult method))
+                             ]
                           ++ mkKeyConstraints keys
                           ++ mkMethodConstraints keys method
                    )
                    (appT (appT (conT (methodClass method)) eventType) (return (methodResult method)))
                    []
 
+mkCtxt :: Name -> TypeQ -> CtxElemQ
+#if MIN_VERSION_template_haskell(2,4,0)
+mkCtxt name typ = classP name [typ]
+#else
+mkCtxt name typ = appT (conT name) typ
+#endif
 
 genMethodStructs :: [Name] -> [MethodInfo] -> Q [Dec]
 genMethodStructs derv meths
@@ -137,7 +167,15 @@ genMethodStructs derv meths
 genMethodStruct :: [Name] -> MethodInfo -> Q [Dec]
 genMethodStruct derv method
     = do let c = NormalC (upperName (methodName method)) (zip (repeat NotStrict ) (methodArgs method))
-         return [ DataD [] (upperName (methodName method)) (methodKeys method) [c] (derv) ]
+         return [ DataD [] (upperName (methodName method)) (map mkTyVarBndr $ methodKeys method) [c] (derv) ]
+
+ where
+
+#if MIN_VERSION_template_haskell(2,4,0)
+   mkTyVarBndr = PlainTV
+#else
+   mkTyVarBndr = id
+#endif
 
 upperName :: Name -> Name
 upperName = mkName . upperFirst . nameBase
@@ -148,7 +186,7 @@ upperFirst "" = error "ComponentTH.UpperFirst []"
 
 data MethodInfo = Method { methodName   :: Name
                          , methodKeys   :: [Name]
-                         , methodContext:: [Type]
+                         , methodContext:: [CtxElem]
                          , methodArgs   :: [Type]
                          , methodClass  :: Name
                          , methodEv     :: Name
@@ -231,24 +269,56 @@ getStateKeys (VarT key) = [key]
 getStateKeys (ConT _st) = []
 getStateKeys v = error $ "Bad state type: " ++ pprint v ++ " (expected a constant, an application or a type variable)"
 
-isMonadState :: [Type] -> Type -> Maybe Type
-isMonadState contxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- contxt, 
-                                         mName == name, m == ''MonadState ]
+-- |Ignoring EqualP predicates, returns all names associated with a
+-- context predicate
+getPredKeys :: CtxElem -> [Name]
+#if MIN_VERSION_template_haskell(2,4,0)
+getPredKeys (ClassP nm typs) = nm : concatMap getStateKeys typs
+getPredKeys _ = []
+#else
+getPredKeys = getStateKeys
+#endif
 
-isMonadReader :: [Type] -> Type -> Maybe Type
-isMonadReader contxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- contxt, 
-                                          mName == name, m == ''MonadReader ]
 
-isRelevant :: [Name] -> Type -> Bool
-isRelevant keys t = isAcceptableContext t && any (`elem` keys) (getStateKeys t)
+isMonadState :: [CtxElem] -> Type -> Maybe Type
+isMonadState = isMonadX ''MonadState
 
-isAcceptableContext :: Type -> Bool
+isMonadReader :: [CtxElem] -> Type -> Maybe Type
+isMonadReader = isMonadX ''MonadReader
+
+isMonadX :: Name -> [CtxElem] -> Type -> Maybe Type
+#if MIN_VERSION_template_haskell(2,4,0)
+isMonadX monadType contxt name = listToMaybe [ state | ClassP m [state,mName] <- contxt, 
+                                         mName == name, m == monadType ]
+#else
+isMonadX monadType contxt name = listToMaybe [ state | AppT (AppT (ConT m) state) mName <- contxt,
+                                         mName == name, m == monadType ]
+#endif
+
+
+
+isRelevant :: [Name] -> CtxElem -> Bool
+isRelevant keys p = isAcceptableContext p && any (`elem` keys) (getPredKeys p)
+
+isAcceptableContext :: CtxElem -> Bool
+#if MIN_VERSION_template_haskell(2,4,0)
+isAcceptableContext (ClassP con _) = con `notElem` [''MonadState, ''MonadReader] 
+#else
 isAcceptableContext (AppT r r') = isAcceptableContext r && isAcceptableContext r'
 isAcceptableContext (ConT con) = con `notElem` [''MonadState, ''MonadReader]
+#endif
 isAcceptableContext _ = True
 
 requireSimpleCon :: Name -> Info -> [Name]
-requireSimpleCon _ (TyConI (DataD _ _ names _ _derv)) = names
-requireSimpleCon _ (TyConI (NewtypeD _ _ names _ _derv)) = names
-requireSimpleCon _ (TyConI (TySynD _ names _)) = names
+requireSimpleCon _ (TyConI (DataD _ _ names _ _derv)) = map conv names
+requireSimpleCon _ (TyConI (NewtypeD _ _ names _ _derv)) = map conv names
+requireSimpleCon _ (TyConI (TySynD _ names _)) = map conv names
 requireSimpleCon name _ = error $ "Cannot create component from '"++pprint name++"'. Expected a data structure."
+
+#if MIN_VERSION_template_haskell(2,4,0)
+conv :: TyVarBndr -> Name
+conv (PlainTV nm) = nm
+conv (KindedTV nm _) = nm
+#else
+conv = id
+#endif

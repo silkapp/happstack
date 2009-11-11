@@ -484,6 +484,10 @@ runTxLoop eventSaverVar queue st0 =
                            writerAdd eventSaver (EventLogEntry context (mkObject ev)) (logMT NOTICE "> disk " >> ra)
                            loop st'
   in do forkIO $ (loop st0) `catch` (\ThreadKilled -> return ())
+#if MIN_VERSION_base(4,2,0)
+                            `catch` (\BlockedIndefinitelyOnSTM -> return ())
+#else
                             `catch` (\BlockedIndefinitely -> return ())
+#endif
         return ()
 
