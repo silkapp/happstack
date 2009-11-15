@@ -20,7 +20,7 @@ instance Default a => Default (Foo a) where
 instance Default a => Default (Bar a) where
     defaultValue = DefBar
 
--- NOTE: I am not possible the test condition is correct, I am just guessing based on what was there
+-- NOTE: I am not positive the test condition is correct, I am just guessing based on what was there
 testPairs :: Test
 testPairs = let xs = [Foo $ Bar "abc",Foo $ Bar "def"]
                 xs' = runIdentity $ fromXml Flexible $ pairsToXml $ xmlToPairs $ concatMap toXml xs
