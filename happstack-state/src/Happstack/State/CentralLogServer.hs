@@ -48,7 +48,7 @@ instance Binary Entry where
     put (Entry eid epoch edata)
         = put eid >> put epoch >> put edata
 
-data ForeignEvent = ForeignEvent L.ByteString L.ByteString
+data ForeignEvent = ForeignEvent Int L.ByteString
 instance Binary ForeignEvent where
     get = ForeignEvent <$> get <*> get
     put (ForeignEvent hash event)
@@ -72,6 +72,18 @@ instance BEncodeable Entry where
     bencode entry = BString (encode entry)
     bdecode = fmap decode (bbytestring token)
 
+data Response = Response Entry Bool
+instance BEncodeable Response where
+    bencode (Response entry isOwner)
+        = BDict (Map.fromList [("entry",bencode entry)
+                              ,("owner",BString $ L.pack $ show isOwner)])
+    bdecode = do owner <- bstring (dict "owner")
+                 setInput =<< dict "entry"
+                 entry <- bdecode
+                 case owner of
+                   "True" -> return $ Response entry True
+                   _      -> return $ Response entry False
+
 instance BEncodeable L.ByteString where
     bencode bs = BString bs
     bdecode = bbytestring token
@@ -82,14 +94,14 @@ instance BEncodeable UserMsg where
         = BDict (Map.singleton "NewEvent" (BString event))
     bencode (NewCheckpoint eid url)
         = BDict $ Map.singleton "NewCheckpoint" $ BDict $ Map.fromList [ ("entry_id", BInt $ fromIntegral eid)
-                                                                       , ("url", BString $ encode url) ]
+                                                                       , ("url", BString $ L.pack url) ]
     bdecode = do setInput =<< dict "NewEvent"
                  fmap NewEvent (bbytestring token)
               <|>
               do setInput =<< dict "NewCheckpoint"
                  eid <- bint (dict "entry_id")
                  url <- bbytestring (dict "url")
-                 return (NewCheckpoint (fromIntegral eid) (decode url))
+                 return (NewCheckpoint (fromIntegral eid) (L.unpack url))
 
 data Cluster
     = Cluster { clusterChan :: NetworkChan
@@ -184,37 +196,39 @@ changeEventMapping localEventMap cluster
     = do logLS NOTICE "Create new event mapper"
          responseIndex <- newMVar Map.empty
          let chan = clusterChan cluster
-         let insertEID hash = do mv <- newEmptyMVar
-                                 modifyMVar_ responseIndex $ \idx -> return $ Map.insert hash mv idx
+         let insertEID uniq = do mv <- newEmptyMVar
+                                 modifyMVar_ responseIndex $ \idx -> return $ Map.insert uniq mv idx
                                  return $ takeMVar mv
-             returnResponse hash object = modifyMVar_ responseIndex $ \idx ->
-                                          case Map.lookup hash idx of
-                                            Nothing -> return idx -- We're already received the result from another node.
+             returnResponse uniq object = modifyMVar_ responseIndex $ \idx ->
+                                          case Map.lookup uniq idx of
+                                            Nothing -> return idx -- This shouldn't happen.
                                             Just mv -> do putMVar mv object -- Notify the caller about the new response.
-                                                          return $ Map.delete hash idx
+                                                          return $ Map.delete uniq idx
              listener = forever $
-                        do Entry eid time foreign <- peek chan
-                           let ForeignEvent hash object = decode foreign
-                           logLS NOTICE $ "Received entry with hash: " ++ show hash
+                        do Response (Entry eid time foreign) owner <- peek chan
+                           let ForeignEvent uniq object = decode foreign
+                           logLS NOTICE $ "Received entry with id: " ++ show uniq ++ " " ++ show owner
                            let txContext = TxContext { txId = eid
                                                      , txRand = 0
                                                      , txTime = time
                                                      , txStdGen = mkStdGen 0 }
                            response <- runColdEventFunc txContext (fst $ deserialize object) localEventMap
                            swapMVar (clusterLastId cluster) eid
-                           returnResponse hash response
+                           -- If we sent this event, pipe the result to the listener.
+                           when owner $ returnResponse uniq response
          forkIO listener
+         uniqVar <- newMVar 0
          let newEventMap = flip Map.map localEventMap $ \handler ->
                            case handler of
                              UpdateHandler runCold _ parse
-                                 -> let runHot ev = do let obj = serialize $ mkObject ev
-                                                           hash = bytestringDigest $ sha1 obj
-                                                           foreign = ForeignEvent hash obj
-                                                       logLS NOTICE $ "New hash: " ++ show hash
-                                                       wait <- insertEID hash
+                                 -> let runHot ev = do uniq <- modifyMVar uniqVar (\a -> return (a+1, a))
+                                                       let obj = serialize $ mkObject ev
+                                                           foreign = ForeignEvent uniq obj
+                                                       logLS NOTICE $ "New locally unique id: " ++ show uniq
+                                                       wait <- insertEID uniq
                                                        poke chan (NewEvent (encode foreign))
                                                        response <- wait
-                                                       logLS NOTICE $ "Received response for: " ++ show hash
+                                                       logLS NOTICE $ "Received response for: " ++ show uniq
                                                        return $ parseObject response
                                     in UpdateHandler runCold runHot parse
                              QueryHandler{} -> handler
