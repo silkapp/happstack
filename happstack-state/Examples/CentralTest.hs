@@ -41,7 +41,10 @@ setMyInt :: MonadState MyState m => Int -> m ()
 setMyInt i = do st <- get
                 put $ st { myInt = i }
 
-$(mkMethods ''MyState ['getMyData, 'setMyData, 'getMyInt, 'setMyInt])
+sync :: Update MyState ()
+sync = return ()
+
+$(mkMethods ''MyState ['getMyData, 'setMyData, 'getMyInt, 'setMyInt, 'sync])
 
 instance Component MyState where
     type Dependencies MyState = End
@@ -62,7 +65,7 @@ main = processLoggingFlags $
        do args <- getArgs
           case args of
             (app_name : rest) -> do control <- startSystemStateAmazon app_name (Proxy :: Proxy MyState)
-                                    threadDelay (10^6) -- Wait 1sec to sync with central server.
+                                    update $ Sync
                                     case rest of
                                       ["get"]
                                         -> do print =<< query GetMyData
