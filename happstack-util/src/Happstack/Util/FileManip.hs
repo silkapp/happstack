@@ -3,17 +3,13 @@
 module Happstack.Util.FileManip (always, find) where
 
 import qualified System.PosixCompat.Files as F
-import qualified System.PosixCompat.Types as T
-import Control.Monad
 import Control.Monad.State
-import Control.Exception.Extensible (Exception)
 import qualified Control.Exception.Extensible as E
-import Data.Bits
 import System.IO
 import Data.List (sort)
 import System.Directory (getDirectoryContents)
-import System.IO.Unsafe (unsafeInterleaveIO, unsafePerformIO)
-import System.FilePath ((</>), takeDirectory, takeExtension, takeFileName)
+import System.IO.Unsafe (unsafeInterleaveIO)
+import System.FilePath ((</>))
 
 
 -- | Information collected during the traversal of a directory.
