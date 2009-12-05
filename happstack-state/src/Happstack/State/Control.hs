@@ -39,7 +39,7 @@ import Happstack.State.TxControl
 import Happstack.State.ComponentSystem
 import Happstack.Data.Proxy hiding (proxy)
 
--- | Starts the MACID system without multimaster support.  Uses the default behavior
+-- | Starts the MACID system without replication support.  Uses the default behavior
 -- of saving the state into the _local directory.
 startSystemState :: (Methods a, Component a) =>
                     Proxy a -> IO (MVar TxControl)
