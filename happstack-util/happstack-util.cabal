@@ -36,6 +36,7 @@ Library
                        process,
                        time,
                        QuickCheck < 2,
+                       HUnit,
                        random,
                        SMTPClient >= 1.0.1 && < 1.1,
                        strict-concurrency,
