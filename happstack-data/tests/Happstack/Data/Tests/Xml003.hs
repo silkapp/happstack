@@ -23,7 +23,7 @@ instance Default a => Default (Bar a) where
 -- NOTE: I am not positive the test condition is correct, I am just guessing based on what was there
 testPairs :: Test
 testPairs = let xs = [Foo $ Bar "abc",Foo $ Bar "def"]
-                xs' = runIdentity $ fromXml Flexible $ pairsToXml $ xmlToPairs $ concatMap toXml xs
+                xs' = runIdentity $ fromXml Flexible $ pairsToXml $ xmlToPairs $ concatMap toPublicXml xs
             in "testPairs" ~: xs @=? xs'
 
 xml003 :: Test
