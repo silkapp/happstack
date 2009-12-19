@@ -27,7 +27,7 @@ Cabal-Version:      >= 1.6
 source-repository head
     type:     darcs
     subdir:   happstack-data
-    location: http://patch-tag.com/publicrepos/happstack
+    location: http://patch-tag.com/r/mae/happstack/pullrepo
 
 flag base4
 
