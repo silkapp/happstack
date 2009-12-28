@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HSP.HTML
   ( webHSP
+  , webHSP'
   ) where
 
 import Control.Monad.Trans (MonadIO(), liftIO)
@@ -38,5 +39,8 @@ instance ToMessage (Maybe XMLMetaData, XML) where
 -- with HSP, you can wrap up your HTML as webHSP $ <html>...</html>
 -- to use it with Happstack.
 webHSP :: (MonadIO m) => HSP XML -> m Response
-webHSP hsp = toResponse `liftM` liftIO (evalHSP Nothing hsp)
+webHSP = webHSP' Nothing
 
+-- | webHSP with XMLMetaData
+webHSP' :: (MonadIO m) => Maybe XMLMetaData -> HSP XML -> m Response
+webHSP' metadata hsp = toResponse `liftM` liftIO (evalHSP metadata hsp)
