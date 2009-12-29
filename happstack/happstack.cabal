@@ -31,6 +31,7 @@ data-files:          CHANGELOG
                      templates/project/src/GuestBook/Control.hs
                      templates/project/src/GuestBook/View.hs
                      templates/project/src/GuestBook/State.hs
+                     templates/project/src/GuestBook/State2.hs
                      templates/project/guestbook.cabal
                      templates/project/public/theme/images/menu_hover.gif
                      templates/project/public/theme/images/grunge.gif

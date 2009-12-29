@@ -35,6 +35,7 @@ Library
   App.View,
   GuestBook.Control,
   GuestBook.State,
+  GuestBook.State2,
   GuestBook.View
  hs-source-dirs: src
 
