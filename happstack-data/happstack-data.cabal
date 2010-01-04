@@ -79,6 +79,7 @@ Library
     Happstack.Data.Serialize
     Happstack.Data.SerializeTH
   if flag(tests)
+    Build-depends: HUnit
     Exposed-modules:   
       Happstack.Data.Tests
       Happstack.Data.Tests.Xml001

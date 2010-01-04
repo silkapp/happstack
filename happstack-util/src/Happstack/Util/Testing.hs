@@ -1,18 +1,29 @@
-module Happstack.Util.Testing (qctest, qccheck, qcrun) where
+module Happstack.Util.Testing (qctest, qccheck) where
 
-import Test.HUnit as HU
-import Test.QuickCheck as QC
-import Test.QuickCheck.Batch (TestResult(..),TestOptions(..),run)
+import qualified Test.HUnit as HU
+import qualified Test.QuickCheck as QC
+-- import Test.QuickCheck.Batch (TestResult(..),TestOptions(..),run)
 import System.Random
-
-qctest :: QC.Testable a => a -> Test
-qctest = qccheck defaultConfig
-
+{-
 qccheck :: QC.Testable a => Config -> a -> Test
 qccheck config a = TestCase $
   do rnd <- newStdGen
      tests config (evaluate a) rnd 0 0 []
+-}
 
+qccheck :: QC.Testable a => QC.Args -> a -> HU.Test
+qccheck args prop = 
+  HU.TestCase $
+    do result <- QC.quickCheckWithResult args prop
+       case result of
+         (QC.Success _) -> return ()
+         (QC.GaveUp ntest _) -> HU.assertFailure $ "Arguments exhausted after" ++ show ntest ++ (if ntest == 1 then " test." else " tests.")
+         (QC.Failure _ usedSize reason _) -> HU.assertFailure reason
+         (QC.NoExpectedFailure _) -> HU.assertFailure $ "No Expected Failure"
+
+qctest :: QC.Testable a => a -> HU.Test
+qctest = qccheck QC.stdArgs
+{-
 qcrun :: QC.Testable a => a -> TestOptions -> Test
 qcrun prop opts = TestCase $
     do res <- run prop opts
@@ -50,3 +61,4 @@ tests config gen rnd0 ntest nfail stamps
       result      = generate (configSize config ntest) rnd2 gen
       (rnd1,rnd2) = split rnd0
 
+-}

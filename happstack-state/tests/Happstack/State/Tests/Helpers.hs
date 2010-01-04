@@ -12,23 +12,16 @@ import Control.Monad
 import Control.Exception
 import Control.Concurrent
 
-import Test.QuickCheck
-import Test.QuickCheck.Batch
+import Test.QuickCheck (Arbitrary(arbitrary), choose)
 import Text.Printf
-
-instance Arbitrary Char where
-    arbitrary = choose ('a','z')
-    coarbitrary = undefined
 
 instance (Arbitrary a, Num a) => Arbitrary (Abs a) where
     arbitrary = liftM (Abs . abs) arbitrary
-    coarbitrary = undefined
 
 instance (Arbitrary a) => Arbitrary (NonEmpty a) where
     arbitrary = do x <- arbitrary
                    xs <- arbitrary
                    return $ NonEmpty (x:xs)
-    coarbitrary = undefined
 
 data Abs a = Abs a
 instance (Show a) => Show (Abs a) where
@@ -88,7 +81,7 @@ forEachSaver_ action
                  , ("File", withFileSaver)
                  , ("Queue File", \action -> withFileSaver (action . Queue))
                  ]
-
+{-
 tryTests :: String -> TestOptions -> [TestOptions -> IO TestResult] -> IO ()
 tryTests name opt tests
     = do printf "%25s : " name
@@ -106,3 +99,4 @@ tryTests name opt tests
                                         putStrLn ("   **   " ++ show exp)
                                         exitWith (ExitFailure 1)
          putChar '\n'
+-}

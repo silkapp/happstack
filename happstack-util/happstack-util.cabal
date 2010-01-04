@@ -35,7 +35,7 @@ Library
                        parsec < 3,
                        process,
                        time,
-                       QuickCheck < 2,
+                       QuickCheck >= 2 && < 3,
                        HUnit,
                        random,
                        SMTPClient >= 1.0.1 && < 1.1,

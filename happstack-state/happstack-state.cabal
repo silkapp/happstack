@@ -82,7 +82,7 @@ Library
   else
     Build-Depends:     base < 4
   if flag(tests)
-    Build-Depends:     QuickCheck < 2, HUnit
+    Build-Depends:     QuickCheck >= 2 && <3, HUnit
 
   hs-source-dirs:      src
   if flag(tests)

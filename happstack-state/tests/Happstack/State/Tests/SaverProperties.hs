@@ -1,12 +1,11 @@
 module Happstack.State.Tests.SaverProperties
-    ( checkSaverProperties
-    , saverProperties
+    ( saverProperties
     ) where
 
 import Happstack.State.Saver
 import Happstack.State.Saver.Impl.Memory
 import Happstack.State.Tests.Helpers
-import Happstack.Util.Testing (qctest, qcrun)
+import Happstack.Util.Testing (qctest, qccheck)
 
 import System.Directory
 import System.Random
@@ -17,8 +16,7 @@ import Control.Exception
 import Control.Concurrent
 import Data.List
 
-import Test.QuickCheck
-import Test.QuickCheck.Batch
+import Test.QuickCheck (Args(maxSize), (==>), stdArgs)
 import Test.HUnit (Test(TestCase),(~:), assertFailure)
 
 --------------------------------------------------------------
@@ -71,24 +69,24 @@ prop_atomic withSaver (NonEmpty key) (Abs cutoff) value
          out <- readerGetUncut reader
          readerClose reader
          return $ out == [value]
-
+{-
 checkSaverProperties :: IO ()
 checkSaverProperties
     = forEachSaver_ $ \name withSaver ->
-      tryTests (name ++ " saver") options [run (prop_getSetId withSaver)
+      tryTests (name ++ " saver") args [run (prop_getSetId withSaver)
                                           ,run (prop_seqReadWrite withSaver)
                                           ,run (prop_cutDrop withSaver)
                                           ,run (prop_atomic withSaver)]
-  where options = defOpt{length_of_tests=5}
-
+  where args = stdArgs{maxSize=5}
+-}
 saverProperties :: Test
 saverProperties 
     = "saverProperties" ~:
        ((forEachSaver $ \name withSaver ->
              name ~:
-              [ "prop_getSetId"     ~: qcrun (prop_getSetId withSaver) options
-              , "prop_seqReadWrite" ~: qcrun (prop_seqReadWrite withSaver) options
-              , "prop_cutDrop"      ~: qcrun (prop_cutDrop withSaver) options
-              , "prop_atomic"       ~: qcrun (prop_atomic withSaver) options
+              [ "prop_getSetId"     ~: qccheck args (prop_getSetId withSaver)
+              , "prop_seqReadWrite" ~: qccheck args (prop_seqReadWrite withSaver)
+              , "prop_cutDrop"      ~: qccheck args (prop_cutDrop withSaver)
+              , "prop_atomic"       ~: qccheck args (prop_atomic withSaver)
               ]))
-  where options = defOpt{length_of_tests=5}
+  where args = stdArgs{maxSize=5}

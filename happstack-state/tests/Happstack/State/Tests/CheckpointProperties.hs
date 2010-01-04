@@ -2,7 +2,6 @@
 module Happstack.State.Tests.CheckpointProperties
     ( testCongestedCheckpoint
     , congestedCheckpoint
-    , checkCheckpointProperties
     , checkpointProperties
     , runRestoreCongestionKnownFailures
     ) where
@@ -22,7 +21,6 @@ import Data.Typeable
 import Text.Printf
 
 import Test.QuickCheck
-import Test.QuickCheck.Batch
 import Test.HUnit (Test(..),(~:), assertBool, assertFailure)
 
 --------------------------------------------------------------
@@ -179,7 +177,7 @@ prop_runRestoreCongestion withSaver values
          forkIO $ createCheckpoint ctl `finally` putMVar mv ()
          takeMVar mv
          replicateM_ (length values) (waitQSem sem)
-
+{-
 checkCheckpointProperties :: IO ()
 checkCheckpointProperties
     = tryTests ("runRestore") options [run (prop_runRestoreId saver)
@@ -187,20 +185,20 @@ checkCheckpointProperties
                                       ,run (prop_runRestoreMultipleCheckpoint saver)
                                       ,run (prop_runRestoreAsync saver)
                                       ,run (prop_runRestoreCongestion saver)]
-    where options = defOpt{length_of_tests=5}
+    where args = stdArgs {maxSize=5}
           saver = withQueueSaver withMemorySaver
-
+-}
 checkpointProperties :: Test
 checkpointProperties 
     = "checkpointProperties" ~: 
-      [ "prop_runRestoreId"                  ~: qccheck config (prop_runRestoreId saver)
-      , "prop_runRestoreCheckpoint"          ~: qccheck config (prop_runRestoreCheckpoint saver)
-      , "prop_runRestoreMultipleCheckpoint"  ~: qccheck config (prop_runRestoreMultipleCheckpoint saver)
-      , "prop_runRestoreAsync"               ~: qccheck config (prop_runRestoreAsync saver)
-      , "prop_runRestoreCongestion"          ~: qccheck config (prop_runRestoreCongestion saver)
+      [ "prop_runRestoreId"                  ~: qccheck args (prop_runRestoreId saver)
+      , "prop_runRestoreCheckpoint"          ~: qccheck args (prop_runRestoreCheckpoint saver)
+      , "prop_runRestoreMultipleCheckpoint"  ~: qccheck args (prop_runRestoreMultipleCheckpoint saver)
+      , "prop_runRestoreAsync"               ~: qccheck args (prop_runRestoreAsync saver)
+      , "prop_runRestoreCongestion"          ~: qccheck args (prop_runRestoreCongestion saver)
       ]
     where
-      config = defaultConfig { configMaxTest = 100 }
+      args = stdArgs { maxSize = 100 }
       saver = withQueueSaver withMemorySaver
 
 
