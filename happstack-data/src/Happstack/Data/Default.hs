@@ -76,7 +76,7 @@ defaultProxy = error "defaultProxy"
 instance Default t => Sat (DefaultD t) where
     dict = DefaultD { defaultValueD = defaultValue }
 
-instance Default a => Default [a] where
+instance Data DefaultD a => Default [a] where
     defaultValue = []
 
 instance Default Int     where defaultValue = 0
