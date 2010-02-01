@@ -1,0 +1,19 @@
+-- Canonical author spellings can be defined in this file, to clean up
+-- the output of show authors. Each line contains one or more
+-- comma-separated fields: the canonical name and email address in
+-- angle brackets, optionally followed by additional regular
+-- expression patterns. Blank lines and lines beginning with -- are
+-- ignored. An author string which contains the canonical email
+-- address or any of the patterns will be replaced by the full
+-- canonical form.  All matching is case-insensitive. To match the
+-- whole author string use ^ and $.
+
+Creighton Hogg <wchogg@gmail.com>
+David Himmelstrup <lemmih@gmail.com>
+Doug Beardsley <mightybyte@gmail.com>
+Jake McArthur <jake.mcarthur@gmail.com>
+Jeremy Shaw <jeremy@seereason.com>, jeremy@n-heptane.com
+Joe Edmonds <joe@elem.com>
+John MacFarlane <jgm@berkeley.edu>
+Simon Meier <simon.meier@inf.ethz.ch>
+Thomas Hartman <thomashartman1@gmail.com>
