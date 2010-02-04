@@ -41,13 +41,12 @@ newtype FindClause a = FC { runFC :: State FileInfo a }
 --
 -- Example:
 --
--- @
--- myFoldFunc :: a -> 'FileInfo' -> a
--- myFoldFunc a i = let useThisFile = 'evalClause' ('fileName' '==?' \"foo\") i
---                  in if useThisFile
---                     then fiddleWith a
---                     else a
--- @
+-- > myFoldFunc :: a -> FileInfo -> a
+-- > myFoldFunc a i = let useThisFile = evalClause (fileName ==? "foo") i
+-- >                  in if useThisFile
+-- >                     then fiddleWith a
+-- >                     else a
+--
 evalClause :: FindClause a -> FileInfo -> a
 evalClause = evalState . runFC
 
