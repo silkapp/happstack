@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HSX where
 
 import Happstack.Server.SimpleHTTP (ServerMonad(..), FilterMonad(..), WebMonad(..))

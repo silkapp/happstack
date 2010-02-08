@@ -63,6 +63,11 @@ Library
                        Happstack.Server.HSX
                        Happstack.Server.HStringTemplate
                        Happstack.State.ClockTime
+                       HSP.Identity
+                       HSP.IdentityT
+                       HSP.ServerPartT
+                       HSP.WebT
+                       HSP.Google.Analytics
   if flag(tests)
     Exposed-modules:   Happstack.Tests
   other-modules:       Paths_happstack
@@ -74,6 +79,7 @@ Library
                        happstack-server >= 0.4.3 && < 0.5,
                        happstack-state  >= 0.4.3 && < 0.5,
                        happstack-util   >= 0.4.3 && < 0.5,
+                       harp             >= 0.4   && < 0.5,
                        hslogger,
                        hsp >= 0.4.5 && < 0.5,
                        HStringTemplate >= 0.4.3 && < 0.7,
