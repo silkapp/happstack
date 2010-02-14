@@ -35,8 +35,6 @@ Library
                        parsec < 3,
                        process,
                        time,
-                       QuickCheck >= 2 && < 3,
-                       HUnit,
                        random,
                        SMTPClient >= 1.0.1 && < 1.1,
                        strict-concurrency,
@@ -74,11 +72,14 @@ Library
                        Happstack.Util.OpenExclusively,
                        Happstack.Util.TimeOut,
                        Happstack.Util.TH,
-                       Happstack.Util.Testing,
                        Happstack.Util.FileManip
   if flag(tests)
-    Exposed-modules:   Happstack.Util.Tests
-    Exposed-modules:   Happstack.Util.Tests.HostAddress
+    Build-Depends:
+                       QuickCheck >= 2 && < 3,
+                       HUnit
+    Exposed-modules:   Happstack.Util.Testing,
+                       Happstack.Util.Tests,
+                       Happstack.Util.Tests.HostAddress
 
   extensions:          CPP, UndecidableInstances, BangPatterns, StandaloneDeriving,
                        DeriveDataTypeable, TemplateHaskell, RecursiveDo
