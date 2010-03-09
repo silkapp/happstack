@@ -37,6 +37,7 @@ Library
                        Happstack.State.ComponentTH
                        Happstack.State.ComponentSystem
   if flag(tests)
+    Build-Depends:     QuickCheck >= 2 && <3, HUnit, network
     Exposed-modules:   
                        Happstack.State.Tests
                        Happstack.State.Tests.Helpers
@@ -81,8 +82,6 @@ Library
     Build-Depends:     base >= 4 && < 5, syb
   else
     Build-Depends:     base < 4
-  if flag(tests)
-    Build-Depends:     QuickCheck >= 2 && <3, HUnit
 
   hs-source-dirs:      src
   if flag(tests)

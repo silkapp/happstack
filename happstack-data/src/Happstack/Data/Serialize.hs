@@ -21,7 +21,10 @@ import qualified Data.Map as M
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 import qualified Data.Set as Set
-
+import qualified Data.Text as ST
+import qualified Data.Text.Encoding as ST
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Encoding as LT
 import Data.Binary     as B
 import Data.Binary.Put as B
 import Data.Binary.Get as B
@@ -257,6 +260,17 @@ instance Version (IntMap.IntMap a) where mode = Primitive
 instance (Serialize a) => Serialize (IntMap.IntMap a) where
     getCopy = contain $ fmap IntMap.fromAscList safeGet
     putCopy = contain . safePut . IntMap.toList
+    
+instance Version ST.Text
+instance Serialize ST.Text where
+    putCopy = putCopy . ST.encodeUtf8
+    getCopy = contain $ fmap ST.decodeUtf8 safeGet
+    
+instance Version LT.Text
+instance Serialize LT.Text where
+    putCopy = putCopy . LT.encodeUtf8
+    getCopy = contain $ fmap LT.decodeUtf8 safeGet
+  
 
 
 --------------------------------------------------------------
