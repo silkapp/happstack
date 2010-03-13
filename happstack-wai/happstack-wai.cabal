@@ -1,0 +1,29 @@
+Name:                happstack-wai
+Version:             0.0.0
+Synopsis:            Happstack for Web Application Interface.
+Description:         Provides the Happstack world on top of WAI
+License:             BSD3
+License-file:        LICENSE
+Author:              Jeremy Shaw
+Maintainer:          jeremy@seereason.com
+Homepage:            http://happstack.com/
+Category:            Web
+Build-Type:          Simple
+Cabal-Version:       >=1.2
+Stability:           Stable
+
+Library
+  Build-Depends:     base >= 3 && < 5,
+                     bytestring >= 0.9 && < 0.10,
+                     filepath,
+                     MaybeT,
+                     mtl,
+                     utf8-string,
+                     wai,
+                     wai-extra,
+                     web-encodings
+  Exposed-modules:   Happstack.Server.Guards
+                     Happstack.Server.Monads
+                     Happstack.Server.ToMessage
+                     Happstack.Server.Simple
+  ghc-options:       -Wall
