@@ -15,7 +15,8 @@ import Control.Monad.Writer
 import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.UTF8       as LU (toString, fromString)
-import Network.Wai
+import Network.Wai hiding (Request)
+import qualified Network.Wai as Wai
 import Network.Wai.Enumerator (fromLBS)
 
 instance Error Response where
@@ -24,6 +25,12 @@ instance Error Response where
              , responseHeaders = [(ContentType, B.pack "text/plain; charset=UTF-8")]
              , responseBody = Right (fromLBS (LU.fromString str))
              }
+
+data Request
+    = Request
+      { rqRequest :: Wai.Request
+      , rqPaths   :: [FilePath]
+      }
 
 -- The monads:
 
@@ -187,16 +194,16 @@ mkFailMessage s = undefined {- do
 -- ServerMonad                   
 
 class Monad m => ServerMonad m  where
-    askRq   :: m ([FilePath], Request)
-    localRq :: (([FilePath], Request) -> ([FilePath], Request)) -> m a -> m a
+    askRq   :: m Request
+    localRq :: (Request -> Request) -> m a -> m a
 
 -- | ServerPartT is a container for processing requests and returning results
-newtype ServerPartT m a = ServerPartT { unServerPartT :: ReaderT ([FilePath], Request) (WebT m) a }
+newtype ServerPartT m a = ServerPartT { unServerPartT :: ReaderT Request (WebT m) a }
     deriving (Monad, MonadIO, MonadPlus, Functor)
 
 instance (Monad m) => ServerMonad (ServerPartT m) where
     askRq = ServerPartT $ ask
     localRq f m = ServerPartT $ local f (unServerPartT m)
 
-runServerPartT :: ServerPartT m a -> ([FilePath], Request) -> WebT m a
+runServerPartT :: ServerPartT m a -> Request -> WebT m a
 runServerPartT = runReaderT . unServerPartT
