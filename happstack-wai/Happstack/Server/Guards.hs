@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, RankNTypes, ScopedTypeVariables #-}
 module Happstack.Server.Guards where
 
 import Control.Monad(MonadPlus(mzero), unless)
@@ -41,3 +41,25 @@ dirs :: (ServerMonad m, MonadPlus m) => FilePath -> m a -> m a
 dirs fp m = 
      do let parts = splitDirectories (makeRelative "/" fp) 
         foldr dir m parts
+
+
+class MatchMethod m where matchMethod :: m -> Method -> Bool
+instance MatchMethod Method where matchMethod m = (== m)
+instance MatchMethod [Method] where matchMethod methods = (`elem` methods)
+instance MatchMethod (Method -> Bool) where matchMethod f = f
+instance MatchMethod () where matchMethod () _ = True
+
+-- | Guard against the method.  This function also guards against
+-- any remaining path segments.  See methodOnly for the version
+-- that guards only by method
+methodM :: (ServerMonad m, MonadPlus m, MatchMethod method) => method -> m ()
+methodM meth = methodOnly meth >> nullDir
+
+-- | guard against the method only. (as opposed to 'methodM')
+methodOnly :: (ServerMonad m, MonadPlus m, MatchMethod method) => method -> m ()
+methodOnly meth = guardRq $ matchMethod meth . requestMethod . rqRequest
+
+-- | Guard against the method. Note, this function also guards against any
+--   remaining path segments.
+methodSP :: (ServerMonad m, MonadPlus m, MatchMethod method) => method -> m b-> m b
+methodSP m handle = methodM m >> handle
