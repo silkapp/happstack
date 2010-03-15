@@ -23,6 +23,7 @@ Library
                      wai-extra,
                      web-encodings
   Exposed-modules:   Happstack.Server.Guards
+                     Happstack.Server.Filters
                      Happstack.Server.Monads
                      Happstack.Server.ToMessage
                      Happstack.Server.Simple
