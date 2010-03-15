@@ -10,8 +10,9 @@ import qualified Data.ByteString.Lazy.UTF8      as LU
 import Data.Char 				(toLower)
 import Data.Generics                            (Data, Typeable)
 import Data.Monoid 				(Monoid(mempty, mappend, mconcat))
+import Happstack.Server.Monads                  (ServerMonad(askRq))
 -- import Happstack.Server.Cookie 			(Cookie (cookieValue))
--- import Happstack.Server 			(Input(inputValue), Request(rqInputs, rqCookies), ServerMonad, askRq)
+-- import Happstack.Server 			(Input(inputValue), Request(rqInputs, rqCookies))
 import Happstack.Util.Common                    (readM)
 
 newtype ReaderError r e a = ReaderError { unReaderError :: ReaderT r (Either e) a }
