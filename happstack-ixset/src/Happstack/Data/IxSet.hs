@@ -142,7 +142,7 @@ ixSetDataType = SYBWC.mkDataType "IxSet" [iSetConstr, ixSetConstr]
 
 
 instance (Indexable a b, Data a, Ord a, Default a) => Default (IxSet a) where
-    defaultValue = ISet []
+    defaultValue = IxSet []
 
 instance (Ord a,Show a) => Show (IxSet a) where show = show . toSet
 
