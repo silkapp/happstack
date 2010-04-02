@@ -32,11 +32,14 @@ module Happstack.Data.Default
 import qualified Data.ByteString.Char8 as BSC
 import Data.Generics.SYB.WithClass.Basics
 import Data.Generics.SYB.WithClass.Instances ()
+import Data.Generics.SYB.WithClass.Instances.Text ()
 import Data.Int
 import Data.Word
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Foreign.ForeignPtr
+import Data.Text      as T
+import Data.Text.Lazy as L
 
 -- | The 'Default' class provides a 'defaultValue' value, which
 -- is the default value for that type.
@@ -114,6 +117,12 @@ instance Default a => Default (Maybe a) where
 
 instance Default BSC.ByteString where
     defaultValue = BSC.pack ""
+    
+instance Default T.Text where
+    defaultValue = T.empty
+    
+instance Default L.Text where
+    defaultValue = L.empty    
 
 -- We don't really want this instance, but we need it for the ByteString
 -- instance
