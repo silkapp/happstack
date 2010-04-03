@@ -9,6 +9,11 @@ module Happstack.Data.Serialize
 
 import Control.Monad.Identity
 import Data.Int()
+import Data.Fixed (HasResolution, Fixed)
+import Data.Ratio ((%), Ratio, denominator, numerator)
+import Data.Time (Day(..), DiffTime(..), LocalTime(..), NominalDiffTime(..), TimeOfDay(..)
+                 ,TimeZone(..), UTCTime(..), UniversalTime(..), ZonedTime(..))
+import Data.Time.Clock.TAI (AbsoluteTime, taiEpoch, addAbsoluteTime, diffAbsoluteTime)
 import Foreign
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as B
@@ -193,6 +198,13 @@ instance Serialize Int32 where
 instance Version Int64 where mode = Primitive
 instance Serialize Int64 where
     getCopy = contain get; putCopy = contain . put
+instance Version (Fixed a)
+instance (Typeable a, HasResolution a) => Serialize (Fixed a) where
+    getCopy = contain $ liftM fromRational safeGet ; putCopy = contain . safePut . toRational
+instance (Typeable a)  => Version (Ratio a)
+instance (Integral a, Serialize a) => Serialize (Ratio a) where
+  getCopy = contain $ liftM2 (%) safeGet safeGet
+  putCopy r = contain $ safePut (numerator r) >> safePut (denominator r)
 instance Version () where mode = Primitive
 instance Serialize () where
     getCopy = contain get; putCopy = contain . put
@@ -270,8 +282,70 @@ instance Version LT.Text
 instance Serialize LT.Text where
     putCopy = putCopy . LT.encodeUtf8
     getCopy = contain $ fmap LT.decodeUtf8 safeGet
-  
 
+
+-- Data.Time instances
+instance Version Day
+instance Serialize Day where
+  getCopy = contain $ liftM ModifiedJulianDay get ; putCopy = contain . put . toModifiedJulianDay
+
+instance Version UniversalTime
+instance Serialize UniversalTime where
+  getCopy = contain $ liftM ModJulianDate get ; putCopy = contain . put . getModJulianDate
+
+instance Version UTCTime
+instance Serialize UTCTime where
+  getCopy   = contain $ liftM2 UTCTime safeGet safeGet
+  putCopy d = contain $ safePut (utctDay d) >> safePut (utctDayTime d)
+
+instance Version TimeZone
+instance Serialize TimeZone where
+  getCopy   = contain $ do min <- safeGet
+                           sum <- safeGet
+                           nam <- safeGet
+                           return (TimeZone min sum nam)
+  putCopy (TimeZone min sum nam) =
+    contain $ do safePut min
+                 safePut sum
+                 safePut nam
+instance Version TimeOfDay
+instance Serialize TimeOfDay where
+  getCopy = contain $ do h <- safeGet
+                         m <- safeGet
+                         s <- safeGet
+                         return (TimeOfDay h m s)
+  putCopy (TimeOfDay h m s) =
+    contain $ do safePut h
+                 safePut m
+                 safePut s
+instance Version ZonedTime
+instance Serialize ZonedTime where
+  getCopy   = contain $ liftM2 ZonedTime safeGet safeGet
+  putCopy (ZonedTime lt tz) = contain $ safePut lt >> safePut tz
+
+instance Version LocalTime
+instance Serialize LocalTime where
+  getCopy   = contain $ liftM2 LocalTime safeGet safeGet
+  putCopy (LocalTime day tod) = contain $ safePut day >> safePut tod
+
+instance Version DiffTime
+instance Serialize DiffTime where
+  getCopy = contain $ liftM fromRational safeGet ; putCopy = contain . safePut . toRational
+
+instance Version NominalDiffTime
+instance Serialize NominalDiffTime where
+  getCopy = contain $ liftM fromRational get ; putCopy = contain . put . toRational
+
+instance Version AbsoluteTime
+instance Serialize AbsoluteTime where
+  getCopy = contain $ liftM toAbsoluteTime safeGet
+    where
+      toAbsoluteTime :: DiffTime -> AbsoluteTime
+      toAbsoluteTime dt = addAbsoluteTime dt taiEpoch
+  putCopy = contain . safePut . fromAbsoluteTime
+    where
+      fromAbsoluteTime :: AbsoluteTime -> DiffTime
+      fromAbsoluteTime at = diffAbsoluteTime at taiEpoch
 
 --------------------------------------------------------------
 -- Object serialization
