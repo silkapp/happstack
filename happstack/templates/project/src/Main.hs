@@ -3,6 +3,7 @@ module Main where
 import Data.Version (showVersion)
 
 import Control.Concurrent (MVar, forkIO, killThread)
+import Control.Exception (bracket)
 
 import System.Environment (getArgs)
 import System.Log.Logger (Priority(..), logM)
@@ -117,27 +118,34 @@ runServer flags = do
   let appConf = foldr ($) (defaultConf progName) [f | ServerConfig f <- flags] 
 
   -- start the state system
-  control <- startSystemState' (store appConf) stateProxy
-  
-  -- start the http server
-  httpTid <- forkIO $ simpleHTTP (httpConf appConf) appHandler
+  withSystemState' (store appConf) stateProxy $ \control -> do
+    
+     -- start the http server
+     withThread (simpleHTTP (httpConf appConf) appHandler) $ do
 
-  -- checkpoint the state once a day
-  cronTid <- forkIO $ cron (60*60*24) (createCheckpoint control)
+       -- checkpoint the state once a day
+       withThread (cron (60*60*24) (createCheckpoint control)) $ do
   
-  putStrLn "server started"
-  -- wait for termination signal
-  waitForTermination
-  putStrLn "shutting down server"
+          -- wait for termination signal
+          logM "Happstack.Server" NOTICE "System running, press 'e <ENTER>' or Ctrl-C to stop server" 
+          waitForTermination
 
-  -- cleanup
-  killThread httpTid
-  killThread cronTid
-  createCheckpoint control
-  shutdownSystem control 
   where
   startSystemState' :: (Component st, Methods st) => String -> Proxy st -> IO (MVar TxControl)
   startSystemState' = runTxSystem . Queue . FileSaver
+
+  withSystemState' :: (Component st, Methods st) => String -> Proxy st -> (MVar TxControl -> IO a) -> IO a
+  withSystemState' name proxy action = 
+    bracket (startSystemState' name proxy) createCheckpointAndShutdown action
+
+  withThread init action = bracket (forkIO $ init) (killThread) (\_ -> action)
+
+  createCheckpointAndShutdown control = do
+    logM "Happstack.Server" NOTICE "Creating system checkpoint" 
+    createCheckpoint control
+    logM "Happstack.Server" NOTICE "System shutdown" 
+    shutdownSystem control
+
   -- simon.meier@inf.ethz.ch: I currently don't know what this is used for!
   -- FIXME: Add sensible comment.
   stateProxy :: Proxy AppState
