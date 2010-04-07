@@ -29,7 +29,6 @@ But: The Haskell98 Char type is at least 16bits (and often 32), these implementa
 
 import Data.Array.Unboxed
 import Data.Bits
-import Data.Int
 import Data.Char (chr,ord)
 
 

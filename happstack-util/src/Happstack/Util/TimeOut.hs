@@ -51,7 +51,6 @@ import Control.Concurrent
 import qualified Control.Concurrent.MVar.Strict as SM
 import Control.Exception.Extensible as E
 import Data.Typeable(Typeable)
-import Data.Maybe
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Monad (when)
 
