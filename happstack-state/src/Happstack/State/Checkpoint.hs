@@ -9,7 +9,6 @@ import Happstack.State.Saver
 import Happstack.Data.Serialize
 import Happstack.Data.SerializeTH
 import Happstack.State.Transaction
-import Happstack.State.ComponentSystem
 
 import Data.Typeable
 import Data.Maybe
@@ -17,8 +16,6 @@ import Control.Concurrent
 import Control.Monad
 import Control.Exception as E
 import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.Map as M
-import System.IO
 import qualified Data.Map as M
 
 import System.Log.Logger

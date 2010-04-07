@@ -3,7 +3,6 @@
 module Happstack.State.ComponentSystem where
 
 import Happstack.Data.Serialize
-import Happstack.Data.Proxy
 import Happstack.State.Types
 
 import Data.Typeable

@@ -16,7 +16,6 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 import System.Directory         ( createDirectoryIfMissing, removeFile, renameFile, doesFileExist )
 import System.IO
-import qualified System.IO.Error as SE
 import System.Random            ( randomIO )
 import System.Log.Logger
 import Text.Printf

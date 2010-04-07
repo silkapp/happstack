@@ -13,10 +13,7 @@ import qualified System.Log.Handler as SLH
 import System.Log.Handler.Simple
 import System.Log.Handler.Syslog
 
-import Control.Monad
-import Data.List
 import Data.Char
-import Data.Maybe
 import System.Environment
 import System.IO
 import System.Exit

@@ -9,7 +9,6 @@ import Happstack.Data.Proxy
 
 import Control.Monad.State
 import Control.Monad.Reader
-import Control.Monad
 
 instance (Monad m) => Monad (Ev m) where
     return x = Ev $ \_ -> return x

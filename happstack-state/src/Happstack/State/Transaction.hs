@@ -22,7 +22,6 @@ import Happstack.State.Saver
 import Happstack.Data.Serialize
 import Happstack.Data.SerializeTH
 import Happstack.State.Types
-import Happstack.Util.Common (Seconds)
 
 import Data.Dynamic
 import GHC.Base

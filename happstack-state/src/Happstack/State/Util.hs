@@ -7,7 +7,6 @@ module Happstack.State.Util
     ) where
 
 import Control.Concurrent.STM
-import Control.Monad.State
 import System.Random
 
 import Happstack.State.Monad

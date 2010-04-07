@@ -7,7 +7,6 @@ module Happstack.State.TxControl
     ) where
 
 import System.Log.Logger
-import System.IO
 import Control.Monad
 import Control.Exception
 import Control.Concurrent
