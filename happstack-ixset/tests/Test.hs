@@ -1,4 +1,4 @@
-module Main where
+module Test where
 
 import Happstack.Data.IxSet.Tests (allTests)
 import Test.HUnit (errors, failures, putTextToShowS,runTestText, runTestTT)

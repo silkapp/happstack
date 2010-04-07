@@ -111,7 +111,7 @@ import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
 
 -- the core datatypes
 
-data IxSet a = ISet [a] | IxSet [Ix a]
+data IxSet a = IxSet [Ix a]
     deriving (Data, Typeable)
 
 instance Version (IxSet a)
@@ -123,26 +123,21 @@ instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (IxSet a)), SYBWC.Sat (ctx [a]),
           Indexable a b, Data a, Ord a)
        => SYBWC.Data ctx (IxSet a) where
     gfoldl _ f z (IxSet x)  = z fromList `f` toList' x
-    gfoldl _ f z (ISet x)   = z ISet `f` x
-    toConstr _ (ISet  _) = iSetConstr
     toConstr _ (IxSet _) = ixSetConstr
     gunfold _ k z c  = case SYBWC.constrIndex c of
-                       1 -> k (z ISet)
-                       2 -> k (z fromList)
+                       1 -> k (z fromList)
                        _ -> error "IxSet.SYBWC.Data.gunfold unexpected match"
     dataTypeOf _ _ = ixSetDataType
 
-iSetConstr :: SYBWC.Constr
-iSetConstr = SYBWC.mkConstr ixSetDataType "ISet" [] SYBWC.Prefix
 ixSetConstr :: SYBWC.Constr
 ixSetConstr = SYBWC.mkConstr ixSetDataType "IxSet" [] SYBWC.Prefix
 ixSetDataType :: SYBWC.DataType
-ixSetDataType = SYBWC.mkDataType "IxSet" [iSetConstr, ixSetConstr]
+ixSetDataType = SYBWC.mkDataType "IxSet" [ixSetConstr]
 
 
 
 instance (Indexable a b, Data a, Ord a, Default a) => Default (IxSet a) where
-    defaultValue = IxSet []
+    defaultValue = empty
 
 instance (Ord a,Show a) => Show (IxSet a) where show = show . toSet
 
@@ -177,6 +172,7 @@ noCalcs _ = ()
 
 -} 
 inferIxSet :: String -> TH.Name -> TH.Name -> [TH.Name] -> Q [Dec]
+inferIxSet _ _ _ [] = error "inferIxSet needs at least one index"
 inferIxSet ixset typeName calName entryPoints
     = do calInfo <- reify calName
          typeInfo <- reify typeName
@@ -194,7 +190,7 @@ inferIxSet ixset typeName calName entryPoints
                let calType = getCalType t
                    getCalType (ForallT _names _ t') = getCalType t'
                    getCalType (AppT (AppT ArrowT _) t') = t'
-                   getCalType t' = error ("Unexpected type: " ++ pprint t')
+                   getCalType t' = error ("Unexpected type in getCalType: " ++ pprint t')
                    mkEntryPoint n = appE (conE 'Ix) (sigE (varE 'Map.empty) (forallT binders (return context) $
                                                                              appT (appT (conT ''Map) (conT n)) (appT (conT ''Set) typeCon)))
                in do i <- instanceD' (return context) (appT (appT (conT ''Indexable) typeCon) (return calType))
@@ -205,7 +201,7 @@ inferIxSet ixset typeName calName entryPoints
                      let ixType = appT (conT ''IxSet) typeCon
                      ixType' <- tySynD (mkName ixset) binders ixType
                      return $ [i, ixType']  -- ++ d
-           _ -> error "IxSet.infexIxSet calInfo unexpected match"
+           _ -> error "IxSet.inferIxSet calInfo unexpected match"
 
 #if MIN_VERSION_template_haskell(2,4,0)
 tyVarBndrToName (PlainTV nm) = nm
@@ -232,7 +228,6 @@ type IndexOp =
 -- function should have the form a->IxSet a->IxSet a, e.g. insert.
 change :: (Data a, Ord a,Data b,Indexable a b) =>
           IndexOp -> a -> IxSet a -> IxSet a
-change op x (ISet as) = change op x $ fromList as
 change op x (IxSet indices) =
     IxSet $ update indices $ flatten (x,calcs x)
     where
@@ -269,7 +264,6 @@ updateIx i new ixset = insert new $
 toSet :: Ord a => IxSet a -> Set a
 toSet (IxSet (Ix ix:_)) = Map.fold Set.union Set.empty ix
 toSet (IxSet []) = Set.empty
-toSet (ISet lst) = Set.fromList lst
 toSet _ = error "IxSet.toSet unexpected match"
 
 -- | Takes a list of Ixs and converts it into a Set
@@ -315,7 +309,6 @@ getOneOr def = fromMaybe def . getOne
 -- | return True if the IxSet is empty, False otherwise.
 null :: IxSet a -> Bool
 null (IxSet (Ix ix:_)) = Map.null ix
-null (ISet lst)        = List.null lst
 null (IxSet [])        = True
 null _ = error "IxSet.null: unexpected match"
 
@@ -450,7 +443,6 @@ groupBy (IxSet indices) = collect indices
     collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
     collect _ = error "IxSet.groupBy unexpected match"
     f = mapSnd Set.toList . Map.toList
-groupBy _ = error "IxSet.groupBy unexpected match"
 
 -- | A reversed groupBy
 rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
@@ -478,9 +470,6 @@ getOrd ord v (IxSet indices) = collect indices
             gt = concatMap (Set.toList . snd) $ Map.toList gt'
             eq = maybe [] Set.toList eq'
     collect _ = error "IxSet.getOrd unexpected match in collect"
-getOrd ord v (ISet keys) = error $ "IxSet.getOrd " ++ show ord ++ " got ISet[" ++ 
-                           show (length keys) ++ "] of type " ++ show (typeOf v) 
-getOrd _ _ _ = error "IxSet.getOrd unexpected match"
 
 --we want a gGets that returns a list of all matches
 
@@ -501,5 +490,5 @@ Optimization todo:
 --}
 
 instance (Show a,Indexable a b,Data a,Ord a) => Monoid (IxSet a) where
-    mempty=empty
+    mempty = empty
     mappend = union
