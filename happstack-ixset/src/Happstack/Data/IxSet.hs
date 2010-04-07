@@ -215,7 +215,7 @@ tyVarBndrToName = id
 -- modification operations
 
 -- | Generically traverses the argument and converts all data in it to Dynamic
--- and returns all the iternal data as a list of Dynamic
+-- and returns all the internal data as a list of Dynamic
 flatten :: (Typeable a, Data a) => a -> [Dynamic]
 flatten x = case cast x of
                 Just y -> [toDyn (y :: String)]
@@ -229,18 +229,20 @@ type IndexOp =
 change :: (Data a, Ord a,Data b,Indexable a b) =>
           IndexOp -> a -> IxSet a -> IxSet a
 change op x (IxSet indices) =
-    IxSet $ update indices $ flatten (x,calcs x)
+    IxSet $ update True indices $ flatten (x,calcs x)
     where
-    update [] _ = []
-    update _ [] = []
-    update (Ix index:is) dyns = Ix index':update is dyns'
+    update _ [] _ = []
+    update _ _ [] = []
+    update first (Ix index:is) dyns = Ix index':update False is dyns'
         where
         keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
         (ds,dyns') = partition (\d->dynTypeRep d == keyType) dyns
                      -- partition handles out of order indexes
         ii dkey = op (fromJust $ fromDynamic dkey) x
-        index' = foldr ii index ds -- handle multiple values
-    update _ _ = error "IxSet.change unexpected match"
+        index' = if first && List.null ds
+                 then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
+                 else foldr ii index ds -- handle multiple values
+    update _ _ _ = error "IxSet.change unexpected match"
 
 -- | Inserts an item into the IxSet
 insert :: (Data a, Ord a,Data b,Indexable a b) => a -> IxSet a -> IxSet a

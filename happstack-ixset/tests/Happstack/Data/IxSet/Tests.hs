@@ -16,6 +16,7 @@ import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Set (Set)
 import Test.HUnit (Test,(~:),(@=?), test)
+import Control.Exception as E
 
 $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
     [d|
@@ -24,10 +25,16 @@ $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
                   | Foo2 Int
 
         data NoIdxFoo = NoIdxFoo Int
+        data BadlyIndexed = BadlyIndexed Int
       |]
  )
 
-$(inferIxSet "FooXs" ''FooX 'noCalcs [ ''Int, ''String])
+$(inferIxSet "FooXs" ''FooX 'noCalcs [''Int, 
+                                      ''String
+                                      ])
+
+$(inferIxSet "BadlyIndexeds" ''BadlyIndexed 'noCalcs [''String])
+
 {-
   inferIxSet without any indexes is currently unsupported
   $(inferIxSet "NoIdxFoos" ''NoIdxFoo 'noCalcs [])
@@ -86,10 +93,6 @@ foox_c = Foo2 10
 foox_d = Foo2 20
 foox_e = Foo2 30
 
-{-
-  defaultValue should work in this case
-  doesn't
--}
 foox_set_abc :: FooXs
 foox_set_abc = insert foox_a $ insert foox_b $ insert foox_c $ defaultValue
 foox_set_cde :: FooXs
@@ -108,6 +111,10 @@ ixSetCheckSetMethods = test
      3 @=? length (toList foox_set_abc)
    ]
 
+isError x = (x `seq` return False) `E.catch` \(ErrorCall _) -> return True
+
+badIndexSafeguard = "check if there is error when no first index on value" ~:
+                    isError (size $ insert (BadlyIndexed 123) empty)
 
 
 
@@ -117,4 +124,5 @@ allTests :: Test
 allTests = "happstack-ixset" ~: [ ixSet001
                                 , ixSetCheckMethodsOnDefault
                                 , ixSetCheckSetMethods
+                                , badIndexSafeguard
                                 ]
