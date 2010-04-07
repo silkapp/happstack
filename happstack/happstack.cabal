@@ -67,7 +67,8 @@ Library
                        HSP.IdentityT
                        HSP.ServerPartT
                        HSP.WebT
-                       HSP.Google.Analytics
+                       -- does not build
+                       --HSP.Google.Analytics
   if flag(tests)
     Exposed-modules:   Happstack.Tests
   other-modules:       Paths_happstack
