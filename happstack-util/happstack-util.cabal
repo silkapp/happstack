@@ -83,7 +83,7 @@ Library
 
   extensions:          CPP, UndecidableInstances, BangPatterns, StandaloneDeriving,
                        DeriveDataTypeable, TemplateHaskell, RecursiveDo
-  ghc-options:         -Wall
+  ghc-options:         -Wall -fno-warn-unused-do-bind
   GHC-Prof-Options:    -auto-all
 
 Executable happstack-util-tests
