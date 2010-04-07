@@ -36,7 +36,7 @@ Library
                        process,
                        time,
                        random,
-                       SMTPClient >= 1.0.1 && < 1.1,
+                       SMTPClient >= 1.0.2 && < 1.1,
                        strict-concurrency,
                        network >= 2.2 && < 3,
                        template-haskell,
