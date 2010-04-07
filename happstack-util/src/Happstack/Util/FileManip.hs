@@ -82,20 +82,20 @@ findWithHandler ::
 
 findWithHandler errHandler recurse filter path =
     E.handle (errHandler path) $ F.getSymbolicLinkStatus path >>= visit path 0
-  where visit path depth st =
-            if F.isDirectory st && evalFI recurse path depth st
-              then unsafeInterleaveIO (traverse path (succ depth) st)
-              else filterPath path depth st []
+  where visit path' depth st =
+            if F.isDirectory st && evalFI recurse path' depth st
+              then unsafeInterleaveIO (traverse path' (succ depth) st)
+              else filterPath path' depth st []
         traverse dir depth dirSt = do
             names <- E.catch (getDirContents dir) (errHandler dir)
             filteredPaths <- forM names $ \name -> do
-                let path = dir </> name
-                unsafeInterleaveIO $ E.handle (errHandler path)
-                    (F.getSymbolicLinkStatus path >>= visit path depth)
+                let path' = dir </> name
+                unsafeInterleaveIO $ E.handle (errHandler path')
+                    (F.getSymbolicLinkStatus path >>= visit path' depth)
             filterPath dir depth dirSt (concat filteredPaths)
-        filterPath path depth st result =
-            return $ if evalFI filter path depth st
-                then path:result
+        filterPath path' depth st result =
+            return $ if evalFI filter path' depth st
+                then path':result
                 else result
 
 -- | Search a directory recursively, with recursion controlled by a
