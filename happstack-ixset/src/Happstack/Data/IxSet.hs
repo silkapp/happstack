@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances, OverlappingInstances, FlexibleInstances,
              MultiParamTypeClasses, TemplateHaskell, RankNTypes,
              FunctionalDependencies, DeriveDataTypeable,
-             GADTs, CPP #-}
+             GADTs, CPP, ScopedTypeVariables #-}
 
 
 {- |
@@ -66,7 +66,7 @@ And if you want all entries with both:
 
    @entries \@* [Word \"word1\",Word \"word2\"]@
 
-6. Find the only the first author
+6. Find only the first author
 
 If an Entry has multiple authors and you want to be able to query
 on the first author, define a @FirstAuthor@ datatype and add it to the
@@ -417,48 +417,45 @@ ix @+ list = foldr union empty        $ map (ix @=) list
     => IxSet a -> [k] -> IxSet a
 ix @* list = foldr intersection empty $ map (ix @=) list
 
--- | Returns the subset with an index equal to the provided key.
--- It is possible to provide a key of a type not indexed in the 'IxSet'.  In
--- this case the function returns the 'empty' 'IxSet' for this type.
+-- | Returns the subset with an index equal to the provided key.  The
+-- set must be indexed over key type, doing otherwise results in
+-- runtime error.
 getEQ :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
 getEQ = getOrd EQ
 
--- | Returns the subset with an index less than the provided key.
--- It is possible to provide a key of a type not indexed in the IxSet.  In
--- this case the function returns the empty IxSet for this type.
+-- | Returns the subset with an index less than the provided key.  The
+-- set must be indexed over key type, doing otherwise results in
+-- runtime error.
 getLT :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
 getLT = getOrd LT
 
 -- | Returns the subset with an index greater than the provided key.
--- It is possible to provide a key of a type not indexed in the
--- 'IxSet'.  In this case the function returns the 'empty' 'IxSet' for
--- this type.
+-- The set must be indexed over key type, doing otherwise results in
+-- runtime error.
 getGT :: (Indexable a b, Data a, Ord a, Typeable k)
       => k -> IxSet a -> IxSet a
 getGT = getOrd GT
 
 -- | Returns the subset with an index less than or equal to the
--- provided key.  It is possible to provide a key of a type not
--- indexed in the 'IxSet'.  In this case the function returns the
--- 'empty' 'IxSet' for this type.
+-- provided key.  The set must be indexed over key type, doing
+-- otherwise results in runtime error.
 getLTE :: (Indexable a b, Data a, Ord a, Typeable k)
        => k -> IxSet a -> IxSet a
 getLTE v ix = let ix2 = (getLT v ix) in union ix2 $ getEQ v ix
 
 -- | Returns the subset with an index greater than or equal to the
--- provided key.  It is possible to provide a key of a type not
--- indexed in the 'IxSet'.  In this case the function returns the
--- 'empty' 'IxSet' for this type.
+-- provided key.  The set must be indexed over key type, doing
+-- otherwise results in runtime error.
 getGTE :: (Indexable a b, Data a, Ord a, Typeable k)
        => k -> IxSet a -> IxSet a
 getGTE v ix = let ix2 = (getOrd GT v ix) in union ix2 $ getEQ v ix
 
 -- | Returns the subset with an index within the interval provided.
--- The top of the interval is closed and the bottom is open.  It is
--- possible to provide a key of a type not indexed in the 'IxSet'.  In
--- this case the function returns the 'empty' 'IxSet' for this type.
+-- The top of the interval is closed and the bottom is open.  The set
+-- must be indexed over key type, doing otherwise results in runtime
+-- error.
 getRange :: (Indexable a b, Typeable k, Ord a, Data a)
          => k -> k -> IxSet a -> IxSet a
 getRange k1 k2 ixset = intersection (getGTE k1 ixset) (getLT k2 ixset)
@@ -479,14 +476,16 @@ rGroupBy = reverse . groupBy
     
 --query impl function
 
--- | A function for building up selectors on IxSets.  Used in the
--- various get* functions.
+-- | A function for building up selectors on 'IxSet's.  Used in the
+-- various get* functions.  The set must be indexed over key type,
+-- doing otherwise results in runtime error.
 getOrd :: (Indexable a b, Ord a, Data a, Typeable k)
        => Ordering -> k -> IxSet a -> IxSet a
 getOrd ord v (IxSet indices) = collect indices
     where
     v' = toDyn v
-    collect [] = empty
+    collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
+                 " in IxSet " ++ show (typeOf (getOneOr undefined (IxSet indices)))
     collect (Ix index:is) = maybe (collect is) f $ fromDynamic v'
         where
         f v'' = foldr insert empty $
