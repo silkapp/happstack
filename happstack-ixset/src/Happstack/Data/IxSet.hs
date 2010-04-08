@@ -256,16 +256,15 @@ change op x (IxSet indices) =
     where
     update _ [] _ = []
     update _ _ [] = []
-    update first (Ix index:is) dyns = Ix index':update False is dyns'
+    update firstindex (Ix index:is) dyns = Ix index':update False is dyns'
         where
         keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
         (ds,dyns') = partition (\d->dynTypeRep d == keyType) dyns
                      -- partition handles out of order indices
         ii dkey = op (fromJust $ fromDynamic dkey) x
-        index' = if first && List.null ds
+        index' = if firstindex && List.null ds
                  then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
                  else foldr ii index ds -- handle multiple values
-    update _ _ _ = error "IxSet.change unexpected match"
 
 -- | Inserts an item into the 'IxSet'. If your data happens to have
 -- primary key this function might not be what you want. See
@@ -296,7 +295,6 @@ toSet (IxSet idxs) = toSet' idxs
 toSet' :: Ord a => [Ix a] -> Set a
 toSet' (Ix ix:_) = Map.fold Set.union Set.empty ix
 toSet' [] = Set.empty
-toSet' _ = error "IxSet.toSet' unexpected match"
 
 -- | Converts a 'Set' to an 'IxSet'.
 fromSet :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
@@ -337,7 +335,6 @@ getOneOr def = fromMaybe def . getOne
 null :: IxSet a -> Bool
 null (IxSet (Ix ix:_)) = Map.null ix
 null (IxSet [])        = True
-null _ = error "IxSet.null: unexpected match"
 
 -- set operations
 
@@ -468,7 +465,6 @@ groupBy (IxSet indices) = collect indices
     where
     collect [] = []
     collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
-    collect _ = error "IxSet.groupBy unexpected match"
     f = mapSnd Set.toList . Map.toList
     
 --query impl function
@@ -495,7 +491,6 @@ getOrd ord v ixSet@(IxSet indices) = collect indices
             lt = concatMap (Set.toList . snd) $ Map.toList lt'
             gt = concatMap (Set.toList . snd) $ Map.toList gt'
             eq = maybe [] Set.toList eq'
-    collect _ = error "IxSet.getOrd unexpected match in collect"
 
 --we want a gGets that returns a list of all matches
 
