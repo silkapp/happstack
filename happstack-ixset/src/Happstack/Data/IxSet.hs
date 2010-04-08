@@ -521,3 +521,17 @@ Optimization todo:
 instance (Show a,Indexable a b,Data a,Ord a) => Monoid (IxSet a) where
     mempty = empty
     mappend = union
+
+-- | Statistics about 'IxSet'. This function returns quadruple
+-- consisting of 1. total number of elements in the set 2. number of
+-- declared indices 3. number of keys in all indices 4. number of
+-- values in all keys in all indices. This can aid you in debugging
+-- and optimisation.
+stats :: (Ord a) => IxSet a -> (Int,Int,Int,Int)
+stats (IxSet indices) = (no_elements,no_indices,no_keys,no_values)
+    where
+      no_elements = size (IxSet indices)
+      no_indices = length indices
+      no_keys = sum [Map.size m | Ix m <- indices]
+      no_values = sum [sum [Set.size s | s <- Map.elems m] | Ix m <- indices]
+
