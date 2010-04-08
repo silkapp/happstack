@@ -147,7 +147,7 @@ instance (Ord a,Show a) => Show (IxSet a) where show = show . toSet
 instance (Ord a,Read a,Data a,Indexable a b) => Read (IxSet a) where
     readsPrec n = mapFst fromSet . readsPrec n
 
-{- | 'Indexable' class defines objects that can be memebers of 'IxSet'. 
+{- | 'Indexable' class defines objects that can be members of 'IxSet'. 
      If you don't want calculated values use @'Indexable' a ()@.
 -}
 class (Data b) => Indexable a b | a -> b where
@@ -222,6 +222,7 @@ inferIxSet ixset typeName calName entryPoints
                      return $ [i, ixType']  -- ++ d
            _ -> error "IxSet.inferIxSet calInfo unexpected match"
 
+tyVarBndrToName :: TyVarBndr -> Name
 #if MIN_VERSION_template_haskell(2,4,0)
 tyVarBndrToName (PlainTV nm) = nm
 tyVarBndrToName (KindedTV nm _) = nm
@@ -469,10 +470,6 @@ groupBy (IxSet indices) = collect indices
     collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
     collect _ = error "IxSet.groupBy unexpected match"
     f = mapSnd Set.toList . Map.toList
-
--- | A reversed groupBy.
-rGroupBy :: (Typeable k, Typeable t) => IxSet t -> [(k, [t])]
-rGroupBy = reverse . groupBy
     
 --query impl function
 
@@ -481,11 +478,11 @@ rGroupBy = reverse . groupBy
 -- doing otherwise results in runtime error.
 getOrd :: (Indexable a b, Ord a, Data a, Typeable k)
        => Ordering -> k -> IxSet a -> IxSet a
-getOrd ord v (IxSet indices) = collect indices
+getOrd ord v ixSet@(IxSet indices) = collect indices
     where
     v' = toDyn v
     collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
-                 " in IxSet " ++ show (typeOf (getOneOr undefined (IxSet indices)))
+                 " in " ++ show (typeOf ixSet)
     collect (Ix index:is) = maybe (collect is) f $ fromDynamic v'
         where
         f v'' = foldr insert empty $
@@ -510,15 +507,13 @@ Optimization todo:
 
 * nicer operators?
 
-* good way to enforce that you don't query on the wrong type?
-
 * nice way to do updates that doesn't involve reinserting the entire data
 
 * can we index on xpath rather than just type?
 
 --}
 
-instance (Show a,Indexable a b,Data a,Ord a) => Monoid (IxSet a) where
+instance (Indexable a b, Data a, Ord a) => Monoid (IxSet a) where
     mempty = empty
     mappend = union
 
