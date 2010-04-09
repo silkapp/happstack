@@ -88,8 +88,67 @@ do
 
 -}
 
-module Happstack.Data.IxSet (module Happstack.Data.IxSet,
-                             module Ix)
+module Happstack.Data.IxSet 
+    (
+     module Ix,
+         
+     -- * Set type
+     IxSet(..),
+     Indexable(..),
+     noCalcs,
+     inferIxSet,
+               
+     -- * Changes to set
+     IndexOp,
+     change,
+     insert,
+     delete,
+     updateIx,
+
+     -- * Creation
+     fromSet,
+     fromList,
+
+     -- * Conversion
+     toSet,
+     toList,
+     getOne,
+     getOneOr,
+
+     -- * Size checking
+     size,
+     null,
+
+     -- * Set operations
+     (&&&),
+     (|||),
+     union,
+     intersection,
+
+     -- * Indexing
+     (@=),
+     (@<),
+     (@>),
+     (@<=),
+     (@>=),
+     (@><),
+     (@>=<),
+     (@><=),
+     (@>=<=),
+     (@+),
+     (@*),
+     getEQ,
+     getLT,
+     getGT,
+     getLTE,
+     getGTE,
+     getRange,
+     groupBy,
+     getOrd,
+
+     -- * Debugging and optimisation
+     stats
+)
 where
 
 import qualified Happstack.Data.IxSet.Ix as Ix
@@ -111,18 +170,22 @@ import Language.Haskell.TH as TH
 import Happstack.Util.TH
 import Happstack.Data
 import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
+import Prelude hiding (null)
 
 -- the core datatypes
 
 data IxSet a = IxSet [Ix a]
     deriving (Data, Typeable)
 
-instance (Eq a, Ord a,Typeable a) => Eq (IxSet a) where
+instance (Eq a,Ord a,Typeable a) => Eq (IxSet a) where
     IxSet (Ix a:_) == IxSet (Ix b:_) = 
         case cast b of
           Just b' -> a==b'
           Nothing -> error "trying to compare two sets with different types of first indices, this is a bug in library"
     _ == _ = error "comparing sets without indices, this is a bug in library"
+
+instance (Eq a,Ord a,Typeable a) => Ord (IxSet a) where
+    compare a b = compare (toSet a) (toSet b)
 
 instance Version (IxSet a)
 instance (Serialize a, Ord a, Data a, Indexable a b) => Serialize (IxSet a) where
