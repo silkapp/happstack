@@ -47,7 +47,6 @@ Library
   Exposed-modules:     
                        Happstack.Data.IxSet
                        Happstack.Data.IxSet.Ix
-                       Happstack.Data.IxSet.Usage
   if flag(tests)
     Exposed-modules:   
                        Happstack.Data.IxSet.Tests
