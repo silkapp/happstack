@@ -8,15 +8,18 @@
 module Happstack.Data.IxSet.Tests where
 
 import Control.Monad
-import Data.Generics.SYB.WithClass.Basics
-import Data.Maybe
 import Happstack.Data
-import Happstack.Data.IxSet
+import Happstack.Data.IxSet as IxSet
 import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Set (Set)
+import qualified Data.Set as Set
 import Test.HUnit (Test,(~:),(@=?), test)
 import Control.Exception as E
+import Test.QuickCheck
+import Happstack.Util.Testing
+import Data.Data as Data
+import Data.Maybe
 
 $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
     [d|
@@ -26,6 +29,9 @@ $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
 
         data NoIdxFoo = NoIdxFoo Int
         data BadlyIndexed = BadlyIndexed Int
+
+        data MultiIndex = MultiIndex String Int Integer (Maybe Int) (Either Bool Char)
+                        | MultiIndexSubset Int Bool String
       |]
  )
 
@@ -35,62 +41,38 @@ $(inferIxSet "FooXs" ''FooX 'noCalcs [''Int,
 
 $(inferIxSet "BadlyIndexeds" ''BadlyIndexed 'noCalcs [''String])
 
-{-
-  inferIxSet without any indexes is currently unsupported
-  $(inferIxSet "NoIdxFoos" ''NoIdxFoo 'noCalcs [])
--}
+$(inferIxSet "MultiIndexed" ''MultiIndex 'noCalcs [''String, ''Int, ''Integer, ''Bool, ''Char])
 
 instance Indexable Foo String where
     empty =  IxSet [Ix (Map.empty :: Map String (Set Foo)),
                     Ix (Map.empty :: Map Int (Set Foo))]
     calcs (Foo s _) = s ++ "bar"
 
-t1, t2, t3 :: Foo
-t1 = Foo "foo" 2
-t2 = Foo "foo" 3
-t3 = Foo "goo" 3
-
-ts :: [Foo]
-ts = [t1, t2, t3]
-
-ixset :: IxSet Foo
-ixset = fromList ts
-
-xml :: [Element]
-xml = toXml ixset
-
-ixset' :: Maybe (IxSet Foo)
-ixset' = fromXml Rigid xml
-
-ts' :: Maybe [Foo]
-ts' = fmap toList ixset'
-
-ixSet001 :: Test
-ixSet001 = "ixSet001" ~: (Just ts) @=? ts'
+type Foos = IxSet Foo
 
 
-default_ixset :: FooXs
-default_ixset = defaultValue
 
-{-
-default_ixset_no_idx :: NoIdxFoos
-default_ixset_no_idx = defaultValue
--}
+ixSetCheckMethodsOnDefault :: Test
 ixSetCheckMethodsOnDefault = test 
    [ "size is zero" ~: 0 @=? 
-     size default_ixset
+     size (defaultValue :: Foos)
    , "getOne returns Nothing" ~: 
-     Nothing @=? getOne default_ixset
+     Nothing @=? getOne (defaultValue :: Foos)
    , "getOneOr returns default" ~: 
-     Foo1 "" 44 @=? getOneOr (Foo1 "" 44) default_ixset 
+     Foo1 "" 44 @=? getOneOr (Foo1 "" 44) defaultValue
    , "toList returns []" ~: 
-     [] @=? toList default_ixset
+     [] @=? toList (defaultValue :: Foos)
    ]
 
+foox_a :: FooX
 foox_a = Foo1 "abc" 10
+foox_b :: FooX
 foox_b = Foo1 "abc" 20
+foox_c :: FooX
 foox_c = Foo2 10
+foox_d :: FooX
 foox_d = Foo2 20
+foox_e :: FooX
 foox_e = Foo2 30
 
 foox_set_abc :: FooXs
@@ -98,6 +80,7 @@ foox_set_abc = insert foox_a $ insert foox_b $ insert foox_c $ defaultValue
 foox_set_cde :: FooXs
 foox_set_cde = insert foox_e $ insert foox_d $ insert foox_c $ defaultValue
 
+ixSetCheckSetMethods :: Test
 ixSetCheckSetMethods = test 
    [ "size abc is 3" ~: 3 @=? 
      size foox_set_abc
@@ -111,18 +94,139 @@ ixSetCheckSetMethods = test
      3 @=? length (toList foox_set_abc)
    ]
 
+isError :: a -> IO Bool
 isError x = (x `seq` return False) `E.catch` \(ErrorCall _) -> return True
 
-badIndexSafeguard = "check if there is error when no first index on value" ~:
-                    isError (size $ insert (BadlyIndexed 123) empty)
+badIndexSafeguard :: Test
+badIndexSafeguard = test 
+                    [ "check if there is error when no first index on value" ~:
+                      isError (size $ insert (BadlyIndexed 123) empty)
+                    , "check if indexing with missing index" ~: 
+                      isError (getOne (foox_set_cde @= True))
+                    ]
 
 
 
+instance Arbitrary Foo where
+    arbitrary = liftM2 Foo arbitrary arbitrary
 
+instance (Arbitrary a,Data.Data a, Ord a, Indexable a b) => 
+    Arbitrary (IxSet a) where
+    arbitrary = liftM fromList arbitrary
+
+prop_toAndFromXml :: Foos -> Bool
+prop_toAndFromXml ixset = Just ixset == ixset'
+    where
+      xml :: [Element]
+      xml = toXml ixset
+
+      ixset' :: Maybe (IxSet Foo)
+      ixset' = fromXml Rigid xml
+
+prop_sizeEqToListLength :: Foos -> Bool      
+prop_sizeEqToListLength ixset = size ixset == length (toList ixset)
+
+prop_union :: Foos -> Foos -> Bool
+prop_union ixset1 ixset2 = 
+    toSet (ixset1 `union` ixset2) == toSet ixset1 `Set.union` toSet ixset2
+
+prop_intersection :: Foos -> Foos -> Bool
+prop_intersection ixset1 ixset2 = 
+    toSet (ixset1 `intersection` ixset2) == 
+          toSet ixset1 `Set.intersection` toSet ixset2
+
+prop_opers :: Foos -> Int -> Bool
+prop_opers ixset intidx =
+    ((lt `union` eq) == lteq) &&
+    ((gt `union` eq) == gteq) &&
+    -- this works for Foo as an Int field is in every Foo value
+    ((gt `union` eq `union` lt) == ixset) 
+    where
+      eq = ixset @= intidx
+      lt = ixset @< intidx
+      gt = ixset @> intidx
+      lteq = ixset @<= intidx
+      gteq = ixset @>= intidx
+
+prop_sureelem :: Foos -> Foo -> Bool
+prop_sureelem ixset foo@(Foo string intidx) = 
+    not (IxSet.null eq) && 
+    not (IxSet.null lteq) && 
+    not (IxSet.null gteq)
+    where
+      ixset' = insert foo ixset
+      eq = ixset' @= intidx
+      lteq = ixset' @<= intidx
+      gteq = ixset' @>= intidx
+
+prop_ranges :: Foos -> Int -> Int -> Bool
+prop_ranges ixset intidx1 intidx2 =
+    ((ixset @>< (intidx1,intidx2)) == (gt1 &&& lt2)) &&
+    ((ixset @>=< (intidx1,intidx2)) == ((gt1 ||| eq1) &&& lt2)) &&
+    ((ixset @><= (intidx1,intidx2)) == (gt1 &&& (lt2 ||| eq2))) &&
+    ((ixset @>=<= (intidx1,intidx2)) == ((gt1 ||| eq1) &&& (lt2 ||| eq2)))
+    where
+      eq1 = ixset @= intidx1
+      lt1 = ixset @< intidx1
+      gt1 = ixset @> intidx1
+      eq2 = ixset @= intidx2
+      lt2 = ixset @< intidx2
+      gt2 = ixset @> intidx2
+      
+
+prop_any :: Foos -> [Int] -> Bool
+prop_any ixset idxs = 
+    (ixset @+ idxs) == foldr union empty (map ((@=) ixset) idxs)
+
+prop_all :: Foos -> [Int] -> Bool
+prop_all ixset idxs = 
+    (ixset @* idxs) == foldr intersection empty (map ((@=) ixset) idxs)
 
 allTests :: Test
-allTests = "happstack-ixset" ~: [ ixSet001
-                                , ixSetCheckMethodsOnDefault
+allTests = "happstack-ixset" ~: [ ixSetCheckMethodsOnDefault
                                 , ixSetCheckSetMethods
                                 , badIndexSafeguard
+                                , test (True @=? findElement 1 1)
+                                , qctest prop_toAndFromXml
+                                , qctest prop_sizeEqToListLength
+                                , qctest prop_union
+                                , qctest prop_intersection
+                                , qctest prop_opers
+                                , qctest prop_sureelem
+                                , qctest prop_ranges
+                                , qctest prop_any
+                                , qctest prop_all
                                 ]
+
+
+
+bigSet :: Int -> MultiIndexed
+bigSet n = fromList $
+    [ MultiIndex string int integer maybe_int either_bool_char |
+      string <- ["abc", "def", "ghi", "jkl"],
+      int <- [1..n],
+      integer <- [10000..10010],
+      maybe_int <- [Nothing, Just 5, Just 6],
+      either_bool_char <- [Left True, Left False, Right 'A', Right 'B']] ++
+    [ MultiIndexSubset int bool string |
+      string <- ["abc", "def", "ghi"],
+      int <- [1..n],
+      bool <- [True, False]]
+
+findElementX :: MultiIndexed -> Int -> Bool
+findElementX set n = isJust $ getOne (set @+ ["abc","def","ghi"] 
+                                      @>=<= (10000 :: Integer,10010 :: Integer)
+                                      @= (True :: Bool)
+                                      @= (n `div` n)
+                                      @= "abc"
+                                      @= (10000 :: Integer)
+                                      @= (5 :: Int))
+
+findElement :: Int -> Int -> Bool
+findElement n m = all id ([findElementX set k | k <- [1..n]])
+    where set = bigSet m
+                            
+{-
+bigSetTests :: Test
+bigSetTests = "bigSetTests" ~: return (findElement 1 1)
+-}
