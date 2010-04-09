@@ -117,6 +117,13 @@ import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
 data IxSet a = IxSet [Ix a]
     deriving (Data, Typeable)
 
+instance (Eq a, Ord a,Typeable a) => Eq (IxSet a) where
+    IxSet (Ix a:_) == IxSet (Ix b:_) = 
+        case cast b of
+          Just b' -> a==b'
+          Nothing -> error "trying to compare two sets with different types of first indices, this is a bug in library"
+    _ == _ = error "comparing sets without indices, this is a bug in library"
+
 instance Version (IxSet a)
 instance (Serialize a, Ord a, Data a, Indexable a b) => Serialize (IxSet a) where
     putCopy = contain . safePut . toList
