@@ -153,7 +153,7 @@ where
 
 import qualified Happstack.Data.IxSet.Ix as Ix
 import           Happstack.Data.IxSet.Ix (Ix(Ix))
-import Data.Generics hiding (GT)
+import Data.Generics (Data, gmapQ)
 import Data.Dynamic
 import Data.Maybe
 import Data.Monoid
