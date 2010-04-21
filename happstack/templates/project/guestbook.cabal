@@ -9,8 +9,8 @@ Description:
  This small example guestbook makes an excellent starting point for
  your own happstack applications.
 Cabal-version: >= 1.4.0.0
-build-type: Custom
-Data-files:
+Build-type: Simple
+Data-files: 
         public/theme/style.css
         public/theme/images/date.gif
         public/theme/images/ql_rss.gif
@@ -27,26 +27,15 @@ Data-files:
 Flag base4
     Description: Choose the even newer, even smaller, split-up base package.
 
-Library
- Exposed-Modules:
-  App.Control,
-  App.Logger,
-  App.State,
-  App.View,
-  GuestBook.Control,
-  GuestBook.State,
-  GuestBook.State2,
-  GuestBook.View
- hs-source-dirs: src
-
- GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
- Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data, extensible-exceptions
- if flag(base4)
-    Build-Depends: base >= 4 && < 5, syb
-
 Executable guestbook-server
  Main-Is: Main.hs
  hs-source-dirs: src
- GHC-options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
- Build-depends: happstack-util
- Build-Tools: trhsx
+
+ GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
+ Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data, extensible-exceptions, happstack-util
+ if !os(windows)
+   -- Cabal has a bug on windows and cannot find trhsx
+   Build-Tools: trhsx
+
+ if flag(base4)
+    Build-Depends: base >= 4 && < 5, syb
