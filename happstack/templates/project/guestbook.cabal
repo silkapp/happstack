@@ -9,7 +9,7 @@ Description:
  This small example guestbook makes an excellent starting point for
  your own happstack applications.
 Cabal-version: >= 1.4.0.0
-Build-type: Simple
+Build-type: Custom
 Data-files: 
         public/theme/style.css
         public/theme/images/date.gif
