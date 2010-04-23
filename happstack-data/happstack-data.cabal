@@ -101,7 +101,7 @@ Library
               TypeSynonymInstances, PatternGuards,
               PolymorphicComponents
   -- Should also have ", DeriveDataTypeable" but Cabal complains
-  GHC-Options: -Wall
+  GHC-Options: -Wall -O0
 
 Executable happstack-data-tests
   Main-Is: Test.hs
