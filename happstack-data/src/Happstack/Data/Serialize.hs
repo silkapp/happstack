@@ -1,4 +1,4 @@
-{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs, PatternSignatures,
+{-# LANGUAGE UndecidableInstances, OverlappingInstances, ScopedTypeVariables, GADTs,
     GeneralizedNewtypeDeriving, DeriveDataTypeable #-}
 module Happstack.Data.Serialize
     ( Serialize(..), Version(..), Migrate(..), Mode(..), Contained, contain, extension,
@@ -9,9 +9,8 @@ module Happstack.Data.Serialize
 
 import Control.Monad.Identity
 import Data.Int()
-import Data.Fixed (HasResolution, Fixed)
 import Data.Ratio ((%), Ratio, denominator, numerator)
-import Data.Time (Day(..), DiffTime(..), LocalTime(..), NominalDiffTime(..), TimeOfDay(..)
+import Data.Time (Day(..), DiffTime, LocalTime(..), NominalDiffTime, TimeOfDay(..)
                  ,TimeZone(..), UTCTime(..), UniversalTime(..), ZonedTime(..))
 import Data.Time.Clock.TAI (AbsoluteTime, taiEpoch, addAbsoluteTime, diffAbsoluteTime)
 import Foreign
@@ -22,7 +21,6 @@ import Happstack.Data.Migrate
 import Happstack.Data.Proxy
 
 import Data.Typeable
-import qualified Data.Map as M
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
 import qualified Data.Set as Set
@@ -198,9 +196,13 @@ instance Serialize Int32 where
 instance Version Int64 where mode = Primitive
 instance Serialize Int64 where
     getCopy = contain get; putCopy = contain . put
+{-
+This instance requires base >= 4.2.0.0, which means GHC >= 6.12. We can add this back in when we drop support for GHC 6.10.
+
 instance Version (Fixed a)
 instance (Typeable a, HasResolution a) => Serialize (Fixed a) where
     getCopy = contain $ liftM fromRational safeGet ; putCopy = contain . safePut . toRational
+-}
 instance (Typeable a)  => Version (Ratio a)
 instance (Integral a, Serialize a) => Serialize (Ratio a) where
   getCopy = contain $ liftM2 (%) safeGet safeGet
@@ -300,24 +302,26 @@ instance Serialize UTCTime where
 
 instance Version TimeZone
 instance Serialize TimeZone where
-  getCopy   = contain $ do min <- safeGet
-                           sum <- safeGet
-                           nam <- safeGet
-                           return (TimeZone min sum nam)
-  putCopy (TimeZone min sum nam) =
-    contain $ do safePut min
-                 safePut sum
+  getCopy   = contain $ do minutes    <- safeGet
+                           summerOnly <- safeGet
+                           nam        <- safeGet
+                           return (TimeZone minutes summerOnly nam)
+  putCopy (TimeZone minutes summerOnly nam) =
+    contain $ do safePut minutes
+                 safePut summerOnly
                  safePut nam
+
 instance Version TimeOfDay
 instance Serialize TimeOfDay where
   getCopy = contain $ do h <- safeGet
                          m <- safeGet
                          s <- safeGet
-                         return (TimeOfDay h m s)
+                         return (TimeOfDay h m (fromRational s))
   putCopy (TimeOfDay h m s) =
     contain $ do safePut h
                  safePut m
-                 safePut s
+                 safePut (toRational s)
+
 instance Version ZonedTime
 instance Serialize ZonedTime where
   getCopy   = contain $ liftM2 ZonedTime safeGet safeGet
