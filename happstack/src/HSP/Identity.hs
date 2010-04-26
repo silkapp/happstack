@@ -21,6 +21,7 @@ instance HSX.XMLGen Identity where
                                                           (map unIChild $ concatMap runIdentity $ map HSX.unXMLGenT children)
                                                          )
     xmlToChild = IChild
+    pcdataToChild = HSX.xmlToChild . pcdata
 
 instance HSX.EmbedAsAttr Identity Attribute where
     asAttr = return . (:[]) . IAttr 

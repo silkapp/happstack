@@ -20,6 +20,7 @@ instance (Monad m) => HSX.XMLGen (WebT m) where
                               childer
                              )
     xmlToChild = WChild
+    pcdataToChild = HSX.xmlToChild . pcdata
 
 flattenCDATA :: [XML] -> [XML]
 flattenCDATA cxml = 

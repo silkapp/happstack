@@ -42,7 +42,7 @@ instance (Functor m, Monad m) => HSX.XMLGen (IdentityT m) where
                                      children' <- HSX.unXMLGenT (fmap (map unIChild . concat) (sequence children))
                                      return (Element (toName n) attrs' children')
     xmlToChild = IChild
-
+    pcdataToChild = HSX.xmlToChild . pcdata
 
 instance (Monad m, Functor m) => HSX.EmbedAsAttr (IdentityT m) Attribute where
     asAttr = return . (:[]) . IAttr 
