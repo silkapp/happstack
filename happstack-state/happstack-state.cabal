@@ -100,7 +100,7 @@ Library
                        MagicHash, TypeSynonymInstances
   if impl(ghc < 6.10)
      Extensions:       PatternSignatures
-  ghc-options:         -Wall -fno-warn-unused-do-bind
+  ghc-options:         -Wall
   GHC-Prof-Options:    -auto-all
 
 Executable happstack-state-tests
