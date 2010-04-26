@@ -9,12 +9,10 @@
 
 module Happstack.Data.Xml.Instances where
 
-import Data.Char
 import Data.List
 import Happstack.Data.Xml.Base
 import Data.Generics.SYB.WithClass.Basics
 import Data.Generics.SYB.WithClass.Instances ()
-import Data.Maybe
 import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as BS
 

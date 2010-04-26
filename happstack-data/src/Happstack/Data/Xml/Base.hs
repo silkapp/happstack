@@ -3,7 +3,7 @@
              ScopedTypeVariables, GADTs,
              PolymorphicComponents, FlexibleContexts,
              MultiParamTypeClasses, DeriveDataTypeable,
-             PatternSignatures, PatternGuards #-}
+             ScopedTypeVariables, PatternGuards #-}
 
 module Happstack.Data.Xml.Base where
 
@@ -22,7 +22,6 @@ import Happstack.Data.Migrate
 import Happstack.Data.Normalize
 import Happstack.Util.TH
 import Language.Haskell.TH
-import qualified Data.Generics as G
 
 {-| Element recursively represents XML data.  
     Elem n elems -> XML element with name n and described by elems.  Note that elems contains sub-elements as well as the attributes or literal data of the element.
