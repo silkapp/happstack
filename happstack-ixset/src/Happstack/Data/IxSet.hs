@@ -31,8 +31,8 @@ Assume you have a type like:
                 ]
     calcs entry = () -- words for text indexing purposes @
 
-3. Use 'insert', 'delete', 'updateIx' and 'empty' to build up an 
-   'IxSet' collection
+3. Use 'insert', 'delete', 'updateIx', 'deleteIx' and 'empty' to build
+   up an 'IxSet' collection
 
     @entries = foldr insert empty [e1,e2,e3,e4]@
     @entries' = foldr delete entries [e1,e3]@
@@ -104,6 +104,7 @@ module Happstack.Data.IxSet
      insert,
      delete,
      updateIx,
+     deleteIx,
 
      -- * Creation
      fromSet,
@@ -355,6 +356,14 @@ updateIx :: (Indexable a b, Ord a, Data a, Typeable k)
 updateIx i new ixset = insert new $
                      maybe ixset (flip delete ixset) $
                      getOne $ ixset @= i
+
+-- | Will delete the item with index k.  Only works if there is at
+-- most one item with that index in the 'IxSet'. Will not change
+-- 'IxSet' if you have more then 1 item with given index.
+deleteIx :: (Indexable a b, Ord a, Data a, Typeable k)
+         => k -> IxSet a -> IxSet a
+deleteIx i ixset = maybe ixset (flip delete ixset) $
+                       getOne $ ixset @= i
 
 -- conversion operations
 
