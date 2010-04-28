@@ -13,6 +13,8 @@ import Control.Monad.Reader (MonadReader)
 import Control.Monad.State  (MonadState)
 import Control.Monad.RWS    (MonadRWS)
 import Control.Monad.Trans  (MonadTrans(lift), MonadIO(liftIO))
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import HSP
 import qualified HSX.XMLGenerator as HSX
 
@@ -43,6 +45,12 @@ instance (Functor m, Monad m) => HSX.XMLGen (IdentityT m) where
     xmlToChild = IChild
     pcdataToChild = HSX.xmlToChild . pcdata
 
+instance (Monad m, Functor m) => IsAttrValue (IdentityT m) T.Text where
+    toAttrValue = toAttrValue . T.unpack
+
+instance (Monad m, Functor m) => IsAttrValue (IdentityT m) TL.Text where
+    toAttrValue = toAttrValue . TL.unpack
+
 instance (Monad m, Functor m) => HSX.EmbedAsAttr (IdentityT m) Attribute where
     asAttr = return . (:[]) . IAttr 
 
@@ -59,6 +67,12 @@ instance (Monad m, Functor m) => HSX.EmbedAsAttr (IdentityT m) (Attr String Bool
 instance (Monad m, Functor m) => HSX.EmbedAsAttr (IdentityT m) (Attr String Int) where
     asAttr (n := i)  = asAttr $ MkAttr (toName n, pAttrVal (show i))
 
+instance (Monad m, Functor m, IsName n) => (EmbedAsAttr (IdentityT m) (Attr n TL.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ TL.unpack a)
+
+instance (Monad m, Functor m, IsName n) => (EmbedAsAttr (IdentityT m) (Attr n T.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ T.unpack a)
+
 instance (Monad m, Functor m) => EmbedAsChild (IdentityT m) Char where
     asChild = XMLGenT . return . (:[]) . IChild . pcdata . (:[])
 
@@ -69,6 +83,12 @@ instance (Monad m, Functor m) => EmbedAsChild (IdentityT m) (IdentityT m String)
     asChild c = 
         do c' <- lift c
            lift . return . (:[]) . IChild . pcdata $ c'
+
+instance (Monad m, Functor m) => (EmbedAsChild (IdentityT m) TL.Text) where
+    asChild = asChild . TL.unpack
+
+instance (Monad m, Functor m) => (EmbedAsChild (IdentityT m) T.Text) where
+    asChild = asChild . T.unpack
 
 instance (Monad m, Functor m) => EmbedAsChild (IdentityT m) XML where
     asChild = XMLGenT . return . (:[]) . IChild

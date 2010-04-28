@@ -4,6 +4,8 @@ module HSP.WebT where
 
 import HSP
 import Control.Applicative ((<$>))
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import qualified HSX.XMLGenerator as HSX
 import Happstack.Server (WebT)
 
@@ -37,6 +39,12 @@ flattenCDATA cxml =
                            _ -> flP (y:xs) (x:bs)
 
 
+instance (Monad m, Functor m) => IsAttrValue (WebT m) T.Text where
+    toAttrValue = toAttrValue . T.unpack
+
+instance (Monad m, Functor m) => IsAttrValue (WebT m) TL.Text where
+    toAttrValue = toAttrValue . TL.unpack
+
 instance (Monad m) => HSX.EmbedAsAttr (WebT m) Attribute where
     asAttr = return . (:[]) . WAttr 
 
@@ -53,11 +61,23 @@ instance (Monad m) => HSX.EmbedAsAttr (WebT m) (Attr String Bool) where
 instance (Monad m) => HSX.EmbedAsAttr (WebT m) (Attr String Int) where
     asAttr (n := i)  = asAttr $ MkAttr (toName n, pAttrVal (show i))
 
+instance (Monad m, Functor m, IsName n) => (EmbedAsAttr (WebT m) (Attr n TL.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ TL.unpack a)
+
+instance (Monad m, Functor m, IsName n) => (EmbedAsAttr (WebT m) (Attr n T.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ T.unpack a)
+
 instance (Monad m) => EmbedAsChild (WebT m) Char where
     asChild = XMLGenT . return . (:[]) . WChild . pcdata . (:[])
 
 instance (Monad m) => EmbedAsChild (WebT m) String where
     asChild = XMLGenT . return . (:[]) . WChild . pcdata
+
+instance (Monad m, Functor m) => (EmbedAsChild (WebT m) TL.Text) where
+    asChild = asChild . TL.unpack
+
+instance (Monad m, Functor m) => (EmbedAsChild (WebT m) T.Text) where
+    asChild = asChild . T.unpack
 
 instance (Monad m) => EmbedAsChild (WebT m) XML where
     asChild = XMLGenT . return . (:[]) . WChild

@@ -5,6 +5,8 @@ module HSP.Identity
     , evalIdentity
     ) where
 
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import HSP
 import Control.Monad.Identity (Identity(Identity, runIdentity))
 import qualified HSX.XMLGenerator as HSX
@@ -23,22 +25,33 @@ instance HSX.XMLGen Identity where
     xmlToChild = IChild
     pcdataToChild = HSX.xmlToChild . pcdata
 
-instance HSX.EmbedAsAttr Identity Attribute where
+instance IsAttrValue Identity T.Text where
+    toAttrValue = toAttrValue . T.unpack
+
+instance IsAttrValue Identity TL.Text where
+    toAttrValue = toAttrValue . TL.unpack
+
+instance EmbedAsAttr Identity Attribute where
     asAttr = return . (:[]) . IAttr 
 
-instance HSX.EmbedAsAttr Identity (Attr String Char) where
+instance EmbedAsAttr Identity (Attr String Char) where
     asAttr (n := c)  = asAttr (n := [c])
 
-instance HSX.EmbedAsAttr Identity (Attr String String) where
+instance EmbedAsAttr Identity (Attr String String) where
     asAttr (n := str)  = asAttr $ MkAttr (toName n, pAttrVal str)
 
-instance HSX.EmbedAsAttr Identity (Attr String Bool) where
+instance EmbedAsAttr Identity (Attr String Bool) where
     asAttr (n := True)  = asAttr $ MkAttr (toName n, pAttrVal "true")
     asAttr (n := False) = asAttr $ MkAttr (toName n, pAttrVal "false")
 
-instance HSX.EmbedAsAttr Identity (Attr String Int) where
+instance EmbedAsAttr Identity (Attr String Int) where
     asAttr (n := i)  = asAttr $ MkAttr (toName n, pAttrVal (show i))
 
+instance (IsName n) => (EmbedAsAttr Identity (Attr n TL.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ TL.unpack a)
+
+instance (IsName n) => (EmbedAsAttr Identity (Attr n T.Text)) where
+    asAttr (n := a) = asAttr $ MkAttr (toName n, pAttrVal $ T.unpack a)
 
 instance EmbedAsChild Identity Char where
     asChild = XMLGenT . Identity . (:[]) . IChild . pcdata . (:[])
@@ -46,6 +59,11 @@ instance EmbedAsChild Identity Char where
 instance EmbedAsChild Identity String where
     asChild = XMLGenT . Identity . (:[]) . IChild . pcdata
 
+instance (EmbedAsChild Identity TL.Text) where
+    asChild = asChild . TL.unpack
+
+instance (EmbedAsChild Identity T.Text) where
+    asChild = asChild . T.unpack
 
 instance EmbedAsChild Identity XML where
     asChild = XMLGenT . Identity . (:[]) . IChild
