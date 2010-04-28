@@ -6,28 +6,27 @@ module HSP.IdentityT
     , IdentityT(..)
     ) where
 
-import Control.Applicative (Applicative((<*>), pure))
-import Control.Monad.Trans (MonadTrans(lift), MonadIO(liftIO))
+import Control.Applicative  (Applicative((<*>), pure))
+import Control.Monad        (MonadPlus)
+import Control.Monad.Writer (MonadWriter)
+import Control.Monad.Reader (MonadReader)
+import Control.Monad.State  (MonadState)
+import Control.Monad.RWS    (MonadRWS)
+import Control.Monad.Trans  (MonadTrans(lift), MonadIO(liftIO))
 import HSP
 import qualified HSX.XMLGenerator as HSX
 
 -- * IdentityT Monad Transformer
 
 newtype IdentityT m a = IdentityT { runIdentityT :: m a }
-    deriving (Monad)
+    deriving (Functor, Monad, MonadWriter w, MonadReader r, MonadState s, MonadRWS r w s, MonadIO, MonadPlus)
 
-instance (Functor m) => Functor (IdentityT m) where
-    fmap f = IdentityT . fmap f . runIdentityT
-    
 instance (Applicative f) => Applicative (IdentityT f) where
     pure  = IdentityT . pure     
     (IdentityT f) <*> (IdentityT a) = IdentityT (f <*> a)
 
 instance MonadTrans IdentityT where
     lift = IdentityT
-
-instance (MonadIO m) => MonadIO (IdentityT m) where
-    liftIO = IdentityT . liftIO
 
 -- * HSX.XMLGenerator for IdentityT
 
