@@ -155,7 +155,6 @@ where
 import qualified Happstack.Data.IxSet.Ix as Ix
 import           Happstack.Data.IxSet.Ix (Ix(Ix))
 import Data.Generics (Data, gmapQ)
-import Data.Dynamic
 import Data.Maybe
 import Data.Monoid
 import           Data.List (partition)
@@ -306,34 +305,37 @@ tyVarBndrToName = id
 
 -- modification operations
 
+type IndexOp =
+    forall k a. (Ord k,Ord a) => k -> a -> Map k (Set a) -> Map k (Set a)
+
 -- | Generically traverses the argument and converts all data in it to
 -- 'Dynamic' and returns all the internal data as a list of 'Dynamic'.
 --
 -- This function properly handles 'String' as 'String' not as @['Char']@.
-flatten :: (Typeable a, Data a) => a -> [Dynamic]
+flatten :: (Typeable a, Data a, Typeable b) => a -> [b]
 flatten x = case cast x of
-                Just y -> [toDyn (y :: String)]
-                Nothing -> toDyn x : concat (gmapQ flatten x)
-
-type IndexOp =
-    forall k a. (Ord k,Ord a) => k -> a -> Map k (Set a) -> Map k (Set a)
+              Just y -> case cast (y :: String) of
+                          Just v -> [v]
+                          Nothing -> []
+              Nothing -> case cast x of
+                           Just v -> v : concat (gmapQ flatten x)
+                           Nothing -> concat (gmapQ flatten x)
 
 -- | Higher order operator for modifying 'IxSet's.  Use this when your
 -- final function should have the form @a -> IxSet a -> IxSet a@,
 -- e.g. 'insert' or 'delete'.
 change :: (Data a, Ord a,Data b,Indexable a b) =>
           IndexOp -> a -> IxSet a -> IxSet a
-change op x (IxSet indices) =
-    IxSet $ update True indices $ flatten (x,calcs x)
+change op x (IxSet indices) = 
+    IxSet v
     where
-    update _ [] _ = []
-    update _ _ [] = []
-    update firstindex (Ix index:is) dyns = Ix index':update False is dyns'
+    v = zipWith update (True:repeat False) indices
+    a = (x,calcs x)
+    update firstindex (Ix index) = Ix index'
         where
         keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
-        (ds,dyns') = partition (\d->dynTypeRep d == keyType) dyns
-                     -- partition handles out of order indices
-        ii dkey = op (fromJust $ fromDynamic dkey) x
+        ds = flatten a
+        ii dkey = op dkey x
         index' = if firstindex && List.null ds
                  then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
                  else foldr ii index ds -- handle multiple values
@@ -521,22 +523,22 @@ getGT = getOrd GT
 -- otherwise results in runtime error.
 getLTE :: (Indexable a b, Data a, Ord a, Typeable k)
        => k -> IxSet a -> IxSet a
-getLTE v ix = let ix2 = (getLT v ix) in union ix2 $ getEQ v ix
+getLTE = getOrd2 True True False
 
 -- | Returns the subset with an index greater than or equal to the
 -- provided key.  The set must be indexed over key type, doing
 -- otherwise results in runtime error.
 getGTE :: (Indexable a b, Data a, Ord a, Typeable k)
        => k -> IxSet a -> IxSet a
-getGTE v ix = let ix2 = (getOrd GT v ix) in union ix2 $ getEQ v ix
+getGTE = getOrd2 False True True
 
 -- | Returns the subset with an index within the interval provided.
--- The top of the interval is closed and the bottom is open.  The set
--- must be indexed over key type, doing otherwise results in runtime
--- error.
+-- The bottom of the interval is closed and the top is open,
+-- i. e. [k1;k2).  The set must be indexed over key type, doing
+-- otherwise results in runtime error.
 getRange :: (Indexable a b, Typeable k, Ord a, Data a)
          => k -> k -> IxSet a -> IxSet a
-getRange k1 k2 ixset = intersection (getGTE k1 ixset) (getLT k2 ixset)
+getRange k1 k2 ixset = getGTE k1 (getLT k2 ixset)
 
 -- | Returns lists of elements paired with the indices determined by
 -- type inference.
@@ -544,7 +546,7 @@ groupBy::(Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
 groupBy (IxSet indices) = collect indices
     where
     collect [] = []
-    collect (Ix index:is) = maybe (collect is) f (fromDynamic $ toDyn index)
+    collect (Ix index:is) = maybe (collect is) f (cast index)
     f = mapSnd Set.toList . Map.toList
     
 --query impl function
@@ -552,25 +554,36 @@ groupBy (IxSet indices) = collect indices
 -- | A function for building up selectors on 'IxSet's.  Used in the
 -- various get* functions.  The set must be indexed over key type,
 -- doing otherwise results in runtime error.
+
 getOrd :: (Indexable a b, Ord a, Data a, Typeable k)
        => Ordering -> k -> IxSet a -> IxSet a
-getOrd ord v ixSet@(IxSet indices) = collect indices
+getOrd LT = getOrd2 True False False
+getOrd EQ = getOrd2 False True False
+getOrd GT = getOrd2 False False True
+
+-- | A function for building up selectors on 'IxSet's.  Used in the
+-- various get* functions.  The set must be indexed over key type,
+-- doing otherwise results in runtime error.
+getOrd2 :: (Indexable a b, Ord a, Data a, Typeable k)
+       => Bool -> Bool -> Bool -> k -> IxSet a -> IxSet a
+getOrd2 inclt inceq incgt v ixSet@(IxSet indices) = collect indices
     where
-    v' = toDyn v
     collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
                  " in " ++ show (typeOf ixSet)
-    collect (Ix index:is) = maybe (collect is) f $ fromDynamic v'
+    collect (Ix index:is) = maybe (collect is) f $ cast v
         where
-        f v'' = foldr insert empty $
-              case ord of
-              LT -> lt
-              GT -> gt
-              EQ -> eq
+        f v'' = foldr insert empty (lt ++ eq ++ gt)
             where
             (lt',eq',gt') = Map.splitLookup v'' index
-            lt = concatMap (Set.toList . snd) $ Map.toList lt'
-            gt = concatMap (Set.toList . snd) $ Map.toList gt'
-            eq = maybe [] Set.toList eq'
+            lt = if inclt 
+                 then concatMap Set.toList $ Map.elems lt'
+                 else []
+            gt = if incgt 
+                 then concatMap Set.toList $ Map.elems gt'
+                 else []
+            eq = if inceq
+                 then maybe [] Set.toList eq'
+                 else []
 
 --we want a gGets that returns a list of all matches
 
