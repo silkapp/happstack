@@ -44,7 +44,7 @@ $(inferIxSet "BadlyIndexeds" ''BadlyIndexed 'noCalcs [''String])
 $(inferIxSet "MultiIndexed" ''MultiIndex 'noCalcs [''String, ''Int, ''Integer, ''Bool, ''Char])
 
 instance Indexable Foo String where
-    empty =  IxSet [Ix (Map.empty :: Map String (Set Foo)),
+    empty =  ixSet [Ix (Map.empty :: Map String (Set Foo)),
                     Ix (Map.empty :: Map Int (Set Foo))]
     calcs (Foo s _) = s ++ "bar"
 

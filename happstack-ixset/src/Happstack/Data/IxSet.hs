@@ -22,12 +22,12 @@ Assume you have a type like:
    make your type an instance of Indexable
 
   @instance Indexable Entry () where
-    empty = IxSet[
-                ,Ix (Map.empty::Map Author (Set Entry)) --out of order
-                ,Ix (Map.empty::Map Id (Set Entry))
-                ,Ix (Map.empty::Map Updated (Set Entry))
-                ,Ix (Map.empty::Map Test (Set Entry)) -- bogus index
-                ,Ix (Map.empty::Map Word (Set Entry)) -- text index
+    empty = ixSet 
+                [ Ix (Map.empty::Map Author (Set Entry)) -- out of order
+                , Ix (Map.empty::Map Id (Set Entry))
+                , Ix (Map.empty::Map Updated (Set Entry))
+                , Ix (Map.empty::Map Test (Set Entry))   -- bogus index
+                , Ix (Map.empty::Map Word (Set Entry))   -- text index
                 ]
     calcs entry = () -- words for text indexing purposes @
 
@@ -93,10 +93,11 @@ module Happstack.Data.IxSet
      module Ix,
          
      -- * Set type
-     IxSet(..),
+     IxSet,
      Indexable(..),
      noCalcs,
      inferIxSet,
+     ixSet,
                
      -- * Changes to set
      IndexOp,
@@ -177,6 +178,11 @@ import Prelude hiding (null)
 data IxSet a = IxSet [Ix a]
     deriving (Data, Typeable)
 
+-- | Create an 'IxSet' using list of indices. Useful in 'Indexable'
+-- 'empty' method.
+ixSet :: [Ix a] -> IxSet a
+ixSet = IxSet
+
 instance (Eq a,Ord a,Typeable a) => Eq (IxSet a) where
     IxSet (Ix a:_) == IxSet (Ix b:_) = 
         case cast b of
@@ -223,7 +229,7 @@ instance (Ord a,Read a,Data a,Indexable a b) => Read (IxSet a) where
 class (Data b) => Indexable a b | a -> b where
     -- | Method 'empty' defines what an empty 'IxSet' for this
     -- particular type should look like.  It should have all necessary
-    -- indices.
+    -- indices. Use 'ixSet' function to create the set.
     empty :: IxSet a
     -- | Method 'calcs' adds indexable values not found in the
     -- type. Those end up in indices just like other types found in
@@ -284,7 +290,7 @@ inferIxSet ixset typeName calName entryPoints
                                                                              appT (appT (conT ''Map) (conT n)) (appT (conT ''Set) typeCon)))
                in do i <- instanceD' (return context) (appT (appT (conT ''Indexable) typeCon) (return calType))
                           [d| empty :: IxSet a
-                              empty = IxSet $(listE (map mkEntryPoint entryPoints))
+                              empty = ixSet $(listE (map mkEntryPoint entryPoints))
                               calcs :: a -> b
                               calcs = $(varE calName) |]
                      let ixType = appT (conT ''IxSet) typeCon
@@ -566,10 +572,10 @@ getOrd GT = getOrd2 False False True
 -- doing otherwise results in runtime error.
 getOrd2 :: (Indexable a b, Ord a, Data a, Typeable k)
        => Bool -> Bool -> Bool -> k -> IxSet a -> IxSet a
-getOrd2 inclt inceq incgt v ixSet@(IxSet indices) = collect indices
+getOrd2 inclt inceq incgt v ixset@(IxSet indices) = collect indices
     where
     collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
-                 " in " ++ show (typeOf ixSet)
+                 " in " ++ show (typeOf ixset)
     collect (Ix index:is) = maybe (collect is) f $ cast v
         where
         f v'' = foldr insert empty (lt ++ eq ++ gt)
