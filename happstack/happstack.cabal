@@ -81,7 +81,8 @@ Library
                        happstack-util   >= 0.4.3 && < 0.5,
                        harp             >= 0.4   && < 0.5,
                        hslogger,
-                       hsp >= 0.4.5 && < 0.6,
+                       hsx >= 0.7 && < 0.8,
+                       hsp >= 0.5.2 && < 0.6,
                        HStringTemplate >= 0.4.3 && < 0.7,
                        mtl,
                        old-time,
@@ -89,11 +90,10 @@ Library
                        text
                        
   if flag(base4)
-    Build-Depends:     base >= 4 && < 5, syb,
-                       hsx >= 0.7 && < 0.8
+    Build-Depends:     base >= 4 && < 5, syb
   else
     build-depends:     haskell-src-exts == 0.3.9,
-                       hsx == 0.4.5, HStringTemplate < 0.6
+                       HStringTemplate < 0.6
 
   hs-source-dirs:      src
   if flag(tests)
