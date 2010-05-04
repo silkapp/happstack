@@ -1,11 +1,11 @@
 #!/bin/sh
 echo "Haddock all happstack packages hyperlinkining source code"
-cd happstack-util       && cabal haddock --hyperlink-source --internal
-cd ../happstack-data    && cabal haddock --hyperlink-source --internal
-cd ../happstack-state   && cabal haddock --hyperlink-source --internal
-cd ../happstack-ixset   && cabal haddock --hyperlink-source --internal
-cd ../happstack-server  && cabal haddock --hyperlink-source --internal
-cd ../happstack         && cabal haddock --hyperlink-source --internal
+cd happstack-util       && cabal configure && cabal haddock --hyperlink-source --internal
+cd ../happstack-data    && cabal configure && cabal haddock --hyperlink-source --internal
+cd ../happstack-state   && cabal configure && cabal haddock --hyperlink-source --internal
+cd ../happstack-ixset   && cabal configure && cabal haddock --hyperlink-source --internal
+cd ../happstack-server  && cabal configure && cabal haddock --hyperlink-source --internal
+cd ../happstack         && cabal configure && cabal haddock --hyperlink-source --internal
 cd ..
 
 ARGS="-i ../../happstack-util/dist/doc/html/happstack-util,happstack-util/dist/doc/html/happstack-util/happstack-util.haddock \
