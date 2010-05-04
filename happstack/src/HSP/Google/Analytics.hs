@@ -12,7 +12,7 @@ import Prelude hiding (head)
 newtype UACCT = UACCT String -- ^ The UACCT provided to you by Google
     deriving (Read, Show, Eq, Ord, Typeable, Data)
 
--- |create the google analytics script tags
+-- | create the google analytics script tags
 -- NOTE: you must put the <% analytics yourUACCT %> immediately before the </body> tag
 -- See also: addAnalytics
 analytics :: (XMLGenerator m) => UACCT -> GenXMLList m
@@ -28,7 +28,7 @@ analytics (UACCT uacct) =
             </script>
        return [a,b]
 
--- |automatically add the google analytics scipt tags immediately before the </body> element
+-- | automatically add the google analytics scipt tags immediately before the </body> element
 -- NOTE: this function is not idepotent
 addAnalytics :: ( AppendChild m XML
                 , EmbedAsChild m XML
