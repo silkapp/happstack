@@ -207,3 +207,18 @@ instance (Monad m) => ServerMonad (ServerPartT m) where
 
 runServerPartT :: ServerPartT m a -> Request -> WebT m a
 runServerPartT = runReaderT . unServerPartT
+
+withRequest :: (Request -> WebT m a) -> ServerPartT m a
+withRequest = ServerPartT . ReaderT
+
+-- | A constructor for a 'ServerPartT' when you don't care about the request.
+anyRequest :: Monad m => WebT m a -> ServerPartT m a
+anyRequest x = withRequest $ \_ -> x
+
+instance Monad m => FilterMonad Response (ServerPartT m) where
+    setFilter = anyRequest . setFilter
+    composeFilter = anyRequest . composeFilter
+    getFilter m = withRequest $ \rq -> getFilter (runServerPartT m rq)
+
+instance Monad m => WebMonad Response (ServerPartT m) where
+    finishWith r = anyRequest $ finishWith r
