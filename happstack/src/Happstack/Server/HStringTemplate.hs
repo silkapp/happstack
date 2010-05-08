@@ -23,7 +23,7 @@ log' = logM "Happstack.Server.HStringTemplate"
 
 -- FIXME: Caveat, assumes text/html, can this be handled at the filter level?
 instance ToMessage (StringTemplate String) where
-    toContentType _ = B.pack "text/plain;charset=utf-8"
+    toContentType _ = B.pack "text/html;charset=utf-8"
     toMessage = L.pack . render
 
 -- | @webST name attrs@ renders a name template with attrs
