@@ -1,5 +1,5 @@
 Name:                happstack-hamlet
-Version:             0.2
+Version:             0.2.1
 Synopsis:            Support for Hamlet HTML templates in Happstack
 
 Description:         Happstack is a web application development framework. 
@@ -15,6 +15,7 @@ Copyright:           2010 Jeremy Shaw
 Category:            Web
 Build-type:          Simple
 Cabal-version:       >=1.6
+Extra-source-files:  demo.hs
 
 source-repository head
     type:     darcs
