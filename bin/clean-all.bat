@@ -4,5 +4,6 @@ cd ..\happstack-data    && cabal clean && ^
 cd ..\happstack-state   && cabal clean && ^
 cd ..\happstack-ixset   && cabal clean && ^
 cd ..\happstack-server  && cabal clean && ^
+cd ..\happstack-hamlet  && cabal clean && ^
 cd ..\happstack         && cabal clean && ^
 cd .. && echo "Done"

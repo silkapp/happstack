@@ -5,5 +5,6 @@ cd ../happstack-data    && cabal sdist --builddir=../dist && \
 cd ../happstack-state   && cabal sdist --builddir=../dist && \
 cd ../happstack-ixset   && cabal sdist --builddir=../dist && \
 cd ../happstack-server  && cabal sdist --builddir=../dist && \
+cd ../happstack-hamlet  && cabal sdist --builddir=../dist && \
 cd ../happstack         && cabal sdist --builddir=../dist && \
 cd .. && echo "Done"
