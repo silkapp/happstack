@@ -4,12 +4,10 @@ module Happstack.Server.Simple
     ) where
 
 import Control.Monad (mzero)
-import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.UTF8       as LU (toString, fromString)
 import Happstack.Server.Monads (Request(..), ServerPartT, runWebT, runServerPartT)
 import Network.Wai (Application, Response, pathInfo)
-import qualified Network.Wai as Wai (Request(pathInfo))
+import qualified Network.Wai as Wai (Request)
 import Network.Wai.Handler.SimpleServer (run)
 import Web.Encodings (decodeUrl)
 import System.FilePath (splitDirectories)

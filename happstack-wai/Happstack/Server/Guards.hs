@@ -4,7 +4,6 @@ module Happstack.Server.Guards where
 import Control.Monad(MonadPlus(mzero), unless)
 import Happstack.Server.Monads
 import Network.Wai hiding (Request)
-import qualified Network.Wai as Wai
 import System.FilePath                           (makeRelative, splitDirectories)
 
 -------------------------------------

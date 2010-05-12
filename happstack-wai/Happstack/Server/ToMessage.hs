@@ -1,10 +1,8 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module Happstack.Server.ToMessage where
 
-import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.UTF8       as LU (toString, fromString)
-import Happstack.Server.Monads
+import qualified Data.ByteString.Lazy.UTF8       as LU (fromString)
 import Network.Wai
 import Network.Wai.Enumerator (fromLBS)
 

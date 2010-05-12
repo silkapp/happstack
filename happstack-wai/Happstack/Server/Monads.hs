@@ -1,20 +1,14 @@
 {-# LANGUAGE FunctionalDependencies, FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ScopedTypeVariables #-}
 module Happstack.Server.Monads where
-       
-import Control.Monad (unless)
-import qualified Data.ByteString.Lazy.Char8 as C
+
 import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.UTF8       as LU (toString, fromString)
+import qualified Data.ByteString.Lazy.UTF8       as LU (fromString)
 import Data.Monoid
 import Control.Monad (MonadPlus(mzero), msum)
 import Control.Monad.Reader(ReaderT(..), MonadReader(ask, local))
-import Control.Monad.Trans(MonadIO(..))
 import Control.Monad.Error(ErrorT(..), Error(strMsg), throwError)
 import Control.Monad.Maybe                       (MaybeT(MaybeT), runMaybeT)
 import Control.Monad.Writer
-import qualified Data.ByteString.Lazy.Char8 as C
-import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.UTF8       as LU (toString, fromString)
 import Network.Wai hiding (Request)
 import qualified Network.Wai as Wai
 import Network.Wai.Enumerator (fromLBS)
