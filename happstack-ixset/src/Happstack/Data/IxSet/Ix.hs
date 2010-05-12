@@ -12,6 +12,10 @@ module Happstack.Data.IxSet.Ix
     ( Ix(..)
     , insert
     , delete
+    , insertList
+    , deleteList
+    , union
+    , intersection
     ) 
     where
 
@@ -62,7 +66,12 @@ insert :: (Ord a, Ord k)
        => k -> a -> Map k (Set a) -> Map k (Set a)
 insert k v index = Map.insertWith Set.union k (Set.singleton v) index
 
--- | Convenience function for deleting from 'Map's of 'Set's If the
+-- | Helper function to 'insert' a list of elements into a set.
+insertList :: (Ord a, Ord k)
+           => [(k,a)] -> Map k (Set a) -> Map k (Set a)
+insertList xs index = foldr (\(k,v) -> insert k v) index xs
+
+-- | Convenience function for deleting from 'Map's of 'Set's. If the
 -- resulting 'Set' is empty, then the entry is removed from the 'Map'.
 delete :: (Ord a, Ord k)
        => k -> a -> Map k (Set a) -> Map k (Set a)
@@ -70,4 +79,20 @@ delete k v index = Map.update remove k index
     where
     remove set = let set' = Set.delete v set
                  in if Set.null set' then Nothing else Just set'
+
+-- | Helper function to 'delete' a list of elements from a set.
+deleteList :: (Ord a, Ord k)
+           => [(k,a)] -> Map k (Set a) -> Map k (Set a)
+deleteList xs index = foldr (\(k,v) -> delete k v) index xs
+
+-- | Take union of two sets.
+union :: (Ord a, Ord k)
+       => Map k (Set a) -> Map k (Set a) -> Map k (Set a)
+union index1 index2 = Map.unionWith Set.union index1 index2
+
+-- | Take intersection of two sets
+intersection :: (Ord a, Ord k)
+             => Map k (Set a) -> Map k (Set a) -> Map k (Set a)
+intersection index1 index2 = Map.filter (not . Set.null) $ 
+                             Map.intersectionWith Set.intersection index1 index2
 

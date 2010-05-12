@@ -19,7 +19,7 @@ Assume you have a type like:
   type Email = String@
 
 1. Decide what parts of your type you want indexed and
-   make your type an instance of Indexable
+   make your type an instance of 'Indexable'
 
   @instance Indexable Entry () where
     empty = ixSet 
@@ -49,7 +49,7 @@ Assume you have a type like:
 
 If you want to do add a text index extract the words in entry and pass
 them in the 'calc' method of the 'Indexable' class.  Then if you want
-all entries with either word1 or word2, you change the instance to
+all entries with either @word1@ or @word2@, you change the instance to
 
     @getWords entry = let Just (Content s) =
                            gGet entry in map Word $ words s@
@@ -68,10 +68,10 @@ And if you want all entries with both:
 
 6. Find only the first author
 
-If an Entry has multiple authors and you want to be able to query
-on the first author, define a @FirstAuthor@ datatype and add it to the
-result of calc.  calc @e = (toWords e, getFirstAuthor e)@ and now you can
-do
+If an @Entry@ has multiple authors and you want to be able to query on
+the first author, define a @FirstAuthor@ datatype and add it to the
+result of 'calc'.  @calc e = (toWords e, getFirstAuthor e)@ and now
+you can do
 
    @newtype FirstAuthor = FirstAuthor Email@
    
@@ -146,7 +146,6 @@ module Happstack.Data.IxSet
      getGTE,
      getRange,
      groupBy,
-     getOrd,
 
      -- * Debugging and optimisation
      stats
@@ -158,7 +157,6 @@ import           Happstack.Data.IxSet.Ix (Ix(Ix))
 import Data.Generics (Data, gmapQ)
 import Data.Maybe
 import Data.Monoid
-import           Data.List (partition)
 import qualified Data.List as List
 import           Data.Map (Map)
 import qualified Data.Map as Map
@@ -201,7 +199,7 @@ instance (Serialize a, Ord a, Data a, Indexable a b) => Serialize (IxSet a) wher
 instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (IxSet a)), SYBWC.Sat (ctx [a]),
           Indexable a b, Data a, Ord a)
        => SYBWC.Data ctx (IxSet a) where
-    gfoldl _ f z (IxSet x)  = z fromList `f` toList' x
+    gfoldl _ f z ixset  = z fromList `f` toList ixset
     toConstr _ (IxSet _) = ixSetConstr
     gunfold _ k z c  = case SYBWC.constrIndex c of
                        1 -> k (z fromList)
@@ -259,10 +257,11 @@ noCalcs _ = ()
    with @Int@ and @String@ as indices.
 
    WARNING: The type specified as the first index must be a type which
-   appears in all values in the 'IxSet' or 'toList' and 'toSet' will
-   not function properly. You will be warned not to do this by runtime error.
-   You can always use the element type itself. For example:
-  
+   appears in all values in the 'IxSet' or 'toList', 'toSet' and
+   serialization will not function properly. You will be warned not to do
+   this by runtime error.  You can always use the element type
+   itself. For example:
+
    @$(inferIxSet \"FooDB\" ''Foo 'noCalcs [''Foo, ''Int, ''String])@
 
 -} 
@@ -314,8 +313,8 @@ tyVarBndrToName = id
 type IndexOp =
     forall k a. (Ord k,Ord a) => k -> a -> Map k (Set a) -> Map k (Set a)
 
--- | Generically traverses the argument and converts all data in it to
--- 'Dynamic' and returns all the internal data as a list of 'Dynamic'.
+-- | Generically traverses the argument, finds all occurences of
+-- values of type b and returns them as a list.
 --
 -- This function properly handles 'String' as 'String' not as @['Char']@.
 flatten :: (Typeable a, Data a, Typeable b) => a -> [b]
@@ -345,6 +344,24 @@ change op x (IxSet indices) =
         index' = if firstindex && List.null ds
                  then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
                  else foldr ii index ds -- handle multiple values
+
+insertList :: (Data a, Ord a,Data b,Indexable a b) 
+           => [a] -> IxSet a -> IxSet a
+insertList xs (IxSet indices) = 
+    IxSet v
+    where
+    v = zipWith update (True:repeat False) indices
+    as = [(x,calcs x) | x <- xs]
+    update firstindex (Ix index) = Ix index'
+        where
+        keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
+        flattencheck x
+            | firstindex = case flatten x of
+                             [] -> error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
+                             res -> res
+            | otherwise = flatten x
+        dss = [(k,a) | (a,ca) <- as, k <- flattencheck (a,ca)]
+        index' = Ix.insertList dss index
 
 -- | Inserts an item into the 'IxSet'. If your data happens to have
 -- primary key this function might not be what you want. See
@@ -377,24 +394,19 @@ deleteIx i ixset = maybe ixset (flip delete ixset) $
 
 -- | Converts an 'IxSet' to a 'Set' of its elements.
 toSet :: Ord a => IxSet a -> Set a
-toSet (IxSet idxs) = toSet' idxs
-
--- | Takes a list of 'Ix's and converts it into a 'Set'.
-toSet' :: Ord a => [Ix a] -> Set a
-toSet' (Ix ix:_) = Map.fold Set.union Set.empty ix
-toSet' [] = Set.empty
+toSet (IxSet (Ix ix:_)) = Map.fold Set.union Set.empty ix
+toSet (IxSet []) = Set.empty
 
 -- | Converts a 'Set' to an 'IxSet'.
 fromSet :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
-fromSet set = Set.fold insert empty set
-
--- | Converts a 'Set' to an 'IxSet'.
-fromSet' :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
-fromSet' set = Set.fold insert empty set
+fromSet = -- Set.fold insert empty set
+          fromList . Set.toList
 
 -- | Converts a list to an 'IxSet'.
 fromList :: (Indexable a b, Ord a, Data a) => [a] -> IxSet a
-fromList = fromSet . Set.fromList
+fromList list = -- foldr insert empty list
+                -- fromSet . Set.fromList
+                insertList list empty
 
 -- | Returns the number of unique items in the 'IxSet'.
 size :: Ord a => IxSet a -> Int
@@ -403,10 +415,6 @@ size = Set.size . toSet
 -- | Converts an 'IxSet' to its list of elements.
 toList :: Ord a => IxSet a -> [a]
 toList = Set.toList . toSet
-
--- | Converts a list of 'Ix's to list of elements. 
-toList' :: Ord a => [Ix a] -> [a]
-toList' = Set.toList . toSet'
 
 -- | If the 'IxSet' is a singleton it will return the one item stored in it.
 -- If 'IxSet' is empty or has many elements this function returns 'Nothing'.
@@ -439,68 +447,80 @@ infixr 5 |||
 
 -- | Takes the union of the two 'IxSet's.
 union :: (Ord a, Data a, Indexable a b) => IxSet a -> IxSet a -> IxSet a
-union x1 x2 = fromSet $ Set.union (toSet x1) (toSet x2)
+union (IxSet x1) (IxSet x2) = IxSet indices'
+    where
+      indices' = zipWith union' x1 x2
+      union' (Ix a) (Ix b) = 
+          case cast b of
+            Nothing -> error "IxSet.union: indexes out of order"
+            Just b' -> Ix (Ix.union a b')
 
 -- | Takes the intersection of the two 'IxSet's.
 intersection :: (Ord a, Data a, Indexable a b) => IxSet a -> IxSet a -> IxSet a
-intersection x1 x2 = fromSet $ Set.intersection (toSet x1) (toSet x2)
+intersection (IxSet x1) (IxSet x2) = IxSet indices'
+    where
+      indices' = zipWith intersection' x1 x2
+      intersection' (Ix a) (Ix b) = 
+          case cast b of
+            Nothing -> error "IxSet.intersection: indexes out of order"
+            Just b' -> Ix (Ix.intersection a b')
 
 
 -- query operators
 
 -- | Infix version of 'getEQ'.
 (@=) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> k -> IxSet a
+     => IxSet a -> k -> IxSet a
 ix @= v = getEQ v ix
 
 -- | Infix version of 'getLT'.
 (@<) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> k -> IxSet a
+     => IxSet a -> k -> IxSet a
 ix @< v = getLT v ix
 
 -- | Infix version of 'getGT'.
 (@>) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> k -> IxSet a
+     => IxSet a -> k -> IxSet a
 ix @> v = getGT v ix
 
 -- | Infix version of 'getLTE'.
 (@<=) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> k -> IxSet a
+      => IxSet a -> k -> IxSet a
 ix @<= v = getLTE v ix
 
 -- | Infix version of 'getGTE'.
 (@>=) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> k -> IxSet a
+      => IxSet a -> k -> IxSet a
 ix @>= v = getGTE v ix
 
 -- | Returns the subset with indices in the open interval (k,k).
 (@><) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> (k, k) -> IxSet a
+      => IxSet a -> (k, k) -> IxSet a
 ix @>< (v1,v2) = getLT v2 $ getGT v1 ix
 
 -- | Returns the subset with indices in [k,k).
 (@>=<) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> (k, k) -> IxSet a
+       => IxSet a -> (k, k) -> IxSet a
 ix @>=< (v1,v2) = getLT v2 $ getGTE v1 ix
 
 -- | Returns the subset with indices in (k,k].
 (@><=) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> (k, k) -> IxSet a
+       => IxSet a -> (k, k) -> IxSet a
 ix @><= (v1,v2) = getLTE v2 $ getGT v1 ix
 
 -- | Returns the subset with indices in [k,k].
 (@>=<=) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> (k, k) -> IxSet a
+        => IxSet a -> (k, k) -> IxSet a
 ix @>=<= (v1,v2) = getLTE v2 $ getGTE v1 ix
 
 -- | Creates the subset that has an index in the provided list.
 (@+) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> [k] -> IxSet a
+     => IxSet a -> [k] -> IxSet a
 ix @+ list = foldr union empty        $ map (ix @=) list
 
 -- | Creates the subset that matches all the provided indices.
 (@*) :: (Indexable a b, Data a, Ord a, Typeable k)
-    => IxSet a -> [k] -> IxSet a
+     => IxSet a -> [k] -> IxSet a
 ix @* list = foldr intersection empty $ map (ix @=) list
 
 -- | Returns the subset with an index equal to the provided key.  The
@@ -551,7 +571,7 @@ getRange k1 k2 ixset = getGTE k1 (getLT k2 ixset)
 groupBy::(Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
 groupBy (IxSet indices) = collect indices
     where
-    collect [] = []
+    collect [] = [] -- FIXME: should be an error
     collect (Ix index:is) = maybe (collect is) f (cast index)
     f = mapSnd Set.toList . Map.toList
     
@@ -571,14 +591,14 @@ getOrd GT = getOrd2 False False True
 -- various get* functions.  The set must be indexed over key type,
 -- doing otherwise results in runtime error.
 getOrd2 :: (Indexable a b, Ord a, Data a, Typeable k)
-       => Bool -> Bool -> Bool -> k -> IxSet a -> IxSet a
+        => Bool -> Bool -> Bool -> k -> IxSet a -> IxSet a
 getOrd2 inclt inceq incgt v ixset@(IxSet indices) = collect indices
     where
     collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
                  " in " ++ show (typeOf ixset)
     collect (Ix index:is) = maybe (collect is) f $ cast v
         where
-        f v'' = foldr insert empty (lt ++ eq ++ gt)
+        f v'' = insertList (lt ++ eq ++ gt) empty
             where
             (lt',eq',gt') = Map.splitLookup v'' index
             lt = if inclt 
