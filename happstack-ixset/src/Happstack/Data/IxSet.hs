@@ -181,6 +181,9 @@ data IxSet a = IxSet [Ix a]
 ixSet :: [Ix a] -> IxSet a
 ixSet = IxSet
 
+showTypeOf :: (Typeable a) => a -> String
+showTypeOf x = showsPrec 11 (typeOf x) []
+
 instance (Eq a,Ord a,Typeable a) => Eq (IxSet a) where
     IxSet (Ix a:_) == IxSet (Ix b:_) = 
         case cast b of
@@ -216,7 +219,8 @@ ixSetDataType = SYBWC.mkDataType "IxSet" [ixSetConstr]
 instance (Indexable a b, Data a, Ord a, Default a) => Default (IxSet a) where
     defaultValue = empty
 
-instance (Ord a,Show a) => Show (IxSet a) where show = show . toSet
+instance (Ord a,Show a) => Show (IxSet a) where 
+    showsPrec prec = showsPrec prec . toSet
 
 instance (Ord a,Read a,Data a,Indexable a b) => Read (IxSet a) where
     readsPrec n = mapFst fromSet . readsPrec n
@@ -338,11 +342,11 @@ change op x (IxSet indices) =
     a = (x,calcs x)
     update firstindex (Ix index) = Ix index'
         where
-        keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
+        key = (undefined :: Map key (Set a) -> key) index
         ds = flatten a
         ii dkey = op dkey x
         index' = if firstindex && List.null ds
-                 then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
+                 then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ showTypeOf key ++ " of " ++ showTypeOf x
                  else foldr ii index ds -- handle multiple values
 
 insertList :: (Data a, Ord a,Data b,Indexable a b) 
@@ -354,14 +358,37 @@ insertList xs (IxSet indices) =
     as = [(x,calcs x) | x <- xs]
     update firstindex (Ix index) = Ix index'
         where
-        keyType = typeOf ((undefined :: Map key (Set a) -> key) index)
+        key = (undefined :: Map key (Set a) -> key) index
         flattencheck x
             | firstindex = case flatten x of
-                             [] -> error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ show keyType ++ " of " ++ show (typeOf x)
+                             [] -> error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ showTypeOf key ++ " of " ++ showTypeOf x
                              res -> res
             | otherwise = flatten x
         dss = [(k,a) | (a,ca) <- as, k <- flattencheck (a,ca)]
         index' = Ix.insertList dss index
+
+insertMapOfSets :: (Data a, Ord a,Data b,Indexable a b,Typeable key,Ord key) 
+                => Map key (Set a) -> IxSet a -> IxSet a
+insertMapOfSets originalindex (IxSet indices) = 
+    IxSet v
+    where
+    v = map update indices
+    as = [(x,calcs x) | x <- concatMap Set.toList (Map.elems originalindex)]
+    update (Ix index) = Ix index'
+        where
+        dss = [(k,a) | (a,ca) <- as, k <- flatten (a,ca)]
+        {- We try to be really clever here. The originalindex is a Map of Sets
+           from original index. We want to reuse it as much as possible. If there
+           was a guarantee that each element is present at at most one index we
+           could reuse originalindex as it is. But there can be more, so we need to
+           add remaining ones. Anyway we try to reuse old structure and keep 
+           new allocations low as much as possible.
+         -}
+        index' = case cast originalindex of
+                   Just originalindex' -> 
+                       let dssf = filter (\(k,v) -> not (Map.member k originalindex')) dss
+                       in Ix.insertList dssf originalindex'
+                   Nothing -> Ix.insertList dss index
 
 -- | Inserts an item into the 'IxSet'. If your data happens to have
 -- primary key this function might not be what you want. See
@@ -399,14 +426,11 @@ toSet (IxSet []) = Set.empty
 
 -- | Converts a 'Set' to an 'IxSet'.
 fromSet :: (Indexable a b, Ord a, Data a) => Set a -> IxSet a
-fromSet = -- Set.fold insert empty set
-          fromList . Set.toList
+fromSet = fromList . Set.toList
 
 -- | Converts a list to an 'IxSet'.
 fromList :: (Indexable a b, Ord a, Data a) => [a] -> IxSet a
-fromList list = -- foldr insert empty list
-                -- fromSet . Set.fromList
-                insertList list empty
+fromList list = insertList list empty
 
 -- | Returns the number of unique items in the 'IxSet'.
 size :: Ord a => IxSet a -> Int
@@ -594,22 +618,26 @@ getOrd2 :: (Indexable a b, Ord a, Data a, Typeable k)
         => Bool -> Bool -> Bool -> k -> IxSet a -> IxSet a
 getOrd2 inclt inceq incgt v ixset@(IxSet indices) = collect indices
     where
-    collect [] = error $ "IxSet: there is no index " ++ show (typeOf v) ++ 
-                 " in " ++ show (typeOf ixset)
+    collect [] = error $ "IxSet: there is no index " ++ showTypeOf v ++ 
+                 " in " ++ showTypeOf ixset
     collect (Ix index:is) = maybe (collect is) f $ cast v
         where
-        f v'' = insertList (lt ++ eq ++ gt) empty
+        f v'' = insertMapOfSets result empty
             where
             (lt',eq',gt') = Map.splitLookup v'' index
+            ltgt = Map.unionWith Set.union lt gt
+            result = case eq of
+                       Just eqset -> Map.insertWith Set.union v'' eqset ltgt
+                       Nothing -> ltgt                     
             lt = if inclt 
-                 then concatMap Set.toList $ Map.elems lt'
-                 else []
+                 then lt'
+                 else Map.empty
             gt = if incgt 
-                 then concatMap Set.toList $ Map.elems gt'
-                 else []
+                 then gt'
+                 else Map.empty
             eq = if inceq
-                 then maybe [] Set.toList eq'
-                 else []
+                 then eq'
+                 else Nothing
 
 --we want a gGets that returns a list of all matches
 
