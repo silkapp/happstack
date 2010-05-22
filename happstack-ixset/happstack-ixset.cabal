@@ -60,7 +60,10 @@ Library
 
   -- Should have ", DeriveDataTypeable", but Cabal complains
   cpp-options:         -DUNIX
-  ghc-options:         -Wall
+  if impl(ghc >= 6.12)
+     ghc-options:      -Wall -fno-warn-unused-do-bind
+  else
+     ghc-options:      -Wall
   GHC-Prof-Options:    -auto-all
 
 Executable happstack-ixset-tests

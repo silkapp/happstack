@@ -386,7 +386,7 @@ insertMapOfSets originalindex (IxSet indices) =
          -}
         index' = case cast originalindex of
                    Just originalindex' -> 
-                       let dssf = filter (\(k,v) -> not (Map.member k originalindex')) dss
+                       let dssf = filter (\(k,_v) -> not (Map.member k originalindex')) dss
                        in Ix.insertList dssf originalindex'
                    Nothing -> Ix.insertList dss index
 

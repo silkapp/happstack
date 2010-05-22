@@ -98,9 +98,10 @@ Library
                        GADTs, EmptyDataDecls, ExistentialQuantification, RankNTypes,
                        ScopedTypeVariables, PatternGuards,
                        MagicHash, TypeSynonymInstances
-  if impl(ghc < 6.10)
-     Extensions:       PatternSignatures
-  ghc-options:         -Wall
+  if impl(ghc >= 6.12)
+     ghc-options:      -Wall -fno-warn-unused-do-bind -fno-warn-orphans
+  else
+     ghc-options:      -Wall  -fno-warn-orphans
   GHC-Prof-Options:    -auto-all
 
 Executable happstack-state-tests
