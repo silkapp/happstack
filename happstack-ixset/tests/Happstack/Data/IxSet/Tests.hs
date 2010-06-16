@@ -32,6 +32,8 @@ $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
 
         data MultiIndex = MultiIndex String Int Integer (Maybe Int) (Either Bool Char)
                         | MultiIndexSubset Int Bool String
+        data Triple = Triple Int Int Int
+        data S = S String
       |]
  )
 
@@ -43,12 +45,24 @@ $(inferIxSet "BadlyIndexeds" ''BadlyIndexed 'noCalcs [''String])
 
 $(inferIxSet "MultiIndexed" ''MultiIndex 'noCalcs [''String, ''Int, ''Integer, ''Bool, ''Char])
 
-instance Indexable Foo String where
-    empty =  ixSet [Ix (Map.empty :: Map String (Set Foo)),
-                    Ix (Map.empty :: Map Int (Set Foo))]
-    calcs (Foo s _) = s ++ "bar"
+$(inferIxSet "Triples" ''Triple 'noCalcs [''Int])
 
-type Foos = IxSet Foo
+fooCalcs (Foo s _) = s ++ "bar"
+
+{-
+instance Indexable Foo String where
+    empty =  ixSet [ -- Ix (Map.empty :: Map String (Set Foo)) flattenWithCalcs
+                     ixGenWithCalcs (undefined :: String)
+                   , -- Ix (Map.empty :: Map Int (Set Foo)) flattenWithCalcs
+                     ixGenWithCalcs (undefined :: Int)
+-}
+
+$(inferIxSet "Foos" ''Foo 'fooCalcs [''String, ''Int])
+
+instance Indexable S where
+    empty =  ixSet [ ixFun (\(S x) -> [length x])
+                   ]
+    -- calcs _ = ()
 
 
 
@@ -105,12 +119,18 @@ badIndexSafeguard = test
                       isError (getOne (foox_set_cde @= True))
                     ]
 
+testTriple :: Test
+testTriple = test
+             [ "check if we can find element" ~:
+               1 @=? size ((insert (Triple 1 2 3) empty) 
+                           @= (1::Int) @= (2::Int))
+             ]
 
 
 instance Arbitrary Foo where
     arbitrary = liftM2 Foo arbitrary arbitrary
 
-instance (Arbitrary a,Data.Data a, Ord a, Indexable a b) => 
+instance (Arbitrary a,Data.Data a, Ord a, Indexable a) => 
     Arbitrary (IxSet a) where
     arbitrary = liftM fromList arbitrary
 
@@ -182,11 +202,26 @@ prop_all :: Foos -> [Int] -> Bool
 prop_all ixset idxs = 
     (ixset @* idxs) == foldr intersection empty (map ((@=) ixset) idxs)
 
+funSet :: IxSet S
+funSet = IxSet.fromList [S "", S "abc", S "def", S "abcde"]
+
+funIndexes :: Test
+funIndexes = test 
+   [ "has zero length element" ~: 1 @=? 
+     size (funSet @= (0 :: Int))
+   , "has two lengh 3 elements" ~: 2 @=? 
+     size (funSet @= (3 :: Int))
+   , "has three lengh [3;7] elements" ~: 3 @=? 
+     size (funSet @>=<= (3 :: Int, 7 :: Int))
+   ]
+
 allTests :: Test
 allTests = "happstack-ixset" ~: [ ixSetCheckMethodsOnDefault
                                 , ixSetCheckSetMethods
                                 , badIndexSafeguard
                                 , test (True @=? findElement 1 1)
+                                , testTriple
+                                , funIndexes
                                 , qctest prop_toAndFromXml
                                 , qctest prop_sizeEqToListLength
                                 , qctest prop_union
@@ -212,6 +247,20 @@ bigSet n = fromList $
       string <- ["abc", "def", "ghi"],
       int <- [1..n],
       bool <- [True, False]]
+
+
+{-
+GHCi
+
+let b = bigSet 100
+to evaluate things
+size b
+
+timed $ findElementX b 1
+
+2010-05-09 6:00 daje 50s
+
+-}
 
 findElementX :: MultiIndexed -> Int -> Bool
 findElementX set n = isJust $ getOne (set @+ ["abc","def","ghi"] 
