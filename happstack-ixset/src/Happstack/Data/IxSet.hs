@@ -20,10 +20,10 @@ an instance of 'Indexable'. Use 'ixFun' and 'ixGen' to build indexes:
 
 > instance Indexable Entry where
 >     empty = ixSet 
->               [ ixGen (undefined :: Author)        -- out of order
->               , ixGen (undefined :: Id)
->               , ixGen (undefined :: Updated)
->               , ixGen (undefined :: Test)          -- bogus index
+>               [ ixGen (Proxy :: Proxy Author)        -- out of order
+>               , ixGen (Proxy :: Proxy Id)
+>               , ixGen (Proxy :: Proxy Updated)
+>               , ixGen (Proxy :: Proxy Test)          -- bogus index
 >               ]
 
 3. Use 'insert', 'delete', 'updateIx', 'deleteIx' and 'empty' to build
@@ -180,7 +180,7 @@ data IxSet a = IxSet [Ix a]
 -- > instance Indexable Type where
 -- >     empty = ixSet [ ...
 -- >                     ixFun getIndex1
--- >                     ixGen (undefined :: Index2Type)
+-- >                     ixGen (Proxy :: Proxy Index2Type)
 -- >                   ]
 --
 -- First index in the list must contain all objects in set, doing
@@ -202,15 +202,15 @@ ixFun f = Ix Map.empty f
 
 
 -- | Create a generic index. Provided example is used only as type
--- source so you may use 'undefined'. The 'ixGen' uses flatten to
+-- source so you may use a 'Proxy'. The 'ixGen' uses flatten to
 -- traverse value using its 'Data' instance.
 --
 -- > instance Indexable Type where
--- >     empty = ixSet [ ixGen (undefined :: Type) ]
+-- >     empty = ixSet [ ixGen (Proxy :: Proxy Type) ]
 --
 -- In production systems consider using 'ixFun' in place of 'ixGen' as
 -- the former one is much faster.
-ixGen :: forall a b . (Data a,Ord b,Typeable b) => b -> Ix a
+ixGen :: forall a b . (Data a,Ord b,Typeable b) => Proxy b -> Ix a
 ixGen _example = ixFun (flatten :: a -> [b])
 
 showTypeOf :: (Typeable a) => a -> String
