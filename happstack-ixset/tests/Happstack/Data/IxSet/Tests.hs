@@ -34,6 +34,8 @@ $( deriveAll [''Eq, ''Ord, ''Default, ''Show]
                         | MultiIndexSubset Int Bool String
         data Triple = Triple Int Int Int
         data S = S String
+        data G a b = G a b
+        
       |]
  )
 
@@ -48,6 +50,12 @@ $(inferIxSet "MultiIndexed" ''MultiIndex 'noCalcs [''String, ''Int, ''Integer, '
 $(inferIxSet "Triples" ''Triple 'noCalcs [''Int])
 
 fooCalcs (Foo s _) = s ++ "bar"
+
+
+
+$(inferIxSet "Gs" ''G 'noCalcs [''Int])
+
+
 
 {-
 instance Indexable Foo String where

@@ -53,6 +53,7 @@ Library
     Build-Depends:     QuickCheck >= 2 && <3, HUnit
   Exposed-modules:     
                        Happstack.Data.IxSet
+                       Happstack.Data.IxSet.Ix
   if flag(tests)
     Exposed-modules:   
                        Happstack.Data.IxSet.Tests

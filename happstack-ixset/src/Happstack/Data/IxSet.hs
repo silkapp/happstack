@@ -248,7 +248,7 @@ ixSetDataType = SYBWC.mkDataType "IxSet" [ixSetConstr]
 
 
 
-instance (Indexable a, Data a, Default a) => Default (IxSet a) where
+instance (Indexable a, Ord a,Data a, Default a) => Default (IxSet a) where
     defaultValue = empty
 
 instance (Ord a,Show a) => Show (IxSet a) where 
@@ -259,7 +259,7 @@ instance (Ord a,Read a,Typeable a,Indexable a) => Read (IxSet a) where
 
 {- | 'Indexable' class defines objects that can be members of 'IxSet'. 
 -}
-class (Ord a) => Indexable a where
+class Indexable a where
     -- | Method 'empty' defines what an empty 'IxSet' for this
     -- particular type should look like.  It should have all necessary
     -- indexes. Use 'ixSet' function to create the set and fill it in
@@ -309,6 +309,10 @@ inferIxSet ixset typeName calName entryPoints
              names = map tyVarBndrToName binders
 
              typeCon = foldl appT (conT typeName) (map varT names)
+             dataCtxConQ = [classP ''Data [varT name] | name <- names]
+             fullContext = do
+                dataCtxCon <- sequence dataCtxConQ
+                return (context ++ dataCtxCon)
          case calInfo of
            VarI _ t _ _ ->
                let calType = getCalType t
@@ -320,11 +324,10 @@ inferIxSet ixset typeName calName entryPoints
                                                              appT (appT (conT ''Map) (conT n)) 
                                                                       (appT (conT ''Set) typeCon))) `appE` 
                                     (varE 'flattenWithCalcs `appE` varE calName)
-               in do i <- instanceD' (return context) (conT ''Indexable `appT` typeCon)
+               in do i <- instanceD' (fullContext) 
+                          (conT ''Indexable `appT` typeCon)
                           [d| empty :: IxSet a
                               empty = ixSet $(listE (map mkEntryPoint entryPoints))
-                              -- calcs :: a -> b
-                              -- calcs = $(varE calName) 
                             |]
                      let ixType = appT (conT ''IxSet) typeCon
                      ixType' <- tySynD (mkName ixset) binders ixType
@@ -373,7 +376,7 @@ flattenWithCalcs calcs x = flatten (x,calcs x)
 -- | Higher order operator for modifying 'IxSet's.  Use this when your
 -- final function should have the form @a -> 'IxSet' a -> 'IxSet' a@,
 -- e.g. 'insert' or 'delete'.
-change :: (Typeable a,Indexable a) =>
+change :: (Typeable a,Indexable a,Ord a) =>
           IndexOp -> a -> IxSet a -> IxSet a
 change op x (IxSet indexes) = 
     IxSet v
@@ -388,7 +391,7 @@ change op x (IxSet indexes) =
                  then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ showTypeOf key ++ " of " ++ showTypeOf x
                  else foldr ii index ds -- handle multiple values
 
-insertList :: (Typeable a,Indexable a) 
+insertList :: (Typeable a,Indexable a,Ord a) 
            => [a] -> IxSet a -> IxSet a
 insertList xs (IxSet indexes) = 
     IxSet v
