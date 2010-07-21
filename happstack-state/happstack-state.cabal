@@ -36,6 +36,10 @@ Library
                        Happstack.State.Transaction
                        Happstack.State.ComponentTH
                        Happstack.State.ComponentSystem
+                       Happstack.State.Saver.Impl.File
+                       Happstack.State.Saver.Impl.Memory
+                       Happstack.State.Saver.Impl.Queue
+                       Happstack.State.Saver.Types
   if flag(tests)
     Build-Depends:     QuickCheck >= 2 && <3, HUnit, network
     Exposed-modules:   
@@ -46,10 +50,6 @@ Library
   Other-modules:       
                        Happstack.State.Checkpoint
                        Happstack.State.Monad
-                       Happstack.State.Saver.Impl.File
-                       Happstack.State.Saver.Impl.Memory
-                       Happstack.State.Saver.Impl.Queue
-                       Happstack.State.Saver.Types
                        Happstack.State.Types
                        Happstack.State.Util
                        Happstack.State.TxControl
