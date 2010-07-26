@@ -35,6 +35,14 @@ Flag tests
     Description: Build the testsuite, and include the tests in the library
     Default: False
 
+Flag old-haxml
+     Description: Build against HaXml => 1.13 && < 1.14
+     Default: False
+
+Flag new-haxml
+     Description: Build against new HaXml
+     Default: False
+
 Library
   if flag(base4)
     Build-Depends:    base >=4 && < 5, syb
@@ -50,12 +58,17 @@ Library
   else
     Build-Depends:    syb-with-class < 0.6.1
 
+  if flag(old-haxml)
+    Build-Depends:    HaXml >= 1.13 && < 1.14
+
+  if flag(new-haxml)
+    Build-Depends:    HaXml >= 1.20 && < 1.21
+
 
   Build-Depends:      binary,
                       bytestring,
                       containers,
                       happstack-util >= 0.5 && < 0.6, 
-                      HaXml >= 1.13 && < 1.14,
                       mtl,
                       pretty,
                       syb-with-class >= 0.5,
@@ -76,11 +89,16 @@ Library
     Happstack.Data.Normalize
     Happstack.Data.Pairs
     Happstack.Data.Xml
-    Happstack.Data.Xml.HaXml
     Happstack.Data.GOps
     Happstack.Data.Proxy
     Happstack.Data.Serialize
     Happstack.Data.SerializeTH
+  if flag(old-haxml)
+    Exposed-modules:   
+      Happstack.Data.Xml.HaXml13
+  if flag(new-haxml)
+    Exposed-modules:   
+      Happstack.Data.Xml.HaXml
   if flag(tests)
     Build-depends: HUnit
     Exposed-modules:   
@@ -92,7 +110,12 @@ Library
   Other-modules:
     Happstack.Data.Xml.Base
     Happstack.Data.Xml.Instances
-    Happstack.Data.Xml.PrintParse
+  if flag(old-haxml)
+    Other-modules:
+      Happstack.Data.Xml.PrintParse13
+  if flag(new-haxml)
+    Other-modules:
+      Happstack.Data.Xml.PrintParse
   Extensions: TemplateHaskell, FlexibleInstances, UndecidableInstances,
               OverlappingInstances, MultiParamTypeClasses, CPP,
               FunctionalDependencies, DeriveDataTypeable, FlexibleContexts,

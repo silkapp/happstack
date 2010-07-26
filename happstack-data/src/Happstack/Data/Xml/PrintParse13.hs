@@ -2,16 +2,15 @@
              OverlappingInstances, UndecidableInstances,
              DeriveDataTypeable, MultiParamTypeClasses #-}
 
-module Happstack.Data.Xml.PrintParse where
+module Happstack.Data.Xml.PrintParse13 where
 
 import Control.Monad
 import Text.PrettyPrint.HughesPJ
-import Text.XML.HaXml.Parse (xmlParse)
-import Text.XML.HaXml.Posn (noPos)
+import Text.XML.HaXml.Parse
 import Text.XML.HaXml.Pretty
 import Text.XML.HaXml.Types (Document(Document), Content(CElem))
 import Happstack.Data.Xml.Base
-import Happstack.Data.Xml.HaXml
+import Happstack.Data.Xml.HaXml13
 import Data.Generics as G
 import Happstack.Data.DeriveAll
 import Happstack.Data.Default
@@ -41,7 +40,7 @@ class FromString a where
 instance FromString Element where
     fromString _ s = case xmlParse "NoFile" s of
                        Document _ _ e _ ->
-                           return $ fromHaXml $ CElem e noPos
+                           return $ fromHaXml $ CElem e
                        -- XXX Currently we assume this always succeeds,
                        -- but we should be allowing for the possibility of
                        -- failure
