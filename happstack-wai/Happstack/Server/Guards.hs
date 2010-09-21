@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, RankNTypes, ScopedTypeVariables, TypeSynonymInstances #-}
 module Happstack.Server.Guards where
 
 import Control.Monad(MonadPlus(mzero), unless)

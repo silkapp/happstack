@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Happstack.Server.ToMessage where
 
 import qualified Data.ByteString.Char8 as B
@@ -9,13 +10,13 @@ import Network.Wai.Enumerator (fromLBS)
 class ToMessage a where
     toContentType :: a -> B.ByteString
     toContentType _ = B.pack "text/plain"
-    toMessage :: a -> Either FilePath Enumerator -- C.ByteString
+    toMessage :: a -> ResponseBody
     toMessage = error "Happstack.Server.SimpleHTTP.ToMessage.toMessage: Not defined"
     toResponse:: a -> Response
     toResponse val =
         let bs = toMessage val
-            res = Response { status           = Status200 
-                           , responseHeaders = [(ContentType, toContentType val)]
+            res = Response { status           = status200
+                           , responseHeaders = [("Content-Type", toContentType val)]
                            , responseBody    = bs
                            }
         in res
@@ -27,7 +28,7 @@ class ToMessage a where
 
 instance ToMessage String where
   toContentType _ = B.pack "text/plain; charset=UTF-8"
-  toMessage = Right . fromLBS . LU.fromString  
+  toMessage = ResponseLBS . LU.fromString  
   
 instance ToMessage Response where
   toResponse = id

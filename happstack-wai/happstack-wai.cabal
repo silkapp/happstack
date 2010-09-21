@@ -1,5 +1,5 @@
 Name:                happstack-wai
-Version:             0.0.0
+Version:             0.2.0
 Synopsis:            Happstack for Web Application Interface.
 Description:         Provides the Happstack world on top of WAI
 License:             BSD3
@@ -19,7 +19,7 @@ Library
                      MaybeT,
                      mtl,
                      utf8-string,
-                     wai,
+                     wai >= 0.2 && < 0.3,
                      wai-extra,
                      web-encodings
   Exposed-modules:   Happstack.Server.Guards

@@ -14,16 +14,16 @@ setResponseStatus stat
     = composeFilter $ \r -> r{status = stat}
 
 toStatus :: Int -> Status
-toStatus 200 = Status200
-toStatus 301 = Status301
-toStatus 302 = Status302
-toStatus 303 = Status303
-toStatus 400 = Status400
-toStatus 401 = Status401
-toStatus 403 = Status403
-toStatus 404 = Status404
-toStatus 405 = Status405
-toStatus 500 = Status500
+toStatus 200 = status200
+toStatus 301 = status301
+toStatus 302 = status302
+toStatus 303 = status303
+toStatus 400 = status400
+toStatus 401 = status401
+toStatus 403 = status403
+toStatus 404 = status404
+toStatus 405 = status405
+toStatus 500 = status500
 toStatus n   = Status n mempty
 
 -- | same as setResponseCode status >> return val

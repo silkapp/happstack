@@ -1,4 +1,4 @@
-{-# LANGUAGE FunctionalDependencies, FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE FunctionalDependencies, FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ScopedTypeVariables, OverloadedStrings #-}
 module Happstack.Server.Monads where
 
 import qualified Data.ByteString.Char8 as B
@@ -15,9 +15,9 @@ import Network.Wai.Enumerator (fromLBS)
 
 instance Error Response where
   strMsg str = 
-    Response { status = Status200
-             , responseHeaders = [(ContentType, B.pack "text/plain; charset=UTF-8")]
-             , responseBody = Right (fromLBS (LU.fromString str))
+    Response { status = status200
+             , responseHeaders = [("Content-Type", B.pack "text/plain; charset=UTF-8")]
+             , responseBody = ResponseLBS (LU.fromString str)
              }
 
 data Request
