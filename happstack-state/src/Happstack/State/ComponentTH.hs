@@ -217,12 +217,12 @@ getMethodInfo method
            _ -> error $ "Method is not a function: " ++ nameBase method ++ " is a " ++ showInfo methodInfo
 
 showInfo :: Info -> String
-showInfo (ClassI _) = "class"
-showInfo (TyConI _) = "type constructor"
-showInfo (PrimTyConI _ _ _) = "primitive type constructor"
-showInfo (DataConI _ _ _ _) = "data constructor"
-showInfo (VarI _ _ _ _) = "variable"
-showInfo (TyVarI _ _) = "type variable"
+showInfo ClassI{} = "class"
+showInfo TyConI{} = "type constructor"
+showInfo PrimTyConI{} = "primitive type constructor"
+showInfo DataConI{} = "data constructor"
+showInfo VarI{} = "variable"
+showInfo TyVarI{} = "type variable"
 showInfo x = pprint x
 
 

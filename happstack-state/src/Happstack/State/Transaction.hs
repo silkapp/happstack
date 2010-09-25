@@ -169,6 +169,7 @@ createEventMap ctlVar componentProxy
                     return $ M.union (extraEvents tx) (M.map (eventHandler tx) m)
          return $ M.unions maps
     where (componentTree, _versions, _ioActions) = collectHandlers componentProxy
+          eventHandler :: Serialize st => TxRun st -> Method st -> EventHandler
           eventHandler tx (Update fn)
               = let updateCold' ev getCxt
                         = do mv <- newEmptyMVar
@@ -190,6 +191,7 @@ createEventMap ctlVar componentProxy
                         = do cxt <- newTxContext
                              updateCold' ev $ addTxId tx cxt
                 in UpdateHandler updateCold updateHot parseObject
+
           eventHandler tx (Query fn)
               = let queryEmitter ev
                         = do mv <- newEmptyMVar
