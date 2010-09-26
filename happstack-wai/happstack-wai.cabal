@@ -17,7 +17,7 @@ Library
                      bytestring >= 0.9 && < 0.10,
                      filepath,
                      MaybeT,
-                     mtl,
+                     mtl >= 1.1 && < 1.2,
                      utf8-string,
                      wai >= 0.2 && < 0.3,
                      wai-extra,
