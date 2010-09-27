@@ -21,10 +21,10 @@ guestBookHandler =
 
 postEntry :: ServerPartT IO (HSP XML)
 postEntry = methodM POST >> do -- only accept a post method
-  mbEntry <- getData -- get the data
+  mbEntry <- getData (defaultBodyPolicy "/tmp/" 4096 4096 4096) -- get the data
   case mbEntry of 
-    Nothing -> error $ "error: postEntry" 
-    Just entry -> do
+    (Left e) -> badRequest $ <p>e</p>
+    (Right entry) -> do
       now <- liftIO getClockTime
       update $ AddGuestBookEntry entry{date=now}
       seeOther "/entries" (seeOtherXML "/entries")
