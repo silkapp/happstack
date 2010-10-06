@@ -462,7 +462,7 @@ deleteIx i ixset = maybe ixset (flip delete ixset) $
 
 -- | Converts an 'IxSet' to a 'Set' of its elements.
 toSet :: Ord a => IxSet a -> Set a
-toSet (IxSet (Ix ix _:_)) = Map.fold Set.union Set.empty ix
+toSet (IxSet (Ix ix _:_)) = List.foldl' Set.union Set.empty (Map.elems ix)
 toSet (IxSet []) = Set.empty
 
 -- | Converts a 'Set' to an 'IxSet'.
