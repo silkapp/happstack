@@ -20,10 +20,11 @@ module Happstack.Data.IxSet.Ix
     where
 
 import Data.Generics hiding (GT)
-import           Data.Map (Map)
-import qualified Data.Map as Map
-import           Data.Set (Set)
-import qualified Data.Set as Set
+import           Data.List  (foldl')
+import           Data.Map   (Map)
+import qualified Data.Map   as Map
+import           Data.Set   (Set)
+import qualified Data.Set   as Set
 import qualified Data.Generics.SYB.WithClass.Basics as SYBWC
 
 -- the core datatypes
@@ -70,7 +71,7 @@ insert k v index = Map.insertWith Set.union k (Set.singleton v) index
 -- | Helper function to 'insert' a list of elements into a set.
 insertList :: (Ord a, Ord k)
            => [(k,a)] -> Map k (Set a) -> Map k (Set a)
-insertList xs index = foldr (\(k,v) -> insert k v) index xs
+insertList xs index = foldl' (\m (k,v)-> insert k v m) index xs
 
 -- | Convenience function for deleting from 'Map's of 'Set's. If the
 -- resulting 'Set' is empty, then the entry is removed from the 'Map'.
