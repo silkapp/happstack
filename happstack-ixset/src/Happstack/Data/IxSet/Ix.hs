@@ -66,7 +66,7 @@ instance (SYBWC.Data ctx a, SYBWC.Sat (ctx (Ix a)))
 -- 'Map', then a new 'Set' is added transparently.
 insert :: (Ord a, Ord k)
        => k -> a -> Map k (Set a) -> Map k (Set a)
-insert k v index = Map.insertWith Set.union k (Set.singleton v) index
+insert k v index = Map.insertWith' Set.union k (Set.singleton v) index
 
 -- | Helper function to 'insert' a list of elements into a set.
 insertList :: (Ord a, Ord k)
@@ -85,7 +85,7 @@ delete k v index = Map.update remove k index
 -- | Helper function to 'delete' a list of elements from a set.
 deleteList :: (Ord a, Ord k)
            => [(k,a)] -> Map k (Set a) -> Map k (Set a)
-deleteList xs index = foldr (\(k,v) -> delete k v) index xs
+deleteList xs index = foldl' (\m (k,v) -> delete k v m) index xs
 
 -- | Take union of two sets.
 union :: (Ord a, Ord k)

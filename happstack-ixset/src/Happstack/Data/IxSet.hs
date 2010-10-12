@@ -308,7 +308,7 @@ inferIxSet ixset typeName calName entryPoints
 
              names = map tyVarBndrToName binders
 
-             typeCon = foldl appT (conT typeName) (map varT names)
+             typeCon = List.foldl' appT (conT typeName) (map varT names)
 #if MIN_VERSION_template_haskell(2,4,0)
              mkCtx = classP
 #else
@@ -394,10 +394,10 @@ change op x (IxSet indexes) =
         where
         key = (undefined :: Map key (Set a) -> key) index
         ds = flatten2 x
-        ii dkey = op dkey x
+        ii m dkey = op dkey x m
         index' = if firstindex && List.null ds
                  then error $ "Happstack.Data.IxSet.change: all values must appear in first declared index " ++ showTypeOf key ++ " of " ++ showTypeOf x
-                 else foldr ii index ds -- handle multiple values
+                 else List.foldl' ii index ds -- handle multiple values
 
 insertList :: (Typeable a,Indexable a,Ord a) 
            => [a] -> IxSet a -> IxSet a
@@ -589,12 +589,12 @@ ix @>=<= (v1,v2) = getLTE v2 $ getGTE v1 ix
 -- | Creates the subset that has an index in the provided list.
 (@+) :: (Indexable a, Typeable a, Ord a, Typeable k)
      => IxSet a -> [k] -> IxSet a
-ix @+ list = foldr union empty        $ map (ix @=) list
+ix @+ list = List.foldl' union empty        $ map (ix @=) list
 
 -- | Creates the subset that matches all the provided indexes.
 (@*) :: (Indexable a, Typeable a, Ord a, Typeable k)
      => IxSet a -> [k] -> IxSet a
-ix @* list = foldr intersection empty $ map (ix @=) list
+ix @* list = List.foldl' intersection empty $ map (ix @=) list
 
 -- | Returns the subset with an index equal to the provided key.  The
 -- set must be indexed over key type, doing otherwise results in
