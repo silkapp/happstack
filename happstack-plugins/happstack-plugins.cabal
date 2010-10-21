@@ -1,0 +1,61 @@
+Name:                happstack-plugins
+Version:             0.5.1
+Synopsis:            The haskell application server stack + reload
+Description:         This library provides support for automatically recompiling and reloading modules into a running server.
+License:             BSD3
+License-file:        COPYING
+Author:              Happstack team, HAppS LLC
+Maintainer:          Happstack team <happs@googlegroups.com>
+homepage:            http://happstack.com
+Category:            Web, Distributed Computing
+Build-Type:          Simple
+Cabal-Version:       >= 1.6
+
+source-repository head
+    type:     darcs
+    subdir:   happstack-plugins
+    location: http://patch-tag.com/r/mae/happstack/pullrepo
+
+Flag base4
+    Description: Choose the even newer, even smaller, split-up base package.
+
+Flag tests
+    Description: Build the testsuite, and include the tests in the library
+    Default: False
+
+Library
+  exposed-modules:     Happstack.Plugins.Plugins
+                       Happstack.Plugins.Static
+                       Happstack.Plugins.Dynamic
+                       Happstack.Plugins.LiftName
+                       Happstack.Server.Plugins.Dynamic
+                       Happstack.Server.Plugins.Static
+  if flag(tests)
+    Exposed-modules:   Happstack.Tests
+
+  build-depends:       base >= 3,
+                       containers,
+                       filepath,
+                       happstack-server >= 0.5 && < 0.6,
+                       hinotify,
+                       mtl,
+                       plugins >= 1.5.1.4,
+                       template-haskell
+                       
+  if flag(tests)
+    hs-source-dirs:    tests
+
+  if impl(ghc >= 6.12)
+     ghc-options:      -Wall -fno-warn-unused-do-bind
+  else
+     ghc-options:      -Wall
+
+Executable happstack-plugins-tests
+  Main-Is: Test.hs
+  GHC-Options: -threaded
+  hs-source-dirs: tests, src
+  if flag(tests)
+    Buildable: True
+    Build-depends: HUnit
+  else
+    Buildable: False
