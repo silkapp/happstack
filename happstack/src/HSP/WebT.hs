@@ -7,7 +7,7 @@ import Control.Applicative ((<$>))
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified HSX.XMLGenerator as HSX
-import Happstack.Server (WebT)
+import Happstack.Server.Internal.Monads (WebT)
 
 instance (Monad m) => HSX.XMLGen (WebT m) where
     type HSX.XML (WebT m) = XML
