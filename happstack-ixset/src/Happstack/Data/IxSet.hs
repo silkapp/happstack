@@ -309,7 +309,15 @@ inferIxSet ixset typeName calName entryPoints
              names = map tyVarBndrToName binders
 
              typeCon = foldl appT (conT typeName) (map varT names)
-             dataCtxConQ = [classP ''Data [varT name] | name <- names]
+#if MIN_VERSION_template_haskell(2,4,0)
+             mkCtx = classP
+#else
+             -- mkType :: Name -> [TypeQ] -> TypeQ
+             mkType con = foldl appT (conT con)
+
+             mkCtx = mkType
+#endif
+             dataCtxConQ = [mkCtx ''Data [varT name] | name <- names]
              fullContext = do
                 dataCtxCon <- sequence dataCtxConQ
                 return (context ++ dataCtxCon)
