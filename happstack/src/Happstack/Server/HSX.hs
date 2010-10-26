@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HSX where
 
-import Happstack.Server.SimpleHTTP (ServerMonad(..), FilterMonad(..), WebMonad(..))
+import Happstack.Server.SimpleHTTP (ServerMonad(..), FilterMonad(..), WebMonad(..), HasRqData(..))
 import HSX.XMLGenerator (XMLGenT(..))
 
 instance (ServerMonad m) => ServerMonad (XMLGenT m) where
@@ -16,3 +16,8 @@ instance (FilterMonad a m) => FilterMonad a (XMLGenT m) where
 
 instance (WebMonad a m) => WebMonad a (XMLGenT m) where
     finishWith r = XMLGenT $ finishWith r
+
+instance (HasRqData m) => (HasRqData (XMLGenT m)) where
+    askRqEnv = XMLGenT askRqEnv
+    localRqEnv f (XMLGenT m) = XMLGenT (localRqEnv f m)
+    rqDataError = XMLGenT . rqDataError
