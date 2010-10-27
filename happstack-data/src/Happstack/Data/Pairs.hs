@@ -12,7 +12,7 @@ import Data.Maybe
 
 ---stuff for examples
 import Happstack.Data.DeriveAll
-import Happstack.Util.Common
+import Happstack.Util.Common (mapFst)
 
 import Data.Generics as G
 import Happstack.Data.Default -- for pairs
