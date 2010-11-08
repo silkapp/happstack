@@ -3,9 +3,9 @@
 module HSP.ServerPartT where
 
 import HSP
-import Control.Applicative ((<$>))
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
+import Control.Monad              (liftM)
+import qualified Data.Text        as T
+import qualified Data.Text.Lazy   as TL
 import qualified HSX.XMLGenerator as HSX
 import Happstack.Server (ServerPartT)
 
@@ -14,8 +14,8 @@ instance (Monad m) => HSX.XMLGen (ServerPartT m) where
     newtype HSX.Child (ServerPartT m) = SChild { unSChild :: XML }
     newtype HSX.Attribute (ServerPartT m) = SAttr { unSAttr :: Attribute }
     genElement n attrs children = 
-        do attribs <- map unSAttr <$> asAttr attrs
-           childer <- flattenCDATA . map unSChild <$> asChild children
+        do attribs <- map unSAttr `liftM` asAttr attrs
+           childer <- (flattenCDATA . map unSChild) `liftM`asChild children
            HSX.XMLGenT $ return (Element
                               (toName n)
                               attribs

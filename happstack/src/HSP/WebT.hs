@@ -3,7 +3,7 @@
 module HSP.WebT where
 
 import HSP
-import Control.Applicative ((<$>))
+import Control.Monad (liftM)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified HSX.XMLGenerator as HSX
@@ -14,8 +14,8 @@ instance (Monad m) => HSX.XMLGen (WebT m) where
     newtype HSX.Child (WebT m) = WChild { unWChild :: XML }
     newtype HSX.Attribute (WebT m) = WAttr { unWAttr :: Attribute }
     genElement n attrs children = 
-        do attribs <- map unWAttr <$> asAttr attrs
-           childer <- flattenCDATA . map unWChild <$> asChild children
+        do attribs <- map unWAttr `liftM` asAttr attrs
+           childer <- (flattenCDATA . map unWChild) `liftM` asChild children
            HSX.XMLGenT $ return (Element
                               (toName n)
                               attribs
