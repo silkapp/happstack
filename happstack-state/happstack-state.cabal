@@ -14,7 +14,7 @@ Build-Type:          Simple
 source-repository head
     type:     darcs
     subdir:   happstack-state
-    location: http://patch-tag.com/r/mae/happstack/pullrepo
+    location: http://patch-tag.com/r/mae/happstack
 
 flag base4
 

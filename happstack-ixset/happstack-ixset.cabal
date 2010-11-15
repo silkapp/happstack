@@ -20,7 +20,7 @@ Cabal-Version:       >= 1.6
 source-repository head
     type:     darcs
     subdir:   happstack-ixset
-    location: http://patch-tag.com/r/mae/happstack/pullrepo
+    location: http://patch-tag.com/r/mae/happstack
 
 flag base4
 
