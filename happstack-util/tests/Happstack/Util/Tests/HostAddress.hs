@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Happstack.Util.Tests.HostAddress
 (propShowHostAddress, propShowHostAddress6)
 where
@@ -9,13 +10,16 @@ import Data.Word (Word32)
 import System.Random
 import Test.QuickCheck
 
+#if MIN_VERSION_QuickCheck(2,1,2)
+#else
 instance Arbitrary Word32 where
-  arbitrary = choose (minBound, maxBound)
+    arbitrary = choose (minBound, maxBound)
 
 instance Random Word32 where
   randomR (a,b) g = (fromInteger i,g)
     where (i,_) = randomR (toInteger a, toInteger b) g
   random = randomR (minBound,maxBound)
+#endif
 
 propShowHostAddress :: HostAddress -> Bool
 propShowHostAddress a = new == old
