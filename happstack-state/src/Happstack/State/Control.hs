@@ -8,6 +8,7 @@ module Happstack.State.Control
     , waitForTermination
     ) where
 
+import Control.Applicative ((<$>))
 import System.Log.Logger
 import qualified System.Log.Handler as SLH
 import System.Log.Handler.Simple
@@ -20,6 +21,8 @@ import System.Exit
 import System.Console.GetOpt
 import Control.Monad.Trans
 import Control.Concurrent
+
+import Numeric (showHex)
 
 #ifdef UNIX
 import System.Posix.Signals hiding (Handler)
@@ -58,8 +61,14 @@ startSystemStateAmazon appName proxy
 -- | Returns the default Saver.  It will save the application state into
 -- the _local directory.
 stdSaver :: IO Saver
-stdSaver = do pn <- getProgName
+stdSaver = do pn <- escape <$> getProgName
               return $ Queue (FileSaver ("_local/" ++pn++"_state"))
+    where
+      escape :: String -> String
+      escape = concatMap escapeChar
+      escapeChar :: Char -> String
+      escapeChar c | isAlphaNum c = [c]
+                   | otherwise    = showString "_" $ showHex (ord c) "" 
 
 -- | Wait for a signal.
 --   On unix, a signal is sigINT or sigTERM. On windows, the signal
