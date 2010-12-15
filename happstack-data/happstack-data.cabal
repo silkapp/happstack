@@ -72,7 +72,7 @@ Library
                       mtl >= 1.1 && < 2.1,
                       pretty,
                       syb-with-class-instances-text,
-                      text >= 0.7.1,
+                      text >= 0.10 && < 0.12,
                       time >= 1.1.4,
                       template-haskell
 
