@@ -6,14 +6,13 @@ module Happstack.Data.Pairs (pairsToXml,xmlToPairs,pairsToHTMLForm,xmlToHTMLForm
                         ,Pairs,AsPairs
                         ) where
 
+import qualified Control.Arrow as A
 import Data.Char
 import Data.List
 import Data.Maybe
 
 ---stuff for examples
 import Happstack.Data.DeriveAll
-import Happstack.Util.Common (mapFst)
-
 import Data.Generics as G
 import Happstack.Data.Default -- for pairs
 import Happstack.Data.Xml
@@ -118,7 +117,7 @@ instance (Xml a,Show a,G.Data a,Eq a) => AsPairs a where
     fromPairs [] = Nothing
     fromPairs pairs = if res == dv && notRigidMatch then Nothing else Just res
         where
-        xml = pairsToXml $ mapFst clean pairs
+        xml = pairsToXml $ map (A.first clean) pairs
         res = runIdentity $ fromXml Flexible xml
         mbRigidMatch = fromXml Rigid xml
         _ = [mbRigidMatch,Just res]

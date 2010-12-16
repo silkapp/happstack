@@ -68,7 +68,6 @@ Library
   Build-Depends:      binary,
                       bytestring,
                       containers,
-                      happstack-util >= 0.5 && < 0.6, 
                       mtl >= 1.1 && < 2.1,
                       pretty,
                       syb-with-class-instances-text,
