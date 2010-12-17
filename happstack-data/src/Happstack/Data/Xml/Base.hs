@@ -5,7 +5,44 @@
              MultiParamTypeClasses, DeriveDataTypeable,
              ScopedTypeVariables, PatternGuards #-}
 
-module Happstack.Data.Xml.Base where
+module Happstack.Data.Xml.Base 
+    ( Element(..)
+    , insEl
+    , fromXml
+    , Other(..)
+    , toPublicXml
+    , Rigidity(..)
+    , XmlD(..)
+    , Xml(..)
+    , xmlProxy
+    , defaultToXml
+    , transparentToXml
+    , transparentReadXml
+    , transparentXml
+    , defaultReadXml
+    , defaultReadXml'
+    , readXmlWith
+    , readVersionedElement
+    , isTheAttr
+    , getAttr
+    , versionAttr
+    , typeAttr
+    , readElement
+    , aConstrFromElements
+    , constrFromElementsNoRootDefault
+    , constrFromElements
+    , getXmls
+    , putXmls
+    , readMXml
+    , readMXmlNoRootDefault
+    , xmlAttr
+    , xmlShowCDatas
+    , xmlShowCData
+    , xmlCDataLists
+    , xmlCDataList
+    , noCommas
+    , typeNotValue
+    ) where
 
 import Control.Monad.Identity
 import Control.Monad.State
