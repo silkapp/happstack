@@ -71,7 +71,7 @@ Library
                        Happstack.Util.FileManip
   if flag(tests)
     Build-Depends:
-                       QuickCheck >= 2 && < 3,
+                       QuickCheck >= 2 && < 2.5,
                        HUnit
     Exposed-modules:   Happstack.Util.Testing,
                        Happstack.Util.Tests,

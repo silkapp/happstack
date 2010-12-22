@@ -16,10 +16,12 @@ qccheck args prop =
   HU.TestCase $
     do result <- QC.quickCheckWithResult args prop
        case result of
-         (QC.Success _) -> return ()
-         (QC.GaveUp ntest _) -> HU.assertFailure $ "Arguments exhausted after" ++ show ntest ++ (if ntest == 1 then " test." else " tests.")
-         (QC.Failure _ usedSize reason _) -> HU.assertFailure reason
-         (QC.NoExpectedFailure _) -> HU.assertFailure $ "No Expected Failure"
+         (QC.Success {}) -> return ()
+         (QC.GaveUp {}) -> 
+             let ntest = QC.numTests result
+             in HU.assertFailure $ "Arguments exhausted after" ++ show ntest ++ (if ntest == 1 then " test." else " tests.")
+         (QC.Failure {}) -> HU.assertFailure (QC.reason result)
+         (QC.NoExpectedFailure {}) -> HU.assertFailure $ "No Expected Failure"
 
 qctest :: QC.Testable a => a -> HU.Test
 qctest = qccheck QC.stdArgs
