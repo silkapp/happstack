@@ -20,10 +20,11 @@ guestBookHandler =
   dir "entries" $ msum [postEntry, getEntries]        -- RESTful /entries
 
 postEntry :: ServerPartT IO (HSP XML)
-postEntry = methodM POST >> do -- only accept a post method
-  mbEntry <- getData (defaultBodyPolicy "/tmp/" 4096 4096 4096) -- get the data
+postEntry =  do 
+  methodM POST -- only accept a post method
+  mbEntry <- getData 
   case mbEntry of 
-    (Left e) -> badRequest $ <p>e</p>
+    (Left e) -> badRequest $ <p><% e %></p>
     (Right entry) -> do
       now <- liftIO getClockTime
       update $ AddGuestBookEntry entry{date=now}
