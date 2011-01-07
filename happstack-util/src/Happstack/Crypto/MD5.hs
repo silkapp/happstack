@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-{-# OPTIONS_GHC -funbox-strict-fields -fvia-c -optc-funroll-all-loops -optc-O3 #-}
+{-# OPTIONS_GHC -funbox-strict-fields #-}
 --
 -- Module      : Happstack.Crypto.MD5
 -- License     : BSD3
