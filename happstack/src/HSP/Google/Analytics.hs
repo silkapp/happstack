@@ -1,4 +1,5 @@
-{-# OPTIONS_GHC -fglasgow-exts -F -pgmFtrhsx #-}
+{-# LANGUAGE DeriveDataTypeable, FlexibleContexts #-}
+{-# OPTIONS_GHC -F -pgmFtrhsx #-}
 module HSP.Google.Analytics 
     ( UACCT(..)
     , analytics

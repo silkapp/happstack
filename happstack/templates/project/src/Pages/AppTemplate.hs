@@ -1,37 +1,32 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -F -pgmFtrhsx #-}
-module App.View where
+module Pages.AppTemplate where
 
+import Control.Applicative ((<$>))
 import HSP
-import System.Locale (defaultTimeLocale)
-import System.Time (ClockTime(..), formatCalendarTime, toUTCTime)
-import Control.Monad.Trans (MonadIO)
-import Happstack.Server (Response)
-import Happstack.Server.HStringTemplate (webST)
-import Happstack.Server.HSP.HTML (webHSP)
+import Happstack.Server    (ServerPart, ServerPartT, Response, toResponse)
+import HSP.ServerPartT     () -- instance XMLGenerator (ServerPartT m)
+import Happstack.Server.HSP.HTML ()
 
--- * Convenience Functions
+appTemplate ::
+    ( EmbedAsChild (ServerPartT IO) headers
+    , EmbedAsChild (ServerPartT IO) body
+    ) =>
+    String -> headers -> body -> ServerPart Response
+appTemplate title headers body = toResponse <$> (unXMLGenT (appTemplate' title headers body))
 
-dateStr :: ClockTime -> String
-dateStr ct =
-  formatCalendarTime
-    defaultTimeLocale
-    "%a, %B %d, %Y at %H:%M:%S (UTC)"
-    (toUTCTime ct)
-
--- * Main Implementation
-
-renderFromBody :: (MonadIO m, EmbedAsChild (HSPT' IO) xml) => String -> xml -> m Response
-renderFromBody title = webHSP . pageFromBody title
-
-pageFromBody :: (EmbedAsChild (HSPT' IO) xml) => String -> xml -> HSP XML
-pageFromBody title body =
-    withMetaData html4Strict $
+appTemplate' :: 
+    ( EmbedAsChild (ServerPartT IO) headers
+    , EmbedAsChild (ServerPartT IO) body
+    ) =>
+    String -> headers -> body -> XMLGenT (ServerPartT IO) XML
+appTemplate' title headers body =
     <html>
      <head>
       <title><% title %></title>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
       <link rel="stylesheet" type="text/css" href="/theme/style.css" media="screen" />
+      <% headers %>
      </head>
      <body>
       <div id="header">
@@ -49,7 +44,7 @@ pageFromBody title body =
         <h2>Links</h2>
          <ul>
       	  <li class="cat-item cat-item-1"><a href="http://happstack.com/" title="happstack" accesskey="H"><span class="accesskey">H</span>appstack</a></li>
-      	  <li class="cat-item cat-item-2"><a href="http://happstack.com/tutorials.html" title="happstack" accesskey="T"><span class="accesskey">T</span>utorials</a></li>
+      	  <li class="cat-item cat-item-2"><a href="http://happstack.com/docs" title="happstack" accesskey="T"><span class="accesskey">T</span>utorials</a></li>
          </ul>
        </div>
       </div>
@@ -64,7 +59,7 @@ pageFromBody title body =
           <div class="storycontent">
            <p>
               Hey congrats! You're using
-              <a href="http://happstack.com">Happstack</a> 0.3.
+              <a href="http://happstack.com">Happstack</a>.
               This is a guestbook example which you can freely change to your
               whims and fancies.
             </p>
@@ -74,7 +69,7 @@ pageFromBody title body =
               <a href="/README">dynamic README</a>.
             </p>
            <p>Leave a message for the next visitor here...</p>
-           <form action="/entries" method="post" enctype="multipart/form-data;charset=UTF-8" accept-charset="UTF-8">
+           <form action="/guestbook" method="post" enctype="multipart/form-data;charset=UTF-8" accept-charset="UTF-8">
             <p><label for="author">A<span class="accesskey">u</span>thor</label><br /><input type="text" name="author" id="author" tabindex="1" accesskey="U" />
             </p>
             <p><label for="message"><span class="accesskey">M</span>essage</label><br /><textarea cols="80" rows="10" name="message" id="message" tabindex="2" accesskey="M"></textarea></p>
@@ -97,6 +92,4 @@ pageFromBody title body =
      </body>
     </html>
 
-renderREADME :: (MonadIO m) => ClockTime -> m Response
-renderREADME now = webST "readme" [("time", dateStr now)]
 

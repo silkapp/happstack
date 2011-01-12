@@ -2,10 +2,11 @@
     FlexibleInstances, MultiParamTypeClasses, FlexibleContexts,
     UndecidableInstances, TypeOperators
     #-}
-module App.State where
-import Happstack.Data
-import Happstack.State
-import GuestBook
+module State where
+
+import Happstack.Data  (Default, Version(..), deriveSerialize, defaultValue, deriveAll)
+import Happstack.State ((:+:), Component(..), Dependencies, End, mkMethods)
+import State.GuestBook (GuestBook)
 
 -- |top-level application state
 -- in this case, the top-level state itself does not contain any state

@@ -22,17 +22,19 @@ data-files:          CHANGELOG
                      templates/project/bin/build.bat
                      templates/project/Setup.hs
                      templates/project/templates/readme.st
-                     templates/project/src/GuestBook.hs
-                     templates/project/src/Main.hs
-                     templates/project/src/App/Control.hs
-                     templates/project/src/App/View.hs
-                     templates/project/src/App/State.hs
-                     templates/project/src/App/Logger.hs
-                     templates/project/src/GuestBook/Control.hs
-                     templates/project/src/GuestBook/View.hs
-                     templates/project/src/GuestBook/State.hs
-                     templates/project/src/GuestBook/State2.hs
                      templates/project/guestbook.cabal
+                     templates/project/src/Pages/PostEntry.hs
+                     templates/project/src/Pages/AppTemplate.hs
+                     templates/project/src/Pages/Readme.hs
+                     templates/project/src/Pages/Common.hs
+                     templates/project/src/Pages/GuestBookEntries.hs
+                     templates/project/src/State/GuestBook.hs
+                     templates/project/src/Types/GuestBook.hs
+                     templates/project/src/State.hs
+                     templates/project/src/Main.hs
+                     templates/project/src/Routes.hs
+                     templates/project/src/Pages.hs
+                     templates/project/src/Logger.hs
                      templates/project/public/theme/images/menu_hover.gif
                      templates/project/public/theme/images/grunge.gif
                      templates/project/public/theme/images/entrymeta.gif

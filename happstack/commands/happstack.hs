@@ -45,25 +45,30 @@ buildAuto = autoBuild
 newProject :: FilePath -> IO ()
 newProject destDir' = do
     dataDir <- liftM (</> "templates" </> "project") getDataDir
-    destDir <- canonicalizePath destDir'
+--    destDir <- canonicalizePath destDir' -- this won't work because the directory does not exist yet
+    let destDir = destDir'
     
     -- create destDir if needed
     createDir destDir
 
     -- create dirs
     srcDirs <- getSourceDirs dataDir
+
     let destDirs = map ((destDir </>) . makeRelative dataDir) srcDirs
     mapM_ createDir destDirs
 
     -- create files
+
     srcFiles <- getSourceFiles dataDir
     let destFiles = map ((destDir </>) . makeRelative dataDir) srcFiles
     mapM_ cp $ zip srcFiles destFiles
+
+    return ()
     where createDir = createDirectoryIfMissing True
       
 -- only source dirs
 getSourceDirs :: FilePath -> IO [FilePath]
-getSourceDirs dataDir = filterM doesDirectoryExist =<< getSourceData dataDir
+getSourceDirs dataDir = filterM doesDirectoryExist  =<< getSourceData dataDir
 
 -- only source files
 getSourceFiles :: FilePath -> IO [FilePath]

@@ -1,4 +1,4 @@
-module App.Logger (
+module Logger (
       LoggerHandle
     , setupLogger
     , teardownLogger
