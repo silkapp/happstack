@@ -91,7 +91,7 @@ findWithHandler errHandler recurse filter path =
             filteredPaths <- forM names $ \name -> do
                 let path' = dir </> name
                 unsafeInterleaveIO $ E.handle (errHandler path')
-                    (F.getSymbolicLinkStatus path >>= visit path' depth)
+                    (F.getSymbolicLinkStatus path' >>= visit path' depth)
             filterPath dir depth dirSt (concat filteredPaths)
         filterPath path' depth st result =
             return $ if evalFI filter path' depth st
