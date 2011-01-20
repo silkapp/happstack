@@ -32,7 +32,23 @@ Executable guestbook-server
  hs-source-dirs: src
 
  GHC-Options: -threaded -Wall -Wwarn -O2 -fno-warn-name-shadowing -fno-warn-missing-signatures -fwarn-tabs -fno-warn-unused-binds -fno-warn-orphans -fwarn-unused-imports
- Build-depends: happstack-state, happstack-server, hslogger, mtl, old-time, old-locale, hsx, hsp, happstack, utf8-string, happstack-data, extensible-exceptions, happstack-util
+ Build-depends: extensible-exceptions,
+                happstack,
+                happstack-data,
+                happstack-hsp,
+                happstack-server,
+                happstack-state,
+                happstack-util,
+                hsp,
+                hsx,
+                hslogger,
+                mtl,
+                old-time,
+                old-locale,
+                utf8-string
+
+
+
  if !os(windows)
    -- Cabal has a bug on windows and cannot find trhsx
    Build-Tools: trhsx

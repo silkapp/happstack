@@ -61,15 +61,8 @@ Flag tests
     Default: False
 
 Library
-  exposed-modules:     Happstack.Server.HSP.HTML
-                       Happstack.Server.HSX
-                       Happstack.Server.HStringTemplate
-                       Happstack.State.ClockTime
-                       HSP.Identity
-                       HSP.IdentityT
-                       HSP.ServerPartT
-                       HSP.WebT
-                       HSP.Google.Analytics
+  exposed-modules:     Happstack.Server.HStringTemplate
+                       Happstack.State.ClockTime                       
   if flag(tests)
     Exposed-modules:   Happstack.Tests
   other-modules:       Paths_happstack
@@ -81,15 +74,11 @@ Library
                        happstack-server >= 0.5 && < 0.6,
                        happstack-state  >= 0.5 && < 0.6,
                        happstack-util   >= 0.5 && < 0.6,
-                       harp             >= 0.4 && < 0.5,
                        hslogger,
-                       hsx >= 0.7 && < 0.10,
-                       hsp >= 0.5.2 && < 0.7,
                        HStringTemplate >= 0.4.3 && < 0.7,
                        mtl >= 1.1 && < 2.1,
-                       old-time,
-                       utf8-string,
-                       text >= 0.10 && < 0.12
+                       old-time
+
                        
   if flag(base4)
     Build-Depends:     base >= 4 && < 5, syb
