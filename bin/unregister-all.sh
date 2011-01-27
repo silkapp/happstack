@@ -1,5 +1,6 @@
 #!/bin/sh
 echo "unregistering all cabal packages" && \
+ghc-pkg unregister happstack-hstringtemplate --user
 ghc-pkg unregister happstack-hsp    --user
 ghc-pkg unregister happstack-heist  --user
 ghc-pkg unregister happstack-hamlet --user

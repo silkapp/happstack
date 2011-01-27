@@ -14,7 +14,7 @@ Cabal-version:       >=1.6
 
 source-repository head
     type:     darcs
-    subdir:   happstack-heist
+    subdir:   happstack-hsp
     location: http://patch-tag.com/r/mae/happstack
 
 Library

@@ -61,22 +61,17 @@ Flag tests
     Default: False
 
 Library
-  exposed-modules:     Happstack.Server.HStringTemplate
-                       Happstack.State.ClockTime                       
+  exposed-modules:     Happstack.State.ClockTime                       
   if flag(tests)
     Exposed-modules:   Happstack.Tests
   other-modules:       Paths_happstack
 
   build-depends:       base >= 3,
-                       bytestring,
                        happstack-data   >= 0.5 && < 0.6,
                        happstack-ixset  >= 0.5 && < 0.6,
                        happstack-server >= 0.5 && < 0.6,
                        happstack-state  >= 0.5 && < 0.6,
                        happstack-util   >= 0.5 && < 0.6,
-                       hslogger,
-                       HStringTemplate >= 0.4.3 && < 0.7,
-                       mtl >= 1.1 && < 2.1,
                        old-time
 
                        

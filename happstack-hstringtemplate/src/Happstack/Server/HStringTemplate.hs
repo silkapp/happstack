@@ -27,7 +27,10 @@ instance ToMessage (StringTemplate String) where
     toMessage = L.pack . render
 
 -- | @webST name attrs@ renders a name template with attrs
-webST :: (MonadIO m) => String -> [(String, String)] -> m Response
+webST :: (MonadIO m) => 
+         String  -- ^ template name
+      -> [(String, String)] -- ^ key/value attributes
+      -> m Response
 webST name attrs = do
   grp :: STGroup String <- liftIO $ directoryGroupLazy "templates"
   case getStringTemplate name grp of
