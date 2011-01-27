@@ -14,9 +14,9 @@ import Happstack.Server
 
 
 -- |turn a 'Hamlet' template into a Happstack 'Response'
-hamletToResponse :: (url -> [(String, String)] -> String) -> -- ^ function to 'url' values in the template into their 'String' representation
-                    Hamlet url -> -- ^ a 'Hamlet' template
-                    Response
+hamletToResponse :: (url -> [(String, String)] -> String) -- ^ function to 'url' values in the template into their 'String' representation
+                 -> Hamlet url  -- ^ a 'Hamlet' template
+                 -> Response
 hamletToResponse showFn hamlet = 
     let msg = renderHamlet showFn hamlet
      in toResponse_ (B.pack "text/html; charset=UTF-8") msg
