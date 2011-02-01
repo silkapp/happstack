@@ -1,3 +1,4 @@
+-- | This module provides support for using HStringTemplate with Happstack. <http://hackage.haskell.org/package/HStringTemplate>
 {-# LANGUAGE ScopedTypeVariables, FlexibleInstances, ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HStringTemplate (webST) where

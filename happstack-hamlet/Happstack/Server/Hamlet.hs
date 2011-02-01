@@ -1,3 +1,4 @@
+-- |This module provides support for using Hamlet with Happstack. Hamlet provides type-safe HTML generation. More information can be found at <http://patch-tag.com/r/mae/happstack/snapshot/current/content/pretty/happstack-hamlet/demo.hs> and <http://hackage.haskell.org/package/hamlet>.
 {-# LANGUAGE QuasiQuotes, ScopedTypeVariables, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
 module Happstack.Server.Hamlet 
     ( hamletToResponse 
