@@ -1,0 +1,7 @@
+Happstack is a modular Haskell web development framework. It includes a fast HTTP server, a scalable, type-safe persistence layer, multiple templating options, and more.
+
+Homepage: <http://www.happstack.com/>
+
+A cookbook-style introduction to Happstack and can be found here: <http://www.happstack.com/docs/crashcourse/index.html>
+
+Additional Documentation: <http://www.happstack.com/docs>

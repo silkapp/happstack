@@ -26,7 +26,6 @@ ghc-pkg field hamlet name && ARGS="$ARGS -i ../../happstack-hamlet/dist/doc/html
 ghc-pkg field hsp name && ARGS="$ARGS   -i ../../happstack-hsp/dist/doc/html/happstack-hsp,happstack-hsp/dist/doc/html/happstack-hsp/happstack-hsp.haddock"
 ghc-pkg field HStringTemplate name && ARGS="$ARGS -i ../../happstack-hstringtemplate/dist/doc/html/happstack-hstringtemplate,happstack-hstringtemplate/dist/doc/html/happstack-hstringtemplate/happstack-hstringtemplate.haddock"
 
-
-haddock -t "Welcome to Happstack" -o doc/html --gen-contents --gen-index  $ARGS
+haddock -t "Welcome to Happstack" -o doc/html --gen-contents --gen-index --prologue haddock-prologue.txt  $ARGS
 
 echo "Done"
