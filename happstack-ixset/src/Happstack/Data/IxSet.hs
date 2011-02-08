@@ -594,7 +594,7 @@ ix @+ list = List.foldl' union empty        $ map (ix @=) list
 -- | Creates the subset that matches all the provided indexes.
 (@*) :: (Indexable a, Typeable a, Ord a, Typeable k)
      => IxSet a -> [k] -> IxSet a
-ix @* list = List.foldl' intersection empty $ map (ix @=) list
+ix @* list = List.foldl' intersection ix $ map (ix @=) list
 
 -- | Returns the subset with an index equal to the provided key.  The
 -- set must be indexed over key type, doing otherwise results in
