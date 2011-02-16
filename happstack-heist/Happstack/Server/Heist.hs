@@ -9,6 +9,7 @@ module Happstack.Server.Heist
     , render
     ) where
 
+import Blaze.ByteString.Builder                (toLazyByteString)
 import Control.Monad                           (MonadPlus(mzero), msum)
 import Control.Monad.Trans                     (MonadIO)
 import           Data.ByteString.Char8         (ByteString)
@@ -44,10 +45,10 @@ templateReloader td = do
 -- | render the specified template
 render:: (MonadPlus m, MonadIO m) => 
          TemplateDirectory m  -- ^ 'TemplateDirectory' handle
-      -> ByteString -- ^ template name
+      -> ByteString           -- ^ template name
       -> m Response
 render td template = do
     ts    <- getDirectoryTS td
-    bytes <- renderTemplate ts template
-    flip (maybe mzero) bytes $ \x -> do
-        return (toResponseBS (B.pack "text/html; charset=utf-8") (L.fromChunks [x]))
+    t     <- renderTemplate ts template
+    flip (maybe mzero) t $ \(builder, mimeType) -> do
+        return (toResponseBS mimeType (toLazyByteString builder))
