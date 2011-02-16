@@ -5,7 +5,6 @@ cd ..\happstack-state   && cabal haddock --hyperlink-source --internal
 cd ..\happstack-ixset   && cabal haddock --hyperlink-source --internal
 cd ..\happstack-server  && cabal haddock --hyperlink-source --internal
 cd ..\happstack-hamlet  && cabal haddock --hyperlink-source --internal
-cd ..\happstack-wai     && cabal haddock --hyperlink-source --internal
 cd ..\happstack         && cabal haddock --hyperlink-source --internal
 cd ..
 
