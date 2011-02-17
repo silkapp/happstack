@@ -1,5 +1,5 @@
 Name:                happstack
-Version:             0.5.1
+Version:             6.0.0
 Synopsis:            The haskell application server stack + code generation
 Description:         The haskell application server stack
 License:             BSD3
@@ -67,11 +67,11 @@ Library
   other-modules:       Paths_happstack
 
   build-depends:       base >= 3,
-                       happstack-data   >= 0.5 && < 0.6,
-                       happstack-ixset  >= 0.5 && < 0.6,
-                       happstack-server >= 0.5 && < 0.6,
-                       happstack-state  >= 0.5 && < 0.6,
-                       happstack-util   >= 0.5 && < 0.6,
+                       happstack-data   >= 6.0 && < 6.1,
+                       happstack-ixset  >= 6.0 && < 6.1,
+                       happstack-server >= 6.0 && < 6.1,
+                       happstack-state  >= 6.0 && < 6.1,
+                       happstack-util   >= 6.0 && < 6.1,
                        old-time
 
                        

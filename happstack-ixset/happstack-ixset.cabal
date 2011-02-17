@@ -1,5 +1,5 @@
 Name:                happstack-ixset
-Version:             0.5.1
+Version:             6.0.0
 Synopsis:            Efficient relational queries on Haskell sets. 
 Description:         
     Just pick which parts of your data structures you want indexed
@@ -41,8 +41,8 @@ Library
 
 
   Build-Depends:       containers,
-                       happstack-data >= 0.5 && < 0.6,
-                       happstack-util >= 0.5 && < 0.6,
+                       happstack-data >= 6.0 && < 6.1,
+                       happstack-util >= 6.0 && < 6.1,
                        mtl >= 1.1 && < 2.1,
                        template-haskell
 
