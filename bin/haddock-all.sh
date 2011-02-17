@@ -1,5 +1,11 @@
 #!/bin/sh
 
+#
+# To build for uploading to happstack.com do:
+#
+#  HTML_LOCATION=http://www.happstack.com/docs/6.0.0/ ./bin/haddock-all.sh
+# 
+
 set -e
 
 # package list

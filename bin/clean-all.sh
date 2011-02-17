@@ -10,5 +10,6 @@ cd ../happstack-hsp     && cabal clean && \
 cd ../happstack-hamlet  && cabal clean && \
 cd ../happstack-wai     && cabal clean && \
 cd ../happstack-heist   && cabal clean && \
+cd ../happstack-plugins && cabal clean && \
 cd ../happstack         && cabal clean && \
 cd .. && echo "Done"

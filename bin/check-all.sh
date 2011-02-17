@@ -4,10 +4,10 @@ echo "Creating source distribution tarballs in dist"
 for package in happstack-util happstack-data happstack-ixset happstack-state happstack-server happstack happstack-hamlet happstack-heist happstack-hsp happstack-hstringtemplate happstack-plugins
 do
     cd $package
-    cabal configure --builddir=../sdist
-    cabal sdist     --builddir=../sdist
+    echo "checking $package..."
+    cabal check
     cd ..
 
 done
 
-echo "sdist-all.sh done."
+echo "check-all.sh done."
