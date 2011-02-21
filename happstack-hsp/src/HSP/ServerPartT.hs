@@ -73,6 +73,12 @@ instance (Monad m) => EmbedAsChild (ServerPartT m) Char where
 instance (Monad m) => EmbedAsChild (ServerPartT m) String where
     asChild = XMLGenT . return . (:[]) . SChild . pcdata
 
+instance (Monad m) => EmbedAsChild (ServerPartT m) Int where
+    asChild = XMLGenT . return . (:[]) . SChild . pcdata . show
+
+instance (Monad m) => EmbedAsChild (ServerPartT m) Integer where
+    asChild = XMLGenT . return . (:[]) . SChild . pcdata . show
+
 instance (Monad m) => EmbedAsChild (ServerPartT m) XML where
     asChild = XMLGenT . return . (:[]) . SChild
 
