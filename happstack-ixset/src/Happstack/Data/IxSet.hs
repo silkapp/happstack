@@ -69,7 +69,7 @@ index with this type.  Now you can do:
 
 > newtype FirstAuthor = FirstAuthor Email
 >   
-> getFirstAuthor (Entry author _ _ _ _) = FirstAuthor author
+> getFirstAuthor (Entry author _ _ _ _) = [FirstAuthor author]
 >
 > instance Indexable Entry where
 >     ...
