@@ -14,6 +14,7 @@ Cabal-Version:       >= 1.6
 data-files:          CHANGELOG
                      CREDITS
                      RELEASE_NOTES
+                     templates/project/COPYING
                      templates/project/bin/run.bat
                      templates/project/bin/run-interactive.bat
                      templates/project/bin/build.sh
