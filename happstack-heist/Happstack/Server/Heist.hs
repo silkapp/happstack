@@ -19,7 +19,6 @@ import Happstack.Server                        (Response, ServerMonad, askRq, nu
 import System.FilePath                         (joinPath)
 import Text.Templating.Heist                   (renderTemplate)
 import Text.Templating.Heist.TemplateDirectory (TemplateDirectory, getDirectoryTS, reloadTemplateDirectory)
-import qualified  Text.XML.Expat.Tree          as X
 
 -- | serve the heist templates from the 'TemplateDirectory m'
 templateServe :: (ServerMonad m, MonadPlus m, MonadIO m) =>
