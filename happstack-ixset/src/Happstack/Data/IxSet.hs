@@ -107,6 +107,8 @@ module Happstack.Data.IxSet
      -- * Conversion
      toSet,
      toList,
+     toAscList,
+     toDescList,
      getOne,
      getOneOr,
 
@@ -139,6 +141,8 @@ module Happstack.Data.IxSet
      getGTE,
      getRange,
      groupBy,
+     groupAscBy,
+     groupDescBy,
 
      -- * Index creation helpers
      flatten,
@@ -489,6 +493,22 @@ size = Set.size . toSet
 toList :: Ord a => IxSet a -> [a]
 toList = Set.toList . toSet
 
+-- | Converts an 'IxSet' to its list of elements.
+--
+-- List will be sorted in ascending order by the index 'k'.
+--
+-- The list may contain duplicate entries if a single value produces multiple keys.
+toAscList :: forall k a. (Indexable a, Typeable a, Typeable k) => Proxy k -> IxSet a -> [a]
+toAscList _ ixset = concatMap snd (groupAscBy ixset :: [(k, [a])])
+
+-- | Converts an 'IxSet' to its list of elements.
+--
+-- List will be sorted in descending order by the index 'k'.
+--
+-- The list may contain duplicate entries if a single value produces multiple keys.
+toDescList :: forall k a. (Indexable a, Typeable a, Typeable k) => Proxy k -> IxSet a -> [a]
+toDescList _ ixset = concatMap snd (groupDescBy ixset :: [(k, [a])])
+
 -- | If the 'IxSet' is a singleton it will return the one item stored in it.
 -- If 'IxSet' is empty or has many elements this function returns 'Nothing'.
 getOne :: Ord a => IxSet a -> Maybe a
@@ -641,12 +661,39 @@ getRange k1 k2 ixset = getGTE k1 (getLT k2 ixset)
 
 -- | Returns lists of elements paired with the indexes determined by
 -- type inference.
-groupBy::(Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
+groupBy :: (Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
 groupBy (IxSet indexes) = collect indexes
     where
     collect [] = [] -- FIXME: should be an error
     collect (Ix index _:is) = maybe (collect is) f (cast index)
     f = mapSnd Set.toList . Map.toList
+
+-- | Returns lists of elements paired with the indexes determined by
+-- type inference.
+--
+-- The resulting list will be sorted in ascending order by 'k'.
+-- The values in '[t]' will be sorted in ascending order as well.
+groupAscBy :: (Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
+groupAscBy (IxSet indexes) = collect indexes
+    where
+    collect [] = [] -- FIXME: should be an error
+    collect (Ix index _:is) = maybe (collect is) f (cast index)
+    f = mapSnd Set.toAscList . Map.toAscList
+
+-- | Returns lists of elements paired with the indexes determined by
+-- type inference.
+--
+-- The resulting list will be sorted in descending order by 'k'.
+-- 
+-- NOTE: The values in '[t]' are currently sorted in ascending
+-- order. But this may change if someone bothers to add
+-- 'Set.toDescList'. So do not rely on the sort order of '[t]'.
+groupDescBy :: (Typeable k,Typeable t) =>  IxSet t -> [(k, [t])]
+groupDescBy (IxSet indexes) = collect indexes
+    where
+    collect [] = [] -- FIXME: should be an error
+    collect (Ix index _:is) = maybe (collect is) f (cast index)
+    f = mapSnd Set.toAscList . Map.toDescList
     
 --query impl function
 
