@@ -1,6 +1,7 @@
+-- |This module provides, @instance 'XMLGenerator' ('ServerPartT' m)@
 {-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module HSP.ServerPartT where
+module HSP.ServerPartT () where
 
 import HSP
 import Control.Monad              (liftM)
