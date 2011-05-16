@@ -49,17 +49,17 @@ instance (Monad m, Functor m) => IsAttrValue (ServerPartT m) TL.Text where
 instance (Monad m) => HSX.EmbedAsAttr (ServerPartT m) Attribute where
     asAttr = return . (:[]) . SAttr 
 
-instance (Monad m) => HSX.EmbedAsAttr (ServerPartT m) (Attr String Char) where
+instance (Monad m, IsName n) => HSX.EmbedAsAttr (ServerPartT m) (Attr n Char) where
     asAttr (n := c)  = asAttr (n := [c])
 
-instance (Monad m) => HSX.EmbedAsAttr (ServerPartT m) (Attr String String) where
+instance (Monad m, IsName n) => HSX.EmbedAsAttr (ServerPartT m) (Attr n String) where
     asAttr (n := str)  = asAttr $ MkAttr (toName n, pAttrVal str)
 
-instance (Monad m) => HSX.EmbedAsAttr (ServerPartT m) (Attr String Bool) where
+instance (Monad m, IsName n) => HSX.EmbedAsAttr (ServerPartT m) (Attr n Bool) where
     asAttr (n := True)  = asAttr $ MkAttr (toName n, pAttrVal "true")
     asAttr (n := False) = asAttr $ MkAttr (toName n, pAttrVal "false")
 
-instance (Monad m) => HSX.EmbedAsAttr (ServerPartT m) (Attr String Int) where
+instance (Monad m, IsName n) => HSX.EmbedAsAttr (ServerPartT m) (Attr n Int) where
     asAttr (n := i)  = asAttr $ MkAttr (toName n, pAttrVal (show i))
 
 instance (Monad m, Functor m, IsName n) => (EmbedAsAttr (ServerPartT m) (Attr n TL.Text)) where
