@@ -1,6 +1,15 @@
-JMacro is a library that makes it easy to generate javascript in
-Haskell. This is useful even if are just trying to add a little bit of
-javascript code to your HTML templates.
+#ifdef WOOT
+To generate .html from this file run:
+
+cpphs -DHsColour  --noline Examples.lhs  | HsColour -lit -css  | markdown --html4tags > examples.html
+
+And remove the extra <p></p> around the <html></html> tags.
+#endif
+
+<a href="http://www.haskell.org/haskellwiki/Jmacro">JMacro</a> is a
+library that makes it easy to generate javascript in Haskell. This is
+useful even if are just trying to add a little bit of javascript code
+to your HTML templates.
 
 The syntax used by JMacro is almost identical to javascript. So, you
 do not have to learn some special DSL to use it. In fact, JMacro can
@@ -19,17 +28,17 @@ work with most javascript you find in the wild.
    Haskell values into the javascript code. It also makes it easy to
    programmatically generate javascript code.
 
-The happstack-jmacro library makes it easy to use JMacro with Happstack and HSP.
+The happstack-jmacro library makes it easy to use JMacro with <a href="http://www.happstack.com/">Happstack</a> and HSP.
 
 The following should get you started.
 
 The JMacro library does not require any external
-pre-processors. Instead it uses the magic of QuasiQuotation. 
-http://haskell.org/haskellwiki/Quasiquotation
+pre-processors. Instead it uses the magic of <a
+href="http://haskell.org/haskellwiki/Quasiquotation">QuasiQuotation</a>.
 
 So, we need to enabled the QuasiQuotes LANGUAGE extension:
 
-> {-# LANGUAGE FlexibleInstances, GeneralizedNewtypeDeriving, TypeSynonymInstances, QuasiQuotes #-}
+> {-# LANGUAGE CPP, FlexibleInstances, GeneralizedNewtypeDeriving, TypeSynonymInstances, QuasiQuotes #-}
 
 In this example we are also using HSX, which does require a
 pre-processor. The following line will automatically run the
@@ -46,15 +55,17 @@ Next we have a boatload if imports:
 > import Control.Monad.Trans (liftIO)
 > import qualified Data.Map as Map
 > import Data.Maybe (fromMaybe)
+> import Data.Unique
 > import Happstack.Server
 > import Happstack.Server.HSP.HTML    (defaultTemplate) -- ^ also imports ToMessage instance for XML type
-> import Happstack.Server.HSP.JMacro      (IntegerSupply(..), nextInteger')
+> import Happstack.Server.JMacro      () -- ToMessage instance for JStat
 > import HSP
 > import HSP.ServerPartT ()           -- ^ XMLGenerator instance for ServerPartT
+> import HSX.JMacro      (IntegerSupply(..), nextInteger') -- ^ EmbedAsChild and EmbedAsAttr instances for JStat
 > import Language.Javascript.JMacro   
 > import System.Random
 
-In order to ensure that each <script> tag generates unique variables
+In order to ensure that each &lt;script&gt; tag generates unique variables
 names, we need a source of prefixes. Any easy way to do that is to
 wrap the ServerPartT monad around a StateT monad that supplies
 integers:
@@ -66,7 +77,9 @@ integers:
 
 The nextInteger' helper function has the type:
 
-]  nextInteger' :: (MonadState Integer m) => m Integer
+#ifdef HsColour
+>  nextInteger' :: (MonadState Integer m) => m Integer
+#endif
 
 To use JMacroPart with simpleHTTP, we just evaluate the StateT monad:
 
@@ -146,11 +159,15 @@ counts separately:
 Of course, sometimes we want the code blocks to share a global
 variable. We can easily do that by changing the line:
 
-]   var clickCnt = 0;
+#ifdef HsColour
+>   var clickCnt = 0;
+#endif
 
 to
 
-]   var !clickCnt = 0;
+#ifdef HsColour
+>   var !clickCnt = 0;
+#endif
 
 Now all the copies of clickMe2 will share the same counter:
 
@@ -235,8 +252,10 @@ JMacro can embed 'primitives' such as Int, Bool, Char, String, etc, by default. 
 
 To pass these values into the generated javascript, we simply create a ToJExpr instance:
 
-] class ToJExpr a where
-]   toJExpr :: a -> JExpr
+#ifdef HsColour
+> class ToJExpr a where
+>   toJExpr :: a -> JExpr
+#endif
 
 For Fahrenheit, we were actually able to derive the ToJExpr instance automatically (aka, deriving (ToJExpr)).
 
@@ -269,10 +288,12 @@ Now we can splice a random weather report into our javascript:
 >              |] %>
 >         </div>
 
-ToJExpr has an instance for JSValue from the json library, http://hackage.haskell.org/package/json-0.4.4. So, if your type already has a JSON istance, you can trivially create a ToJExpr instance for it:
+ToJExpr has an instance for JSValue from the <a href="http://hackage.haskell.org/package/json-0.4.4">json library</a>. So, if your type already has a JSON istance, you can trivially create a ToJExpr instance for it:
 
-] instance ToJExpr Foo where
-]   toJExpr = toJExpr . showJSON
+#ifdef HsColour
+> instance ToJExpr Foo where
+>   toJExpr = toJExpr . showJSON
+#endif
 
 So far we have use jmacro to generate javascript that is embedded in HTML. We can also use it to create standalone javascript files.
 
@@ -307,6 +328,8 @@ Next we have an html page that includes the external script, and calls jmacro;
 >              </div>
 >          ]
 
+And little page that links to all the demos:
+
 > demosPart :: JMacroPart Response
 > demosPart =
 >     toResponse <$> defaultTemplate "demos" ()
@@ -320,6 +343,8 @@ Next we have an html page that includes the external script, and calls jmacro;
 >                     <li><a href="/external">External</a></li>
 >                    </ul>
 
+and our routes:
+
 > handlers :: JMacroPart Response
 > handlers = 
 >    msum [ dir "hello" helloJMacro
@@ -331,3 +356,14 @@ Next we have an html page that includes the external script, and calls jmacro;
 >         , externalPart
 >         , demosPart
 >         ]
+
+If you do not like having to use the StateT monad transformer to
+generate names, there are other options. For example, we could use
+Data.Unique to generate unique names:
+
+#ifdef HsColour
+> instance IntegerSupply (ServerPartT IO) where
+>     nextInteger = fmap (fromIntegral . (`mod` 1024) . hashUnique) (liftIO newUnique)
+#endif
+
+This should be safe as long as you have less than 1024 different jmacro blocks on a single page.
