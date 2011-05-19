@@ -51,8 +51,15 @@ instance (XMLGenerator m, IntegerSupply m) => EmbedAsChild m JStat where
       do i <- lift nextInteger
          asChild $ genElement (Nothing, "script")
                     [asAttr ("type" := "text/javascript")]
-                    [asChild (render $ jsToDoc $ jsSaturate (Just ('i' : show i)) jstat)]
-
+                    [asChild (escapeForHtml $ render $ jsToDoc $ jsSaturate (Just ('i' : show i)) jstat)]
+      where
+        escapeForHtml :: String -> String
+        escapeForHtml [] = []
+        escapeForHtml [c] = [c]
+        escapeForHtml (b:c:cs)
+            | b == '<' && c == '/' 
+                        = b : '\\' : c : (escapeForHtml cs)
+            | otherwise = b : escapeForHtml (c : cs)
 
 instance (IntegerSupply m, IsName n, EmbedAsAttr m (Attr Name String)) => EmbedAsAttr m (Attr n JStat) where
   asAttr (n := jstat) = 
