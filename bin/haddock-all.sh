@@ -16,6 +16,8 @@ ghc-pkg field hamlet name          && PACKAGES="$PACKAGES happstack-hamlet"
 ghc-pkg field hsp name             && PACKAGES="$PACKAGES happstack-hsp"
 ghc-pkg field HStringTemplate name && PACKAGES="$PACKAGES happstack-hstringtemplate"
 ghc-pkg field heist name           && PACKAGES="$PACKAGES happstack-heist"
+ghc-pkg field jmacro name          && PACKAGES="$PACKAGES happstack-jmacro"
+ghc-pkg field jmacro name && ghc-pkg field hsx name && PACKAGES="$PACKAGES hsx-jmacro"
 
 # output directory
 DESTDIR=$(pwd)/haddock
