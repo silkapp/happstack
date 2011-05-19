@@ -16,7 +16,7 @@ Library
   Exposed-modules:   HSX.JMacro
 
   Build-depends:       
-                     base,
+                     base >4 && <5,
                      hsx,
                      jmacro,
                      mtl,
