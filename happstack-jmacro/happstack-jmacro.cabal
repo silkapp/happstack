@@ -16,7 +16,7 @@ Cabal-version:       >=1.2
 Library
   Exposed-modules:     Happstack.Server.JMacro
   Build-depends:
-     base,
+     base >4 && <5,
      bytestring,
      jmacro,
      happstack-server,
