@@ -27,7 +27,7 @@ module HSX.JMacro where
 import Control.Monad.Trans             (lift)
 import Control.Monad.State             (MonadState(get,put))
 import HSX.XMLGenerator                (XMLGenerator(..), XMLGen(..), EmbedAsChild(..), EmbedAsAttr(..), IsName(..), Attr(..), Name)
-import Language.Javascript.JMacro      (JStat(..), jsToDoc, jsSaturate, renderJs)
+import Language.Javascript.JMacro      (JStat(..), jsToDoc, jsSaturate, renderPrefixJs)
 import Text.PrettyPrint.HughesPJ       (Style(..), Mode(..), render, renderStyle, style)
 
 class IntegerSupply m where 
@@ -51,19 +51,11 @@ instance (XMLGenerator m, IntegerSupply m) => EmbedAsChild m JStat where
       do i <- lift nextInteger
          asChild $ genElement (Nothing, "script")
                     [asAttr ("type" := "text/javascript")]
-                    [asChild (escapeForHtml $ render $ jsToDoc $ jsSaturate (Just ('i' : show i)) jstat)]
-      where
-        escapeForHtml :: String -> String
-        escapeForHtml [] = []
-        escapeForHtml [c] = [c]
-        escapeForHtml (b:c:cs)
-            | b == '<' && c == '/' 
-                        = b : '\\' : c : (escapeForHtml cs)
-            | otherwise = b : escapeForHtml (c : cs)
+                    [asChild (render $ renderPrefixJs (show i) jstat)]
 
 instance (IntegerSupply m, IsName n, EmbedAsAttr m (Attr Name String)) => EmbedAsAttr m (Attr n JStat) where
   asAttr (n := jstat) = 
       do i <- lift nextInteger
-         asAttr $ (toName n := (renderStyle lineStyle $ jsToDoc $ jsSaturate (Just ('i' : show i)) jstat))
+         asAttr $ (toName n := (renderStyle lineStyle $ renderPrefixJs (show i) jstat))
       where
         lineStyle = style { mode= OneLineMode }
