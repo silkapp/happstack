@@ -3,6 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Happstack.Server.HSX where
 
+import Control.Applicative         (Alternative(..))
 import Control.Monad               (MonadPlus(..))
 import Control.Monad.Trans         (MonadIO(..))
 import Happstack.Server.SimpleHTTP (ServerMonad(..), FilterMonad(..), WebMonad(..), HasRqData(..), Happstack(..), Response)
@@ -25,4 +26,4 @@ instance (HasRqData m) => (HasRqData (XMLGenT m)) where
     localRqEnv f (XMLGenT m) = XMLGenT (localRqEnv f m)
     rqDataError = XMLGenT . rqDataError
 
-instance (MonadPlus m, Functor m, MonadIO m, ServerMonad m, FilterMonad a m, WebMonad a m, HasRqData m, a ~ Response) => Happstack (XMLGenT m)
+instance (Alternative m, MonadPlus m, Functor m, MonadIO m, ServerMonad m, FilterMonad a m, WebMonad a m, HasRqData m, a ~ Response) => Happstack (XMLGenT m)
