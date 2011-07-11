@@ -8,14 +8,13 @@ module Happstack.Server.Hamlet
 import qualified Data.ByteString.Char8      as B
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map                   as M
-import qualified Data.Text.Lazy.Encoding    as T    
-
+import           Data.Text                  (Text)
 import Text.Hamlet
 import Happstack.Server
 
 
 -- |turn a 'Hamlet' template into a Happstack 'Response'
-hamletToResponse :: (url -> [(String, String)] -> String) -- ^ function to 'url' values in the template into their 'String' representation
+hamletToResponse :: (url -> [(Text, Text)] -> Text) -- ^ function to 'url' values in the template into their 'String' representation
                  -> Hamlet url  -- ^ a 'Hamlet' template
                  -> Response
 hamletToResponse showFn hamlet = 
