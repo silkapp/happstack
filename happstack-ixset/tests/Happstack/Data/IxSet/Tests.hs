@@ -75,7 +75,7 @@ instance Indexable S where
 
 
 ixSetCheckMethodsOnDefault :: Test
-ixSetCheckMethodsOnDefault = test 
+ixSetCheckMethodsOnDefault = "ixSetCheckMethodsOnDefault" ~: test 
    [ "size is zero" ~: 0 @=? 
      size (defaultValue :: Foos)
    , "getOne returns Nothing" ~: 
@@ -103,7 +103,7 @@ foox_set_cde :: FooXs
 foox_set_cde = insert foox_e $ insert foox_d $ insert foox_c $ defaultValue
 
 ixSetCheckSetMethods :: Test
-ixSetCheckSetMethods = test 
+ixSetCheckSetMethods = "ixSetCheckSetMethods" ~: test 
    [ "size abc is 3" ~: 3 @=? 
      size foox_set_abc
    , "size cde is 3" ~: 3 @=? 
@@ -120,7 +120,7 @@ isError :: a -> IO Bool
 isError x = (x `seq` return False) `E.catch` \(ErrorCall _) -> return True
 
 badIndexSafeguard :: Test
-badIndexSafeguard = test 
+badIndexSafeguard = "badIndexSafeguard" ~: test 
                     [ "check if there is error when no first index on value" ~:
                       isError (size $ insert (BadlyIndexed 123) empty)
                     , "check if indexing with missing index" ~: 
@@ -128,7 +128,7 @@ badIndexSafeguard = test
                     ]
 
 testTriple :: Test
-testTriple = test
+testTriple = "testTriple" ~: test
              [ "check if we can find element" ~:
                1 @=? size ((insert (Triple 1 2 3) empty) 
                            @= (1::Int) @= (2::Int))
@@ -208,13 +208,13 @@ prop_any ixset idxs =
 
 prop_all :: Foos -> [Int] -> Bool
 prop_all ixset idxs = 
-    (ixset @* idxs) == foldr intersection empty (map ((@=) ixset) idxs)
+    (ixset @* idxs) == foldr intersection ixset (map ((@=) ixset) idxs)
 
 funSet :: IxSet S
 funSet = IxSet.fromList [S "", S "abc", S "def", S "abcde"]
 
 funIndexes :: Test
-funIndexes = test 
+funIndexes = "funIndexes" ~: test 
    [ "has zero length element" ~: 1 @=? 
      size (funSet @= (0 :: Int))
    , "has two lengh 3 elements" ~: 2 @=? 
@@ -230,15 +230,15 @@ allTests = "happstack-ixset" ~: [ ixSetCheckMethodsOnDefault
                                 , test (True @=? findElement 1 1)
                                 , testTriple
                                 , funIndexes
-                                , qctest prop_toAndFromXml
-                                , qctest prop_sizeEqToListLength
-                                , qctest prop_union
-                                , qctest prop_intersection
-                                , qctest prop_opers
-                                , qctest prop_sureelem
-                                , qctest prop_ranges
-                                , qctest prop_any
-                                , qctest prop_all
+                                , "prop_toAndFromXml"       ~: qctest prop_toAndFromXml
+                                , "prop_sizeEqToListLength" ~: qctest prop_sizeEqToListLength
+                                , "prop_union"              ~: qctest prop_union
+                                , "prop_union"              ~: qctest prop_intersection
+                                , "prop_opers"              ~: qctest prop_opers
+                                , "prop_sureelem"           ~: qctest prop_sureelem
+                                , "prop_ranges"             ~: qctest prop_ranges
+                                , "prop_any"                ~: qctest prop_any
+                                , "prop_all"                ~: qctest prop_all
                                 ]
 
 
