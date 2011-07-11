@@ -1,22 +1,26 @@
-{-# OPTIONS -fglasgow-exts #-}
 {-# LANGUAGE TemplateHaskell , FlexibleInstances, UndecidableInstances, IncoherentInstances, OverlappingInstances,
-             MultiParamTypeClasses, GeneralizedNewtypeDeriving, DeriveDataTypeable #-}
+             MultiParamTypeClasses, GeneralizedNewtypeDeriving, DeriveDataTypeable,
+             TypeFamilies, TypeSynonymInstances, TypeOperators #-}
 module IxState where
 
-import HAppS.State
+
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State (modify,put,get,gets)
 import Data.Generics hiding ((:+:))
-import HAppS.Data
-import HAppS.Data.IxSet
+import Happstack.Data
+import Happstack.Data.IxSet
+import Happstack.State
 
-
-newtype SesKey = SesKey Integer deriving (Read,Show,Eq,Typeable,Data,Ord) 
-newtype ETime = ETime Integer deriving (Read,Show,Eq,Typeable,Data,Ord) 
+newtype SesKey = SesKey Integer deriving (Read,Show,Eq,Typeable,Data,Ord,Serialize, Version) 
+newtype ETime = ETime Integer deriving (Read,Show,Eq,Typeable,Data,Ord, Serialize, Version) 
 data Session val = Session { sessionKey :: SesKey, sessionETime :: ETime, sessionValue :: val}  deriving (Read,Show,Eq,Typeable,Data,Ord) 
+
+instance Version (Session val)
+$(deriveSerialize ''Session)
+
 $(deriveNewData [''Session,''SesKey,''ETime])
 $(inferIxSet "Sessions" ''Session 'noCalcs [''SesKey,''ETime])
 
@@ -89,7 +93,7 @@ instance Component EntryPoint where
 
 
 runTest :: IO ()
-runTest = bracket (startSystemState (proxy EntryPoint)) closeTxControl $ \ctl ->
+runTest = bracket (startSystemState (proxy EntryPoint)) shutdownSystem $ \ctl ->
           do key1 <- update $ NewSession "5+5="
              key2 <- update $ NewSession (10::Int)
 
@@ -101,3 +105,5 @@ runTest = bracket (startSystemState (proxy EntryPoint)) closeTxControl $ \ctl ->
              n1 <- query $ NumSessions (Proxy :: Proxy (Sessions String))
              n2 <- query $ NumSessions (Proxy :: Proxy (Sessions Int))
              putStrLn $ "Session entries: " ++ show (n1+n2)
+
+main = runTest
