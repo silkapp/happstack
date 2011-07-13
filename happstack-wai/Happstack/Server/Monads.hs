@@ -1,8 +1,10 @@
 {-# LANGUAGE FunctionalDependencies, FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ScopedTypeVariables, OverloadedStrings #-}
 module Happstack.Server.Monads where
 
-import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.UTF8       as LU (fromString)
+import qualified Data.ByteString           as B
+import qualified Data.ByteString.Char8     as C
+import qualified Data.ByteString.Lazy.UTF8 as LU (fromString)
+import Data.Enumerator (Iteratee)
 import Data.Monoid
 import Control.Monad (MonadPlus(mzero), msum)
 import Control.Monad.Reader(ReaderT(..), MonadReader(ask, local))
@@ -10,15 +12,17 @@ import Control.Monad.Error(ErrorT(..), Error(strMsg), throwError)
 import Control.Monad.Maybe                       (MaybeT(MaybeT), runMaybeT)
 import Control.Monad.Writer
 import Network.Wai hiding (Request)
+import Network.HTTP.Types
 import qualified Network.Wai as Wai
-import Network.Wai.Enumerator (fromLBS)
 
 instance Error Response where
-  strMsg str = 
+  strMsg str = responseLBS statusServerError [headerContentType $ C.pack "text/plain; charset=UTF-8"] (LU.fromString str)
+{-
     Response { status = status200
-             , responseHeaders = [("Content-Type", B.pack "text/plain; charset=UTF-8")]
+             , responseHeaders = [("Content-Type", )]
              , responseBody = ResponseLBS (LU.fromString str)
              }
+-}
 
 data Request
     = Request
@@ -142,7 +146,7 @@ instance (Monad m) => MonadPlus (WebT m) where
     mplus x y =  WebT $ ErrorT $ FilterT $ (lower x) `mplus` (lower y)
         where lower = (unFilterT . runErrorT . unWebT)
               
-instance (Monad m) => FilterMonad Response (WebT m) where
+instance (Functor m, Monad m) => FilterMonad Response (WebT m) where
     setFilter f = WebT $ lift $ setFilter $ f
     composeFilter f = WebT . lift . composeFilter $ f
     getFilter     m = WebT $ ErrorT $ fmap lft $ getFilter (runErrorT $ unWebT m)
@@ -192,24 +196,24 @@ class Monad m => ServerMonad m  where
     localRq :: (Request -> Request) -> m a -> m a
 
 -- | ServerPartT is a container for processing requests and returning results
-newtype ServerPartT m a = ServerPartT { unServerPartT :: ReaderT Request (WebT m) a }
+newtype ServerPartT m a = ServerPartT { unServerPartT :: ReaderT Request (WebT (Iteratee B.ByteString m)) a }
     deriving (Monad, MonadIO, MonadPlus, Functor)
 
 instance (Monad m) => ServerMonad (ServerPartT m) where
     askRq = ServerPartT $ ask
     localRq f m = ServerPartT $ local f (unServerPartT m)
 
-runServerPartT :: ServerPartT m a -> Request -> WebT m a
+runServerPartT :: ServerPartT m a -> Request -> WebT (Iteratee B.ByteString m) a
 runServerPartT = runReaderT . unServerPartT
 
-withRequest :: (Request -> WebT m a) -> ServerPartT m a
+withRequest :: (Request -> WebT (Iteratee B.ByteString m) a) -> ServerPartT m a
 withRequest = ServerPartT . ReaderT
 
 -- | A constructor for a 'ServerPartT' when you don't care about the request.
-anyRequest :: Monad m => WebT m a -> ServerPartT m a
+anyRequest :: Monad m => WebT (Iteratee B.ByteString m) a -> ServerPartT m a
 anyRequest x = withRequest $ \_ -> x
 
-instance Monad m => FilterMonad Response (ServerPartT m) where
+instance (Functor m, Monad m) => FilterMonad Response (ServerPartT m) where
     setFilter = anyRequest . setFilter
     composeFilter = anyRequest . composeFilter
     getFilter m = withRequest $ \rq -> getFilter (runServerPartT m rq)

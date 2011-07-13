@@ -5,7 +5,6 @@ module Happstack.Server.ToMessage where
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.UTF8       as LU (fromString)
 import Network.Wai
-import Network.Wai.Enumerator (fromLBS)
 
 class ToMessage a where
     toContentType :: a -> B.ByteString

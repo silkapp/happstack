@@ -17,9 +17,9 @@ Library
                      bytestring >= 0.9 && < 0.10,
                      filepath,
                      MaybeT,
-                     mtl >= 1.1 && < 1.2,
+                     mtl == 2.*,
                      utf8-string,
-                     wai >= 0.2 && < 0.3,
+                     wai == 0.4.*,
                      wai-extra,
                      web-encodings
   Exposed-modules:   Happstack.Server.Guards
@@ -27,4 +27,6 @@ Library
                      Happstack.Server.Monads
                      Happstack.Server.ToMessage
                      Happstack.Server.Simple
+                     Happstack.Server.Run
+                     Happstack.Server.Warp
   ghc-options:       -Wall
