@@ -3,6 +3,7 @@ echo "Building and installing all cabal packages" && \
 cd happstack-util       && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
 cd ../happstack-data    && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
 cd ../happstack-state   && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
+cd ../ixset             && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
 cd ../happstack-ixset   && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
 cd ../happstack-server  && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \
 cd ../happstack         && runhaskell Setup configure --user "$@" && runhaskell Setup build && runhaskell Setup install && \

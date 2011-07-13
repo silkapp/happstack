@@ -1,5 +1,5 @@
-Name:                happstack-ixset
-Version:             6.1.0
+Name:                ixset
+Version:             1.0.0
 Synopsis:            Efficient relational queries on Haskell sets. 
 Description:         
     Just pick which parts of your data structures you want indexed
@@ -19,14 +19,10 @@ Cabal-Version:       >= 1.6
 
 source-repository head
     type:     darcs
-    subdir:   happstack-ixset
+    subdir:   ixset
     location: http://patch-tag.com/r/mae/happstack
 
 flag base4
-
-Flag tests
-    Description: Build the testsuite, and include the tests in the library
-    Default: False
 
 Library
   if flag(base4)
@@ -34,35 +30,26 @@ Library
   else
     Build-Depends:     base < 4
 
-  Build-Depends:       happstack-data >= 6.0 && < 6.1,
-                       ixset
+  if impl(ghc >= 6.12.1)
+    Build-Depends:    syb-with-class >= 0.6.1
+  else
+    Build-Depends:    syb-with-class < 0.6.1
+
+
+  Build-Depends:       containers,
+                       safecopy,
+                       template-haskell
 
   hs-source-dirs:      src
-  if flag(tests)
-    hs-source-dirs:    tests
-    Build-Depends:     QuickCheck >= 2 && <3, HUnit,
-                       happstack-util, containers
   Exposed-modules:     
-                       Happstack.Data.IxSet
-                       Happstack.Data.IxSet.Ix
-  if flag(tests)
-    Exposed-modules:   
-                       Happstack.Data.IxSet.Tests
+                       Data.IxSet
+                       Data.IxSet.Ix
 
-  extensions:          ScopedTypeVariables
+  extensions:          DeriveDataTypeable, FlexibleInstances, OverlappingInstances, 
+                       TemplateHaskell, UndecidableInstances
 
   if impl(ghc >= 6.12)
-     ghc-options:      -O2 -Wall -fno-warn-unused-do-bind -fno-warn-orphans
+     ghc-options:      -Wall -fno-warn-unused-do-bind
   else
-     ghc-options:      -O2 -Wall -fno-warn-orphans
+     ghc-options:      -Wall
   GHC-Prof-Options:    -auto-all
-
-Executable happstack-ixset-tests
-  Main-Is: Test.hs
-  GHC-Options: -threaded
-  hs-source-dirs: tests, src
-  if flag(tests)
-    Buildable: True
-    Build-Depends:     QuickCheck >= 2 && <3, HUnit
-  else
-    Buildable: False

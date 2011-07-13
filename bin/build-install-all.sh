@@ -4,6 +4,7 @@ cd happstack-util       && cabal install "$@" && \
 cd ../happstack-data    && cabal install "$@" && \
 cd ../happstack-state   && cabal install "$@" && \
 cd ../happstack-ixset   && cabal install "$@" && \
+cd ../ixset             && cabal install "$@" && \
 cd ../happstack-server  && cabal install "$@" && \
 cd ../happstack         && cabal install "$@" && \
 cd ../happstack-hsp     && if ghc-pkg field hsp name       > /dev/null 2> /dev/null ; then cabal install "$@"  ; else echo "happstack-hsp skipped because hsp is not installed." ; fi && \

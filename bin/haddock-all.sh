@@ -10,7 +10,7 @@ set -e
 
 # package list
 ## required
-PACKAGES="happstack-util happstack-data happstack-state happstack-ixset happstack-server happstack"
+PACKAGES="happstack-util happstack-data happstack-state ixset happstack-ixset happstack-server happstack"
 ## optional
 ghc-pkg field hamlet name          && PACKAGES="$PACKAGES happstack-hamlet"
 ghc-pkg field hsp name             && PACKAGES="$PACKAGES happstack-hsp"
