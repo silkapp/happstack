@@ -84,13 +84,18 @@ func ph@(PluginHandle (_inotify, objMap)) fp sym =
                (Just (_, Left errs)) -> return $ Left errs
                (Just (_, Right (_, dynSym))) -> return (Right $ fromSym dynSym)
 
+replaceSuffix :: FilePath -> String -> FilePath
+replaceSuffix p sfx = case [ i | (i,'.') <- zip [0..] p ] of
+                        [] -> p++sfx
+                        ixs -> take (last ixs) p ++ '.':sfx
+
 rebuild :: PluginHandle   -- ^ list of currently loaded modules/symbols
         -> FilePath -- ^ source file to compile
         -> Bool
         -> IO ()
 rebuild p@(PluginHandle (inotify, objMap)) fp forceReload =
     do putStrLn ("Rebuilding " ++ fp)
-       makeStatus <- makeAll fp [] -- FIXME: allow user to specify additional flags, such as -O2
+       makeStatus <- makeAll fp ["-odir",".","-hidir",".","-o",replaceSuffix fp "o"] -- FIXME: allow user to specify additional flags, such as -O2
        case makeStatus of
          (MakeFailure errs) ->
              do unload <- modifyMVar objMap $ \om ->
