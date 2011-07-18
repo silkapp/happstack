@@ -8,7 +8,7 @@ module Happstack.Plugins.Plugins
     ) where
 
 import Control.Applicative        ((<$>))
-import Data.IORef                 (IORef, atomicModifyIORef, readIORef)
+import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_)
 import Data.List                  (nub)
 import Data.Maybe                 (mapMaybe)
 import qualified Data.Map         as Map
@@ -18,6 +18,7 @@ import System.FilePath            (addExtension, dropExtension)
 import System.Plugins.Load        (Module, Symbol, LoadStatus(..), getImports, load, unloadAll)
 import System.Plugins.Make        (Errors, MakeStatus(..), MakeCode(..), makeAll)
 import System.INotify             (INotify, WatchDescriptor, Event(..), EventVariety(..), addWatch, removeWatch)
+import System.FilePath            (splitFileName)
 import Unsafe.Coerce              (unsafeCoerce)
 
 -- A very unsafe version of Data.Dynamic
@@ -30,10 +31,18 @@ toSym = unsafeCoerce
 fromSym :: Sym -> a
 fromSym = unsafeCoerce
 
-newtype PluginHandle = PluginHandle (INotify, IORef (Map FilePath ([WatchDescriptor], [FilePath], Maybe Errors, Map Symbol (FilePath -> IO (Either Errors (Module, Sym)), Either Errors (Module, Sym)))))
+-- PluginHandle (iNotify, map of watched files)
+--  The map of watched files contains:
+--   ( WatchDescriptors of the file and its dependencies
+--   , dependencies of the file 
+--   , errors when compiling the file if any
+--   , map of symbols defined in the file - this map contains:
+--        ( a function which reloads the symbol
+--        , the state of the symbol (probably the last call to the function in the first component)
+--        )
+--  )
+newtype PluginHandle = PluginHandle (INotify, MVar (Map FilePath ([WatchDescriptor], [FilePath], Maybe Errors, Map Symbol (FilePath -> IO (Either Errors (Module, Sym)), Either Errors (Module, Sym)))))
 
-atomicModifyIORef' :: IORef a -> (a -> a) -> IO ()
-atomicModifyIORef' ref fn = atomicModifyIORef ref (\val -> (fn val, ()))
 
 funcTH :: PluginHandle -> Name -> IO (Either Errors a)
 funcTH objMap name = 
@@ -59,7 +68,7 @@ nameToFileSym n = error $ "nameToFileSym failed because Name was not the right k
 
 func :: PluginHandle -> FilePath -> Symbol -> IO (Either Errors a)
 func ph@(PluginHandle (_inotify, objMap)) fp sym =
-    do om <- readIORef objMap
+    do om <- readMVar objMap
        case Map.lookup fp om of
          Nothing -> 
              do addSymbol ph fp sym
@@ -79,24 +88,25 @@ rebuild :: PluginHandle   -- ^ list of currently loaded modules/symbols
         -> FilePath -- ^ source file to compile
         -> Bool
         -> IO ()
-rebuild (PluginHandle (inotify, objMap)) fp forceReload =
+rebuild p@(PluginHandle (inotify, objMap)) fp forceReload =
     do putStrLn ("Rebuilding " ++ fp)
        makeStatus <- makeAll fp [] -- FIXME: allow user to specify additional flags, such as -O2
        case makeStatus of
          (MakeFailure errs) ->
-             do unload <- atomicModifyIORef objMap $ \om ->
+             do unload <- modifyMVar objMap $ \om ->
                            case Map.lookup fp om of
-                             Nothing -> (Map.insert fp ([], [], Just errs, Map.empty) om, [])
+                             Nothing -> do wds <- observeFiles p fp []
+                                           return (Map.insert fp (wds, [], Just errs, Map.empty) om, [])
                              (Just (wds, deps, _, symbols)) ->
                                  let symbols' = Map.map (\(loader,_) -> (loader, Left errs)) symbols -- propogate error to all symbols
-                                 in (Map.insert fp (wds, deps, Just errs, symbols') om, unloadList symbols)
+                                 in return (Map.insert fp (wds, deps, Just errs, symbols') om, unloadList symbols)
                 mapM_ unloadAll unload 
                 putStrLn $ unlines errs
          (MakeSuccess NotReq _objFilePath) | not forceReload -> 
                                                do putStrLn "skipped reload."
                                                   return ()
          (MakeSuccess _makeCode objFilePath) -> 
-             do om <- readIORef objMap
+             do om <- readMVar objMap
                 case Map.lookup fp om of
                   Nothing -> return ()
                   (Just (oldWds, _, _, symbols)) ->
@@ -104,12 +114,8 @@ rebuild (PluginHandle (inotify, objMap)) fp forceReload =
                          mapM_ (removeWatch inotify) oldWds
                          res <- mapM (load' objFilePath) (Map.assocs symbols)
                          imports <- map (\bn -> addExtension bn ".hs") <$> getImports (dropExtension objFilePath)
-                         wds <- mapM (\depFp -> putStrLn ("Adding watch for: " ++ depFp) >> addWatch inotify [Modify, Move, Delete] depFp 
-                                                (\e -> do putStrLn ("Got event for " ++ depFp ++ ": " ++ show e)
-                                                          case e of
-                                                            Ignored -> return ()
-                                                            _ -> rebuild (PluginHandle (inotify, objMap)) fp False)) (fp:imports)
-                         atomicModifyIORef' objMap $ Map.insert fp (wds, [], Nothing, Map.fromList res)
+                         wds <- observeFiles p fp imports
+                         modifyMVar_ objMap $ return . Map.insert fp (wds, [], Nothing, Map.fromList res)
     where
       unloadList symbols =
           nub $ mapMaybe (\(_, eSym) ->
@@ -127,8 +133,24 @@ rebuild (PluginHandle (inotify, objMap)) fp forceReload =
                (Right _) -> return ()
              return (symbol, (reloader, r))
 
+
+observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [WatchDescriptor]
+observeFiles p@(PluginHandle (inotify,_objMap)) fp imports = 
+        mapM (\depFp -> do putStrLn ("Adding watch for: " ++ depFp)
+                           let (d,f) = splitFileName depFp
+                           addWatch inotify [Modify, Move, Delete] d $ \e ->
+                                                do putStrLn ("Got event for " ++ depFp ++ ": " ++ show e)
+                                                   case e of
+                                                     Ignored -> return ()
+                                                     Deleted { filePath = f' } | f==f' -> rebuild p fp False
+                                                     MovedIn { filePath = f' } | f==f' -> rebuild p fp False
+                                                     Modified { maybeFilePath = Just f' } | f==f' -> rebuild p fp False
+                                                     _ -> return ()
+             ) (fp:imports)
+                                   
+
 addSymbol :: PluginHandle -> FilePath -> Symbol -> IO ()
-addSymbol (PluginHandle (_inotify, objMap)) sourceFP sym =
+addSymbol p@(PluginHandle (_inotify, objMap)) sourceFP sym =
     do let reloader obj = 
                do putStrLn $ "loading " ++ sym ++ " from " ++ sourceFP
                   ldStatus <- load obj ["."] [] sym
@@ -140,12 +162,13 @@ addSymbol (PluginHandle (_inotify, objMap)) sourceFP sym =
                         do putStrLn "Failed."
                            return (Left errs)
            symVal       = (reloader, Left ["Not loaded yet.."])
-       atomicModifyIORef' objMap $ \om ->
+       modifyMVar_ objMap $ \om ->
            case Map.lookup sourceFP om of
-             Nothing -> Map.insert sourceFP ([], [], Nothing, Map.singleton sym symVal) om
+             Nothing -> do wds <- observeFiles p sourceFP []
+                           return$ Map.insert sourceFP (wds, [], Nothing, Map.singleton sym symVal) om
              (Just (wds, deps, errs, symbols)) ->
                  let symbols' = Map.insert sym symVal symbols
-                 in Map.insert sourceFP (wds, deps, errs, symbols') om
+                 in return$ Map.insert sourceFP (wds, deps, errs, symbols') om
                           
        return ()
 

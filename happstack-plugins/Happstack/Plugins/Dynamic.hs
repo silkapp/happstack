@@ -3,7 +3,7 @@ module Happstack.Plugins.Dynamic
     , initPlugins
     ) where
 
-import Data.IORef                (newIORef)
+import Control.Concurrent.MVar                (newMVar)
 import qualified Data.Map        as Map
 import Happstack.Plugins.Plugins (PluginHandle(..))
 import System.INotify            (initINotify)
@@ -12,5 +12,5 @@ import System.INotify            (initINotify)
 initPlugins :: IO PluginHandle
 initPlugins =
     do inotify <- initINotify
-       objMap <- newIORef Map.empty
+       objMap <- newMVar Map.empty
        return (PluginHandle (inotify, objMap))
