@@ -66,7 +66,7 @@ Library
                        mtl >= 1.1 && < 2.1,
                        old-time,
                        random,
-                       stm,
+                       stm >= 2.1.2.2,
                        template-haskell
 
   if flag(replication)

@@ -76,7 +76,7 @@ class CatchEv m where
 #if __GLASGOW_HASKELL__ < 610
     catchEv :: Ev m a -> (Exception -> a) -> Ev m a
 #else
-    catchEv :: Ev m a -> (SomeException -> a) -> Ev m a
+    catchEv :: Exception e => Ev m a -> (e -> a) -> Ev m a
 #endif
 instance CatchEv (ReaderT st STM) where
     catchEv (Ev cmd) fun = Ev $ \s -> ReaderT $ \r -> runReaderT (cmd s) r `catchSTM` (\a -> return (fun a))
