@@ -27,7 +27,7 @@ Library
   Build-depends:       base >= 3 && <5,
                        bytestring,
                        containers,
-                       happstack-server >= 6.0 && < 6.2,
+                       happstack-server >= 6.0 && < 6.3,
                        hamlet >= 0.8 && <0.9,
                        text
   
