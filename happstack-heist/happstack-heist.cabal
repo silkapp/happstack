@@ -1,5 +1,5 @@
 Name:                happstack-heist
-Version:             6.0.2
+Version:             6.0.3
 Synopsis:            Support for using Heist templates in Happstack
 Description:         Happstack is a web application framework. Heist is an XML templating solution. This package makes it easy to use Heist templates with Happstack.
 Homepage:            http://www.happstack.com/
