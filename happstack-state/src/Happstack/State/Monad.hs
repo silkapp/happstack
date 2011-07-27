@@ -72,11 +72,26 @@ putState = put
 liftSTM :: STM a -> AnyEv a
 liftSTM = unsafeSTMToEv
 
+{-
+In stm >= 2.2.0.1 catchSTM always has the type:
+
+catchSTM :: Exception e => STM a -> (e -> STM a) -> STM a
+
+In earlier versions of stm the type of catchSTM depends on what is exported by GHC.Conc.catchSTM from base.
+-}
 class CatchEv m where
-#if __GLASGOW_HASKELL__ < 610
-    catchEv :: Ev m a -> (Exception -> a) -> Ev m a
+#if (MIN_VERSION_stm(2,2,0))
+    catchEv :: (Exception e) => Ev m a -> (e -> a) -> Ev m a
 #else
-    catchEv :: Exception e => Ev m a -> (e -> a) -> Ev m a
+#if (MIN_VERSION_base(4,3,0))
+    catchEv :: (Exception e) => Ev m a -> (e -> a) -> Ev m a
+#else
+#if (MIN_VERSION_base(4,0,0))
+    catchEv :: Ev m a -> (SomeException -> a) -> Ev m a
+#else
+    catchEv :: Ev m a -> (Exception -> a) -> Ev m a
+#endif
+#endif
 #endif
 instance CatchEv (ReaderT st STM) where
     catchEv (Ev cmd) fun = Ev $ \s -> ReaderT $ \r -> runReaderT (cmd s) r `catchSTM` (\a -> return (fun a))
