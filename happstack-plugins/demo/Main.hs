@@ -8,6 +8,7 @@ import Happstack.Server.Plugins.Dynamic
 #else
 import Happstack.Server.Plugins.Static
 #endif
+import Types
 
 import HomePage
 
@@ -18,6 +19,6 @@ main =
 
 pages :: PluginHandle -> ServerPart Response
 pages ph =
-    msum [ $(withServerPart 'helloPage) ph $ \helloPage ->
-               (helloPage "world")
+    msum [ $(withServerPart 'greetingPage) ph $ \greetingPage ->
+               (greetingPage (Greeting "hello") "world")
          ]

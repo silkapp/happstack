@@ -1,6 +1,8 @@
 module HomePage where
 
 import Happstack.Server
+import Types
 
-helloPage :: String -> ServerPart Response
-helloPage noun = ok (toResponse $ "hello, " ++ noun)
+greetingPage :: Greeting -> String -> ServerPart Response
+greetingPage (Greeting greeting) noun 
+    = ok (toResponse $ greeting ++ ", " ++ noun)
