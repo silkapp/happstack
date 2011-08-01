@@ -5,10 +5,11 @@ module Happstack.Plugins.Plugins
     , funcTH
     , withIO
     , PluginHandle(..)
+    , initPersistentINotify
     ) where
 
 import Control.Applicative        ((<$>))
-import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_)
+import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_,newMVar)
 import Data.List                  (nub)
 import Data.Maybe                 (mapMaybe)
 import qualified Data.Map         as Map
@@ -17,7 +18,7 @@ import Language.Haskell.TH.Syntax (Name(Name),NameFlavour(NameG), occString, mod
 import System.FilePath            (addExtension, dropExtension)
 import System.Plugins.Load        (Module, Symbol, LoadStatus(..), getImports, load, unloadAll)
 import System.Plugins.Make        (Errors, MakeStatus(..), MakeCode(..), makeAll)
-import System.INotify             (INotify, WatchDescriptor, Event(..), EventVariety(..), addWatch, removeWatch)
+import System.INotify             (INotify, WatchDescriptor, Event(..), EventVariety(..), addWatch, removeWatch, initINotify)
 import System.FilePath            (splitFileName)
 import Unsafe.Coerce              (unsafeCoerce)
 
@@ -31,17 +32,19 @@ toSym = unsafeCoerce
 fromSym :: Sym -> a
 fromSym = unsafeCoerce
 
--- PluginHandle (iNotify, map of watched files)
---  The map of watched files contains:
---   ( WatchDescriptors of the file and its dependencies
---   , dependencies of the file 
---   , errors when compiling the file if any
---   , map of symbols defined in the file - this map contains:
---        ( a function which reloads the symbol
---        , the state of the symbol (probably the last call to the function in the first component)
---        )
---  )
-newtype PluginHandle = PluginHandle (INotify, MVar (Map FilePath ([WatchDescriptor], [FilePath], Maybe Errors, Map Symbol (FilePath -> IO (Either Errors (Module, Sym)), Either Errors (Module, Sym)))))
+newtype PluginHandle = PluginHandle 
+   ( PersistentINotify                              -- Inotify handle
+   , MVar
+       ( Map FilePath                               -- source file being observed
+             ( [WatchDescriptorP]                    -- watch descriptor of the source file and its dependecies
+             , [FilePath]                           -- depedencies of the source file
+             , Maybe Errors                         -- errors when compiling the file if any
+             , Map Symbol                           -- symbol defined in the source file
+                   (FilePath -> IO (Either Errors (Module, Sym)) -- function for reloading the symbol
+                   , Either Errors (Module, Sym))   -- the state of the symbol (probably the result of the last call to the function in the first component)
+             )
+       )
+   )
 
 
 funcTH :: PluginHandle -> Name -> IO (Either Errors a)
@@ -93,7 +96,7 @@ rebuild :: PluginHandle   -- ^ list of currently loaded modules/symbols
         -> FilePath -- ^ source file to compile
         -> Bool
         -> IO ()
-rebuild p@(PluginHandle (inotify, objMap)) fp forceReload =
+rebuild p@(PluginHandle (_inotify, objMap)) fp forceReload =
     do putStrLn ("Rebuilding " ++ fp)
        makeStatus <- makeAll fp ["-odir",".","-hidir",".","-o",replaceSuffix fp "o"] -- FIXME: allow user to specify additional flags, such as -O2
        case makeStatus of
@@ -116,7 +119,7 @@ rebuild p@(PluginHandle (inotify, objMap)) fp forceReload =
                   Nothing -> return ()
                   (Just (oldWds, _, _, symbols)) ->
                       do mapM_ unloadAll (unloadList symbols)
-                         mapM_ (removeWatch inotify) oldWds
+                         mapM_ removeWatchP oldWds
                          res <- mapM (load' objFilePath) (Map.assocs symbols)
                          imports <- map (\bn -> addExtension bn ".hs") <$> getImports (dropExtension objFilePath)
                          wds <- observeFiles p fp imports
@@ -139,18 +142,11 @@ rebuild p@(PluginHandle (inotify, objMap)) fp forceReload =
              return (symbol, (reloader, r))
 
 
-observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [WatchDescriptor]
+observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [WatchDescriptorP]
 observeFiles p@(PluginHandle (inotify,_objMap)) fp imports = 
         mapM (\depFp -> do putStrLn ("Adding watch for: " ++ depFp)
-                           let (d,f) = splitFileName depFp
-                           addWatch inotify [Modify, Move, Delete] d $ \e ->
-                                                do putStrLn ("Got event for " ++ depFp ++ ": " ++ show e)
-                                                   case e of
-                                                     Ignored -> return ()
-                                                     Deleted { filePath = f' } | f==f' -> rebuild p fp False
-                                                     MovedIn { filePath = f' } | f==f' -> rebuild p fp False
-                                                     Modified { maybeFilePath = Just f' } | f==f' -> rebuild p fp False
-                                                     _ -> return ()
+                           let handler e = putStrLn ("Got event for " ++ depFp ++ ": " ++ show e) >> rebuild p fp False
+                           addWatchP inotify depFp handler
              ) (fp:imports)
                                    
 
@@ -178,3 +174,66 @@ addSymbol p@(PluginHandle (_inotify, objMap)) sourceFP sym =
        return ()
 
 
+-- Keeps watching a file even after it has been deleted and created again.
+--
+-- It does so by observing the folder which contains the file. When no files
+-- are observed in a given folder, the folder stops being observed.
+data PersistentINotify = PersistentINotify 
+         INotify                       -- INotify handle
+         (MVar 
+           (Map FilePath                 -- Folder containing the file
+                ( WatchDescriptor        -- Watch descriptor of the folder
+                , Map String             -- File being observed
+                      (Event -> IO ())   -- Handler to run on file events
+                )
+           )
+         )
+
+data WatchDescriptorP = WatchDescriptorP PersistentINotify FilePath
+
+initPersistentINotify :: IO PersistentINotify
+initPersistentINotify = do
+  iN <- initINotify
+  fmvar <- newMVar Map.empty
+  return$ PersistentINotify iN fmvar
+
+addWatchP :: PersistentINotify -> FilePath -> (Event -> IO ()) -> IO WatchDescriptorP
+addWatchP piN@(PersistentINotify iN fmvar) fp hdl = 
+   let (d,f) = splitFileName fp
+    in modifyMVar fmvar$ \fm ->
+   case Map.lookup d fm of
+     Nothing -> do
+         wd <- addWatch iN [Modify, Move, Delete] d $ \e -> do 
+                  case e of
+                     Ignored -> return ()
+                     Deleted { filePath = f' } -> callHandler e d f'
+                     MovedIn { filePath = f' } -> callHandler e d f'
+                     Modified { maybeFilePath = Just f' } -> callHandler e d f'
+                     _ -> return ()
+         return ( Map.insert d (wd,Map.singleton f hdl) fm 
+                , WatchDescriptorP piN fp 
+                )
+     Just (wd,ffm) -> return ( Map.insert d (wd,Map.insert f hdl ffm) fm
+                             , WatchDescriptorP piN fp
+                             )
+  where
+     callHandler e d f = do 
+       fm <- readMVar fmvar 
+       case Map.lookup d fm of 
+         Nothing -> return ()
+         Just (_,ffm) -> case Map.lookup f ffm of
+                           Nothing -> return ()
+                           Just mhdl -> mhdl e
+ 
+
+removeWatchP :: WatchDescriptorP -> IO ()
+removeWatchP (WatchDescriptorP (PersistentINotify iN fmvar) fp) =
+   let (d,f) = splitFileName fp
+    in modifyMVar_ fmvar$ \fm ->
+   case Map.lookup d fm of
+     Nothing -> error$ "removeWatchP: invalid handle for file "++fp
+     Just (wd,ffm) -> let ffm' = Map.delete f ffm
+                       in if Map.null ffm' then removeWatch iN wd >> return (Map.delete d fm)
+                            else return (Map.insert d (wd,ffm') fm)
+  
+   
