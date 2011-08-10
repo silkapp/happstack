@@ -121,7 +121,7 @@ rebuild p@(PluginHandle (_inotify, objMap)) fp forceReload =
                       do mapM_ unloadAll (unloadList symbols)
                          mapM_ removeWatchP oldWds
                          res <- mapM (load' objFilePath) (Map.assocs symbols)
-                         imports <- map (\bn -> addExtension bn ".hs") <$> getImports (dropExtension objFilePath)
+                         imports <- map (\bn -> addExtension (mnameToPath bn) ".hs") <$> getImports (dropExtension objFilePath)
                          wds <- observeFiles p fp imports
                          modifyMVar_ objMap $ return . Map.insert fp (wds, [], Nothing, Map.fromList res)
     where
@@ -141,6 +141,9 @@ rebuild p@(PluginHandle (_inotify, objMap)) fp forceReload =
                (Right _) -> return ()
              return (symbol, (reloader, r))
 
+mnameToPath :: FilePath -> FilePath
+mnameToPath = replace '.' '/' 
+ where replace x y = foldr (\a r -> if x==a then y:r else a:r) []
 
 observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [WatchDescriptorP]
 observeFiles p@(PluginHandle (inotify,_objMap)) fp imports = 
@@ -197,9 +200,15 @@ initPersistentINotify = do
   fmvar <- newMVar Map.empty
   return$ PersistentINotify iN fmvar
 
+-- Replacement for splitFileName which returns "." instead of an empty folder.
+splitFileName' :: FilePath -> (FilePath,String)
+splitFileName' fp =
+   let (d,f) = splitFileName fp
+    in (if null d then "." else d,f)
+
 addWatchP :: PersistentINotify -> FilePath -> (Event -> IO ()) -> IO WatchDescriptorP
 addWatchP piN@(PersistentINotify iN fmvar) fp hdl = 
-   let (d,f) = splitFileName fp
+   let (d,f) = splitFileName' fp
     in modifyMVar fmvar$ \fm ->
    case Map.lookup d fm of
      Nothing -> do
@@ -228,7 +237,7 @@ addWatchP piN@(PersistentINotify iN fmvar) fp hdl =
 
 removeWatchP :: WatchDescriptorP -> IO ()
 removeWatchP (WatchDescriptorP (PersistentINotify iN fmvar) fp) =
-   let (d,f) = splitFileName fp
+   let (d,f) = splitFileName' fp
     in modifyMVar_ fmvar$ \fm ->
    case Map.lookup d fm of
      Nothing -> error$ "removeWatchP: invalid handle for file "++fp
