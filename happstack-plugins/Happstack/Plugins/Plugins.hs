@@ -242,7 +242,7 @@ removeWatchP (WatchDescriptorP (PersistentINotify iN fmvar) fp) =
    case Map.lookup d fm of
      Nothing -> error$ "removeWatchP: invalid handle for file "++fp
      Just (wd,ffm) -> let ffm' = Map.delete f ffm
-                       in if Map.null ffm' then removeWatch iN wd >> return (Map.delete d fm)
+                       in if Map.null ffm' then removeWatch wd >> return (Map.delete d fm)
                             else return (Map.insert d (wd,ffm') fm)
   
    
