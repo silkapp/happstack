@@ -10,6 +10,7 @@ module Happstack.Plugins.Plugins
 
 import Control.Applicative        ((<$>))
 import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_,newMVar)
+import Control.Exception          (bracketOnError)
 import Data.List                  (nub)
 import Data.Maybe                 (mapMaybe)
 import qualified Data.Map         as Map
@@ -74,15 +75,19 @@ func ph@(PluginHandle (_inotify, objMap)) fp sym =
     do om <- readMVar objMap
        case Map.lookup fp om of
          Nothing -> 
-             do addSymbol ph fp sym
-                rebuild ph fp True
+             do bracketOnError
+                  (addSymbol ph fp sym)
+                  (const$ deleteSymbol ph fp sym)
+                  (const$ rebuild ph fp True)
                 func ph fp sym
          (Just (_, _, Just errs, _)) -> return $ Left errs
          (Just (_, _, Nothing, symbols)) ->
              case Map.lookup sym symbols of
                Nothing ->
-                   do addSymbol ph fp sym
-                      rebuild ph fp True
+                   do bracketOnError
+                        (addSymbol ph fp sym)
+                        (const$ deleteSymbol ph fp sym)
+                        (const$ rebuild ph fp True)
                       func ph fp sym
                (Just (_, Left errs)) -> return $ Left errs
                (Just (_, Right (_, dynSym))) -> return (Right $ fromSym dynSym)
@@ -175,6 +180,15 @@ addSymbol p@(PluginHandle (_inotify, objMap)) sourceFP sym =
                  in return$ Map.insert sourceFP (wds, deps, errs, symbols') om
                           
        return ()
+
+deleteSymbol :: PluginHandle -> FilePath -> Symbol -> IO ()
+deleteSymbol (PluginHandle (_inotify, objMap)) sourceFP sym =
+       modifyMVar_ objMap $ \om ->
+           case Map.lookup sourceFP om of
+             Nothing -> return om
+             (Just (wds, deps, errs, symbols)) ->
+                 let symbols' = Map.delete sym symbols
+                 in return$ Map.insert sourceFP (wds, deps, errs, symbols') om
 
 
 -- Keeps watching a file even after it has been deleted and created again.
