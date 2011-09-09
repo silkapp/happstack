@@ -5,7 +5,7 @@ module Happstack.Server.Hamlet
     where
 
 import Data.Text         (Text)
-import Text.Hamlet       (Hamlet)
+import Text.Hamlet       (HtmlUrl)
 import Happstack.Server  (Response, toResponse)
 
 -- |turn a 'Hamlet' template into a Happstack 'Response'
@@ -16,7 +16,7 @@ import Happstack.Server  (Response, toResponse)
 --
 -- You probably do not need to use this library at all these days.
 hamletToResponse :: (url -> [(Text, Text)] -> Text) -- ^ function to 'url' values in the template into their 'String' representation
-                 -> Hamlet url  -- ^ a 'Hamlet' template
+                 -> HtmlUrl url  -- ^ a 'Hamlet' template
                  -> Response
 hamletToResponse showFn hamlet = 
     toResponse $ hamlet showFn
