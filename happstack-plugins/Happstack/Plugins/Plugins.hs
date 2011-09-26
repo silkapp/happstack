@@ -5,11 +5,10 @@ module Happstack.Plugins.Plugins
     , funcTH
     , withIO
     , PluginHandle(..)
-    , initPersistentINotify
     ) where
 
 import Control.Applicative        ((<$>))
-import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_,newMVar)
+import Control.Concurrent.MVar    (MVar,readMVar,modifyMVar,modifyMVar_)
 import Control.Exception          (bracketOnError)
 import Data.List                  (nub)
 import Data.Maybe                 (mapMaybe)
@@ -19,9 +18,9 @@ import Language.Haskell.TH.Syntax (Name(Name),NameFlavour(NameG), occString, mod
 import System.FilePath            (addExtension, dropExtension)
 import System.Plugins.Load        (Module, Symbol, LoadStatus(..), getImports, load, unloadAll)
 import System.Plugins.Make        (Errors, MakeStatus(..), MakeCode(..), makeAll)
-import System.INotify             (INotify, WatchDescriptor, Event(..), EventVariety(..), addWatch, removeWatch, initINotify)
-import System.FilePath            (splitFileName)
 import Unsafe.Coerce              (unsafeCoerce)
+
+import Happstack.Plugins.FileSystemWatcher
 
 -- A very unsafe version of Data.Dynamic
 
@@ -34,10 +33,10 @@ fromSym :: Sym -> a
 fromSym = unsafeCoerce
 
 newtype PluginHandle = PluginHandle 
-   ( PersistentINotify                              -- Inotify handle
+   ( FSWatcher                                      -- Inotify handle
    , MVar
        ( Map FilePath                               -- source file being observed
-             ( [WatchDescriptorP]                    -- watch descriptor of the source file and its dependecies
+             ( [FSWatchDescriptor]                  -- watch descriptor of the source file and its dependecies
              , [FilePath]                           -- depedencies of the source file
              , Maybe Errors                         -- errors when compiling the file if any
              , Map Symbol                           -- symbol defined in the source file
@@ -124,7 +123,7 @@ rebuild p@(PluginHandle (_inotify, objMap)) fp forceReload =
                   Nothing -> return ()
                   (Just (oldWds, _, _, symbols)) ->
                       do mapM_ unloadAll (unloadList symbols)
-                         mapM_ removeWatchP oldWds
+                         mapM_ removeWatch oldWds
                          res <- mapM (load' objFilePath) (Map.assocs symbols)
                          imports <- map (\bn -> addExtension (mnameToPath bn) ".hs") <$> getImports (dropExtension objFilePath)
                          wds <- observeFiles p fp imports
@@ -150,11 +149,11 @@ mnameToPath :: FilePath -> FilePath
 mnameToPath = replace '.' '/' 
  where replace x y = foldr (\a r -> if x==a then y:r else a:r) []
 
-observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [WatchDescriptorP]
+observeFiles :: PluginHandle -> FilePath -> [FilePath] -> IO [FSWatchDescriptor]
 observeFiles p@(PluginHandle (inotify,_objMap)) fp imports = 
         mapM (\depFp -> do putStrLn ("Adding watch for: " ++ depFp)
-                           let handler e = putStrLn ("Got event for " ++ depFp ++ ": " ++ show e) >> rebuild p fp False
-                           addWatchP inotify depFp handler
+                           let handler = putStrLn ("Got event for " ++ depFp) >> rebuild p fp False
+                           addWatch inotify depFp handler
              ) (fp:imports)
                                    
 
@@ -191,72 +190,4 @@ deleteSymbol (PluginHandle (_inotify, objMap)) sourceFP sym =
                  in return$ Map.insert sourceFP (wds, deps, errs, symbols') om
 
 
--- Keeps watching a file even after it has been deleted and created again.
---
--- It does so by observing the folder which contains the file. When no files
--- are observed in a given folder, the folder stops being observed.
-data PersistentINotify = PersistentINotify 
-         INotify                       -- INotify handle
-         (MVar 
-           (Map FilePath                 -- Folder containing the file
-                ( WatchDescriptor        -- Watch descriptor of the folder
-                , Map String             -- File being observed
-                      (Event -> IO ())   -- Handler to run on file events
-                )
-           )
-         )
-
-data WatchDescriptorP = WatchDescriptorP PersistentINotify FilePath
-
-initPersistentINotify :: IO PersistentINotify
-initPersistentINotify = do
-  iN <- initINotify
-  fmvar <- newMVar Map.empty
-  return$ PersistentINotify iN fmvar
-
--- Replacement for splitFileName which returns "." instead of an empty folder.
-splitFileName' :: FilePath -> (FilePath,String)
-splitFileName' fp =
-   let (d,f) = splitFileName fp
-    in (if null d then "." else d,f)
-
-addWatchP :: PersistentINotify -> FilePath -> (Event -> IO ()) -> IO WatchDescriptorP
-addWatchP piN@(PersistentINotify iN fmvar) fp hdl = 
-   let (d,f) = splitFileName' fp
-    in modifyMVar fmvar$ \fm ->
-   case Map.lookup d fm of
-     Nothing -> do
-         wd <- addWatch iN [Modify, Move, Delete] d $ \e -> do 
-                  case e of
-                     Ignored -> return ()
-                     Deleted { filePath = f' } -> callHandler e d f'
-                     MovedIn { filePath = f' } -> callHandler e d f'
-                     Modified { maybeFilePath = Just f' } -> callHandler e d f'
-                     _ -> return ()
-         return ( Map.insert d (wd,Map.singleton f hdl) fm 
-                , WatchDescriptorP piN fp 
-                )
-     Just (wd,ffm) -> return ( Map.insert d (wd,Map.insert f hdl ffm) fm
-                             , WatchDescriptorP piN fp
-                             )
-  where
-     callHandler e d f = do 
-       fm <- readMVar fmvar 
-       case Map.lookup d fm of 
-         Nothing -> return ()
-         Just (_,ffm) -> case Map.lookup f ffm of
-                           Nothing -> return ()
-                           Just mhdl -> mhdl e
- 
-
-removeWatchP :: WatchDescriptorP -> IO ()
-removeWatchP (WatchDescriptorP (PersistentINotify iN fmvar) fp) =
-   let (d,f) = splitFileName' fp
-    in modifyMVar_ fmvar$ \fm ->
-   case Map.lookup d fm of
-     Nothing -> error$ "removeWatchP: invalid handle for file "++fp
-     Just (wd,ffm) -> let ffm' = Map.delete f ffm
-                       in if Map.null ffm' then removeWatch wd >> return (Map.delete d fm)
-                            else return (Map.insert d (wd,ffm') fm)
   
-   
