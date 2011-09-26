@@ -28,6 +28,8 @@ type EpochMilli= Int64
 
 instance Typeable StdGen where typeOf _ = mkTyConApp (mkTyCon "System.Random.StdGen") []
 
+#if (MIN_VERSION_random(1,0,1))
+#else
 instance Random Word64 where
   randomR = integralRandomR
   random = randomR (minBound,maxBound)
@@ -40,7 +42,7 @@ integralRandomR :: (Integral a, RandomGen g) => (a,a) -> g -> (a,g)
 integralRandomR  (a,b) g = case randomR (fromIntegral a :: Integer,
                                          fromIntegral b :: Integer) g of
                             (x,g') -> (fromIntegral x, g')
-
+#endif
 
 data TxContext = TxContext
     { txId     :: TxId,
