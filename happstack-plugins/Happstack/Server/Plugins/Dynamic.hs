@@ -56,8 +56,10 @@ withServerPart_' :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad 
                 -> (a -> m b)   -- ^ function which uses the loaded result
                 -> m b 
 withServerPart_' name _fun ph args use =
-    do r <- liftIO $ funcTH' ph name args
-       case r of
-         (Left e)  -> escape $ internalServerError (toResponse (unlines e))
-         (Right f) -> use f
+    do (errs,ma) <- liftIO $ funcTH' ph name args
+       case errs of
+         [] -> case ma of
+                 Nothing -> escape $ internalServerError$ toResponse "Module not loaded yet."
+                 Just a  -> use a
+         _ -> escape $ internalServerError$ toResponse$ unlines errs
 
