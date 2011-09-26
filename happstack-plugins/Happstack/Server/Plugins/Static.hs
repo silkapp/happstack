@@ -4,6 +4,8 @@ module Happstack.Server.Plugins.Static
     , initPlugins
     , withServerPart
     , withServerPart_
+    , withServerPart'
+    , withServerPart_'
     ) where
 
 import Control.Monad.Trans        (MonadIO(..))
@@ -21,6 +23,9 @@ import Language.Haskell.TH        (ExpQ, Name, appE, varE)
 withServerPart :: Name -> ExpQ
 withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE name)
 
+withServerPart' :: Name -> ExpQ
+withServerPart' name = appE (appE [| withServerPart_' |] (liftName name)) (varE name)
+
 -- | a static version of 'Happstack.Server.Plugins.Dynamic.withServerPart_'
 --
 -- This function has the same signature as its dynamic sibling, but it
@@ -34,3 +39,7 @@ withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE na
 -- Use a CPP to select between the Dynamic and Static versions of this module.
 withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> (a -> m b) -> m b
 withServerPart_ _name fun _objMap use = use fun
+
+withServerPart_' :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> [String] -> (a -> m b) -> m b
+withServerPart_' _name fun _objMap _args use = use fun
+

@@ -27,6 +27,7 @@ Library
   exposed-modules:     Happstack.Plugins.Plugins
                        Happstack.Plugins.Static
                        Happstack.Plugins.Dynamic
+                       Happstack.Plugins.FileSystemWatcher
                        Happstack.Plugins.LiftName
                        Happstack.Server.Plugins.Dynamic
                        Happstack.Server.Plugins.Static
