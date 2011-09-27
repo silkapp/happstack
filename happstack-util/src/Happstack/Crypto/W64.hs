@@ -4,6 +4,7 @@ module Happstack.Crypto.W64 where
 import Happstack.Crypto.DES
 import Happstack.Crypto.SHA1
 import Data.List
+import Data.Bits
 import Numeric(readHex)
 #ifdef TEST
 import Test.QuickCheck
@@ -31,7 +32,7 @@ is4Char x = length x==4
 quadCharToW64 :: (Num b, Enum a) => [a] -> b
 quadCharToW64 = fromInteger . impl . map (fromIntegral.fromEnum)
     where impl :: [Integer] -> Integer
-          impl [a,b,c,d]=(a*2^24+b*2^16+c*2^8+d)
+          impl [a,b,c,d] = (a `shiftL` 24) + (b `shiftL` 16) + (c `shiftL` 8) + d
           impl _ = error "Argument to quadCharToW64 must be length 4"
 
 w64ToQuadChar :: (Integral a, Enum b) => a -> [b]
