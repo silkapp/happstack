@@ -13,4 +13,5 @@ cd ../happstack-wai     && cabal clean && \
 cd ../happstack-heist   && cabal clean && \
 cd ../happstack-plugins && cabal clean && \
 cd ../happstack         && cabal clean && \
+cd ../happstack-lite    && cabal clean && \
 cd .. && echo "Done"

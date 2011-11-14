@@ -7,6 +7,7 @@ cd ../ixset             && cabal sdist && cabal upload --verbose=3 --check dist/
 cd ../happstack-ixset   && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
 cd ../happstack-server  && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
 cd ../happstack         && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
+cd ../happstack-lite    && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
 cd ../happstack-hamlet  && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
 cd ../happstack-heist   && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \
 cd ../happstack-hsp     && cabal sdist && cabal upload --verbose=3 --check dist/*.tar.gz && \

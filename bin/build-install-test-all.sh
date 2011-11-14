@@ -7,6 +7,7 @@ cd ../ixset             && cabal install -f tests "$@" && \
 cd ../happstack-ixset   && cabal install -f tests "$@" && \
 cd ../happstack-server  && cabal install -f tests "$@" && \
 cd ../happstack         && cabal install -f tests "$@" && \
+cd ../happstack-lite    && cabal install -f tests "$@" && \
 cd ../happstack-hsp     && if ghc-pkg field hsp name       > /dev/null 2> /dev/null ; then cabal install -f tests "$@"  ; else echo "happstack-hsp skipped because hsp is not installed." ; fi && \
 cd ../happstack-hstringtemplate     && if ghc-pkg field HStringTemplate name       > /dev/null 2> /dev/null ; then cabal install -f tests "$@"  ; else echo "happstack-hstringtemplate skipped because HStringTemplate is not installed." ; fi && \
 cd ../happstack-hamlet  && if ghc-pkg field hamlet name    > /dev/null 2> /dev/null ; then cabal install -f tests "$@"  ; else echo "happstack-hamlet skipped because hamlet is not installed." ; fi && \
