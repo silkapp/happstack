@@ -9,7 +9,6 @@
 set -e
 
 # package list
-## required
 PACKAGES="happstack-util happstack-data happstack-state ixset happstack-ixset happstack-server happstack happstack-lite"
 ## optional
 ghc-pkg field hamlet name          && PACKAGES="$PACKAGES happstack-hamlet"
@@ -32,7 +31,8 @@ echo "Haddock all happstack packages hyperlinkining source code"
 for package in $PACKAGES
 do
  cd $package
- cabal configure --builddir $DESTDIR && cabal haddock  --builddir $DESTDIR --hyperlink-source --internal --html-location="$HTML_LOCATION\$pkg"
+ cabal configure --builddir $DESTDIR && cabal haddock --builddir $DESTDIR --hyperlink-source --internal --html-location="$HTML_LOCATION\$pkg" --haddock-options="$HADDOCKS"
+ HADDOCKS="$HADDOCKS -i$DESTDIR/doc/html/$package/$package.haddock"
  ARGS="$ARGS -i $package,$package/$package.haddock"
  cd ..
 done
