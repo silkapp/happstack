@@ -8,9 +8,9 @@ import Happstack.Server.Plugins.Dynamic
 #else
 import Happstack.Server.Plugins.Static
 #endif
-import Types
 
 import HomePage
+import Types
 
 main :: IO ()
 main =
@@ -19,6 +19,11 @@ main =
 
 pages :: PluginHandle -> ServerPart Response
 pages ph =
-    msum [ $(withServerPart 'greetingPage) ph $ \greetingPage ->
-               (greetingPage (Greeting "hello") "world")
+    msum [ $(withMonadIO 'greetingPage) ph ["-O2","-ddump-ds"] notLoadedPage $ \errs greetingPage ->
+               (greetingPage (Greeting "hello")$ unlines$ "world!":errs)
          ]
+  where 
+    notLoadedPage :: [String] -> ServerPart Response
+    notLoadedPage errs = escape$ internalServerError$ toResponse$ unlines$ 
+                       if null errs then ["Plugin not loaded yet."]
+                         else errs
