@@ -3,6 +3,9 @@ module Happstack.Plugins.Plugins
     ( rebuild
     , func
     , funcTH
+    , withIO
+    , funcTH'
+    , withIO'
     , PluginHandle
     , initPlugins
     ) where
@@ -78,10 +81,30 @@ newRecompilationState =  do
              }
  
 
-funcTH :: PluginHandle -> Name -> [String] -> IO (Errors,Maybe a)
-funcTH objMap name args = 
+funcTH :: PluginHandle -> Name -> IO (Either Errors a)
+funcTH objMap name = fmap reformatOutput$ funcTH' objMap name []
+
+funcTH' :: PluginHandle -> Name -> [String] -> IO (Errors,Maybe a)
+funcTH' objMap name args = 
     do let (fp, sym) = nameToFileSym name
-       func objMap fp sym args
+       func' objMap fp sym args
+
+reformatOutput :: (Errors,Maybe a) -> Either Errors a
+reformatOutput ([],Just a) = Right a
+reformatOutput ([],_) = Left ["Module not loaded."]
+reformatOutput (errs,_) = Left errs
+
+
+
+withIO :: PluginHandle -> Name -> (a -> IO ()) -> IO ()
+withIO objMap name use = withIO' objMap name use []
+
+withIO' :: PluginHandle -> Name -> (a -> IO ()) -> [String] -> IO ()
+withIO' objMap name use args =
+    do (errs,ma) <- funcTH' objMap name args
+       when (not$ null errs)$ putStrLn $ unlines errs
+       maybe (return ()) use ma
+
 
 
 nameToFileSym :: Name -> (FilePath, Symbol)
@@ -93,16 +116,19 @@ nameToFileSym (Name occName (NameG _ _ mn)) =
     in (fp, sym)
 nameToFileSym n = error $ "nameToFileSym failed because Name was not the right kind. " ++ show n
 
-func :: PluginHandle -> FilePath -> Symbol -> [String] -> IO (Errors,Maybe a)
-func ph fp sym args =
+func :: PluginHandle -> FilePath -> Symbol -> IO (Either Errors a)
+func ph fp sym = fmap reformatOutput$ func' ph fp sym []
+
+func' :: PluginHandle -> FilePath -> Symbol -> [String] -> IO (Errors,Maybe a)
+func' ph fp sym args =
     do om <- readMVar$ phObjMap ph
        case Map.lookup fp om of
          Nothing -> 
              do bracketOnError
                   (addSymbol ph fp sym args)
                   (const$ deleteSymbol ph fp sym)
-                  (const$ rebuild ph fp True args)
-                func ph fp sym args
+                  (const$ rebuild' ph fp True args)
+                func' ph fp sym args
          (Just (_, _, merrs, symbols, _)) ->
              case Map.lookup sym symbols of
                Nothing ->
@@ -111,8 +137,8 @@ func ph fp sym args =
                      do bracketOnError
                           (addSymbol ph fp sym args)
                           (const$ deleteSymbol ph fp sym)
-                          (const$ rebuild ph fp True args)
-                        func ph fp sym args
+                          (const$ rebuild' ph fp True args)
+                        func' ph fp sym args
                    Just errs -> 
                      return (errs,Nothing)
                Just (_, [], mm) -> 
@@ -128,17 +154,19 @@ replaceSuffix p sfx = case [ i | (i,'.') <- zip [0..] p ] of
 rebuild :: PluginHandle   -- ^ list of currently loaded modules/symbols
         -> FilePath -- ^ source file to compile
         -> Bool
-        -> [String]
         -> IO ()
-rebuild p fp forceReload args =
+rebuild p fp forceReload = rebuild' p fp forceReload []
+ 
+rebuild' :: PluginHandle -> FilePath -> Bool -> [String] -> IO ()
+rebuild' p fp forceReload args =
     do rs <- readMVar (phObjMap p) >>= maybe newRecompilationState (\(_,_,_,_,rs)->return rs) . Map.lookup fp
        bracket
          (signalRecompilationStarted rs)
-         (\compile -> when compile$ signalRecompilationFinished rs (rebuild' rs))
-         (\compile -> when compile$ rebuild' rs)
+         (\compile -> when compile$ signalRecompilationFinished rs (rebuild'' rs))
+         (\compile -> when compile$ rebuild'' rs)
   where
-    rebuild' :: RecompilationState -> IO ()
-    rebuild' rs = do
+    rebuild'' :: RecompilationState -> IO ()
+    rebuild'' rs = do
        putStrLn ("Rebuilding " ++ fp)
        makeStatus <- makeAll fp (["-odir",".","-hidir",".","-o",replaceSuffix fp "o"]++args)
        case makeStatus of
@@ -186,7 +214,7 @@ mnameToPath = replace '.' '/'
 observeFiles :: PluginHandle -> FilePath -> [FilePath] -> [String] -> RecompilationState -> IO [FSWatchDescriptor]
 observeFiles p fp imports args rs = 
         mapM (\depFp -> do putStrLn ("Adding watch for: " ++ depFp)
-                           let handler = putStrLn ("Got event for " ++ depFp) >> signalRecompilationNeeded rs (rebuild p fp False args)
+                           let handler = putStrLn ("Got event for " ++ depFp) >> signalRecompilationNeeded rs (rebuild' p fp False args)
                            addWatch (phWatcher p) depFp handler
              ) (fp:imports)
                                    

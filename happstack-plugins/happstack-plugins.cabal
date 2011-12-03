@@ -24,12 +24,7 @@ Flag tests
     Default: False
 
 Library
-  exposed-modules:     Happstack.Plugins.Plugins
-                       Happstack.Plugins.Static
-                       Happstack.Plugins.Dynamic
-                       Happstack.Plugins.FileSystemWatcher
-                       Happstack.Plugins.LiftName
-                       Happstack.Server.Plugins.Dynamic
+  exposed-modules:     Happstack.Server.Plugins.Dynamic
                        Happstack.Server.Plugins.Static
 
   build-depends:       base >= 3 && < 5,
@@ -38,10 +33,7 @@ Library
                        happstack-server >= 6.0 && < 6.3,
                        hinotify >= 0.3.2,
                        mtl,
-                       plugins >= 1.5.1.4,
+                       happstack-server>=6,
                        template-haskell
                        
-  if impl(ghc >= 6.12)
-     ghc-options:      -Wall -fno-warn-unused-do-bind
-  else
-     ghc-options:      -Wall
+  ghc-options:      -Wall

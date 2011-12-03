@@ -9,6 +9,7 @@ import Happstack.Server.Plugins.Dynamic
 import Happstack.Server.Plugins.Static
 #endif
 
+import Types
 import HomePage
 import Types
 
@@ -19,8 +20,8 @@ main =
 
 pages :: PluginHandle -> ServerPart Response
 pages ph =
-    msum [ $(withMonadIO 'greetingPage) ph ["-O2","-ddump-ds"] notLoadedPage $ \errs greetingPage ->
-               (greetingPage (Greeting "hello")$ unlines$ "world!":errs)
+    msum [ $(withServerPart 'greetingPage) ph $ \greetingPage ->
+               (greetingPage (Greeting "hello") "world")
          ]
   where 
     notLoadedPage :: [String] -> ServerPart Response

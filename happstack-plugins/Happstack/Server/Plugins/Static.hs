@@ -1,27 +1,33 @@
-{-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
+{-# LANGUAGE EmptyDataDecls, FlexibleContexts, TemplateHaskell #-}
 module Happstack.Server.Plugins.Static 
     ( PluginHandle
+    , PluginConf(..)
     , initPlugins
-    , withMonadIO
-    , withMonadIO_
+    , withServerPart
+    , withServerPart_
+    , withServerPart'
+    , withServerPart_'
     ) where
 
 import Control.Monad.Trans        (MonadIO(..))
 import Happstack.Plugins.Static   (PluginHandle, initPlugins) 
 import Happstack.Plugins.LiftName (liftName)
+import Happstack.Server           (ServerMonad, FilterMonad, WebMonad, Response)
 import Language.Haskell.TH        (ExpQ, Name, appE, varE)
 
 
 -- | A template haskell wrapper around 'withMonadIO_'.
 -- Usage:
 --
--- > $(withMonadIO 'symbol) pluginHandle ghc_args (error "symbol could not be loaded") $ \previous_errors a -> ...
+-- > $(withServerPart 'symbol) pluginHandle $ \a -> ...
 --
 withMonadIO :: Name -> ExpQ
 withMonadIO name = appE (appE [| withMonadIO_ |] (liftName name)) (varE name)
 
+withServerPart' :: Name -> ExpQ
+withServerPart' name = appE (appE [| withServerPart_' |] (liftName name)) (varE name)
 
--- | a static version of 'Happstack.Server.Plugins.Dynamic.withMonadIO_'
+-- | a static version of 'Happstack.Server.Plugins.Dynamic.withServerPart_'
 --
 -- This function has the same signature as its dynamic sibling, but it
 -- does not do any fancy dynamic loading. It simply applies the
@@ -32,16 +38,9 @@ withMonadIO name = appE (appE [| withMonadIO_ |] (liftName name)) (varE name)
 -- build.
 -- 
 -- Use a CPP to select between the Dynamic and Static versions of this module.
-withMonadIO_ :: (MonadIO m) => 
-                   Name         -- ^ name of the symbol to dynamically load
-                -> a            -- ^ the symbol (must be the function refered to by the 'Name' argument)
-                -> PluginHandle -- ^ Handle to the function reloader
-                -> [String]     -- ^ arguments for ghc
-                -> ([String] -> m b)        -- ^ function called if the symbol is not loaded ( either because the
-				                            --   last recompilation attempt failed or because it is being 
-											--   compiled right now by another thread).
-                -> ([String] -> a -> m b)   -- ^ function which uses the loaded result, receives also a 
-                                            -- list of errors in the last recompilation attempt
-                -> m b
-withMonadIO_ _name fun _ph _ghc_args _notloaded use = use [] fun
+withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> (a -> m b) -> m b
+withServerPart_ _name fun _objMap use = use fun
+
+withServerPart_' :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> [String] -> (a -> m b) -> m b
+withServerPart_' _name fun _objMap _args use = use fun
 
