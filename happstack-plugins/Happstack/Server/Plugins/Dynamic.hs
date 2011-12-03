@@ -3,37 +3,32 @@ module Happstack.Server.Plugins.Dynamic
     ( PluginHandle
     , PluginConf(..)
     , initPlugins
+    , initPluginsWithConf
+    , defaultPluginConf
     , withServerPart
     , withServerPart_
-    , withServerPart'
-    , withServerPart_'
     ) where
 
-import Control.Monad.Trans        (MonadIO(liftIO))
-import Language.Haskell.TH        (ExpQ, appE, varE)
-import Language.Haskell.TH.Syntax (Name)
-import Happstack.Plugins.Dynamic  (initPlugins)
-import Happstack.Plugins.LiftName (liftName)
-import Happstack.Plugins.Plugins  (PluginHandle, funcTH')
-import Happstack.Server           (ServerMonad, FilterMonad, WebMonad, Response, internalServerError, escape, toResponse)
+import Control.Monad.Trans          (MonadIO)
+import Language.Haskell.TH          (ExpQ, appE, varE)
+import Language.Haskell.TH.Syntax   (Name)
+import System.Plugins.Auto          ( initPlugins,initPluginsWithConf,PluginHandle,withMonadIO_
+                                    , PluginConf(..), defaultPluginConf)
+import System.Plugins.Auto.LiftName (liftName)
+import Happstack.Server             (ServerMonad, FilterMonad, WebMonad, Response, internalServerError, escape, toResponse)
 
-
--- |  Dynamically load the specified symbol pass it as an argument to
+-- |  dynamically load the specified symbol pass it as an argument to
 -- the supplied server monad function.
 --
--- This is a wrapper aronud 'withMonadIO_' which ensures the first
+-- This is a wrapper aronud 'withServerPart_' which ensures the first
 -- and second argument stay in-sync.
 -- 
 -- Usage:
 --
--- > $(withServerPart 'symbol) pluginHandle $ \a -> ...
+-- > $(withServerPart 'symbol) pluginHandle id $ \errors a -> ...
 --
 withServerPart :: Name -> ExpQ
 withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE name)
-
-withServerPart' :: Name -> ExpQ
-withServerPart' name = appE (appE [| withServerPart_' |] (liftName name)) (varE name)
-
 
 -- | dynamically load the specified symbol pass it as an argument to
 -- the supplied server monad function.
@@ -46,22 +41,13 @@ withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad R
                    Name         -- ^ name of the symbol to dynamically load
                 -> a            -- ^ the symbol (must be the function refered to by the 'Name' argument)
                 -> PluginHandle -- ^ Handle to the function reloader
-                -> (a -> m b)   -- ^ function which uses the loaded result
+                -> (PluginConf -> PluginConf)   -- ^ Modifications to the plugin configuration.
+                -> ([String] -> a -> m b)   -- ^ function which uses the loaded result, and gets a list of compilation errors if any
                 -> m b 
-withServerPart_ name fun ph use = withServerPart_' name fun ph [] use
-
-withServerPart_' :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => 
-                   Name         -- ^ name of the symbol to dynamically load
-                -> a            -- ^ the symbol (must be the function refered to by the 'Name' argument)
-                -> PluginHandle -- ^ Handle to the function reloader
-                -> [String]     -- ^ arguments for ghc
-                -> (a -> m b)   -- ^ function which uses the loaded result
-                -> m b 
-withServerPart_' name _fun ph args use =
-    do (errs,ma) <- liftIO $ funcTH' ph name args
+withServerPart_ name fun ph fconf use = withMonadIO_ name fun ph fconf notLoaded use
+ where
+   notLoaded errs = escape $ internalServerError$ toResponse$ 
        case errs of
-         [] -> case ma of
-                 Nothing -> escape $ internalServerError$ toResponse "Module not loaded yet."
-                 Just a  -> use a
-         _ -> escape $ internalServerError$ toResponse$ unlines errs
+         [] -> "Module not loaded yet."
+         _ -> unlines errs
 

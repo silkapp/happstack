@@ -3,29 +3,25 @@ module Happstack.Server.Plugins.Static
     ( PluginHandle
     , PluginConf(..)
     , initPlugins
+    , initPluginsWithConf
+    , defaultPluginConf
     , withServerPart
     , withServerPart_
-    , withServerPart'
-    , withServerPart_'
     ) where
 
-import Control.Monad.Trans        (MonadIO(..))
-import Happstack.Plugins.Static   (PluginHandle, initPlugins) 
-import Happstack.Plugins.LiftName (liftName)
-import Happstack.Server           (ServerMonad, FilterMonad, WebMonad, Response)
-import Language.Haskell.TH        (ExpQ, Name, appE, varE)
+import Control.Monad.Trans          (MonadIO)
+import Happstack.Server             (ServerMonad, FilterMonad, WebMonad, Response)
+import Language.Haskell.TH          (ExpQ, Name, appE, varE)
+import System.Plugins.Auto.LiftName
+import System.Plugins.Auto          (PluginConf(..),defaultPluginConf)
 
-
--- | A template haskell wrapper around 'withMonadIO_'.
+-- | A template haskell wrapper around 'withServerPart_'.
 -- Usage:
 --
--- > $(withServerPart 'symbol) pluginHandle $ \a -> ...
+-- > $(withServerPart 'symbol) pluginHandle id $ \errors a -> ...
 --
-withMonadIO :: Name -> ExpQ
-withMonadIO name = appE (appE [| withMonadIO_ |] (liftName name)) (varE name)
-
-withServerPart' :: Name -> ExpQ
-withServerPart' name = appE (appE [| withServerPart_' |] (liftName name)) (varE name)
+withServerPart :: Name -> ExpQ
+withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE name)
 
 -- | a static version of 'Happstack.Server.Plugins.Dynamic.withServerPart_'
 --
@@ -38,9 +34,17 @@ withServerPart' name = appE (appE [| withServerPart_' |] (liftName name)) (varE 
 -- build.
 -- 
 -- Use a CPP to select between the Dynamic and Static versions of this module.
-withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> (a -> m b) -> m b
-withServerPart_ _name fun _objMap use = use fun
+withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> (PluginConf -> PluginConf) -> ([String] -> a -> m b) -> m b
+withServerPart_ _name fun _objMap _args use = use [] fun
 
-withServerPart_' :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> [String] -> (a -> m b) -> m b
-withServerPart_' _name fun _objMap _args use = use fun
+-- | Dummy plugin handle. In a static configuration its values are not used at all.
+data PluginHandle
+
+-- | Creates a dummy plugin handle.
+initPlugins :: IO PluginHandle
+initPlugins = initPluginsWithConf undefined
+
+-- | Creates a dummy plugin handle.
+initPluginsWithConf :: PluginConf -> IO PluginHandle
+initPluginsWithConf = const$ return undefined
 

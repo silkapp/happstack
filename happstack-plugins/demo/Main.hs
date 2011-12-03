@@ -11,7 +11,6 @@ import Happstack.Server.Plugins.Static
 
 import Types
 import HomePage
-import Types
 
 main :: IO ()
 main =
@@ -20,11 +19,6 @@ main =
 
 pages :: PluginHandle -> ServerPart Response
 pages ph =
-    msum [ $(withServerPart 'greetingPage) ph $ \greetingPage ->
-               (greetingPage (Greeting "hello") "world")
+    msum [ $(withServerPart 'greetingPage) ph (\c -> c { pcWhenCompiled = \_ errs -> mapM_ putStrLn errs }) $
+             \_errs greetingPage -> (greetingPage (Greeting "hello") "world")
          ]
-  where 
-    notLoadedPage :: [String] -> ServerPart Response
-    notLoadedPage errs = escape$ internalServerError$ toResponse$ unlines$ 
-                       if null errs then ["Plugin not loaded yet."]
-                         else errs
