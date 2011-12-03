@@ -28,10 +28,7 @@ Library
                        Happstack.Server.Plugins.Static
 
   build-depends:       base >= 3 && < 5,
-                       containers,
-                       filepath,
-                       happstack-server >= 6.0 && < 6.3,
-                       hinotify >= 0.3.2,
+                       plugins-auto,
                        mtl,
                        happstack-server>=6,
                        template-haskell
