@@ -12,7 +12,7 @@ module Happstack.Server.Plugins.Static
 import Control.Monad.Trans          (MonadIO)
 import Happstack.Server             (ServerMonad, FilterMonad, WebMonad, Response)
 import Language.Haskell.TH          (ExpQ, Name, appE, varE)
-import System.Plugins.Auto.LiftName
+import Language.Haskell.TH.Lift     (lift) -- instance Lift Name
 import System.Plugins.Auto          (PluginConf(..),defaultPluginConf)
 
 -- | A template haskell wrapper around 'withServerPart_'.
@@ -21,7 +21,7 @@ import System.Plugins.Auto          (PluginConf(..),defaultPluginConf)
 -- > $(withServerPart 'symbol) pluginHandle id $ \errors a -> ...
 --
 withServerPart :: Name -> ExpQ
-withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE name)
+withServerPart name = appE (appE [| withServerPart_ |] (lift name)) (varE name)
 
 -- | a static version of 'Happstack.Server.Plugins.Dynamic.withServerPart_'
 --
@@ -34,8 +34,13 @@ withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE na
 -- build.
 -- 
 -- Use a CPP to select between the Dynamic and Static versions of this module.
-withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => Name -> a -> PluginHandle -> (PluginConf -> PluginConf) -> ([String] -> a -> m b) -> m b
-withServerPart_ _name fun _objMap _args use = use [] fun
+withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad Response m) => 
+                   Name         -- ^ name of the symbol to dynamically load
+                -> a            -- ^ the symbol (must be the function refered to by the 'Name' argument)
+                -> PluginHandle -- ^ Handle to the function reloader
+                -> ([String] -> a -> m b)   -- ^ function which uses the loaded result, and gets a list of compilation errors if any
+                -> m b 
+withServerPart_ _name fun _objMap use = use [] fun
 
 -- | Dummy plugin handle. In a static configuration its values are not used at all.
 data PluginHandle

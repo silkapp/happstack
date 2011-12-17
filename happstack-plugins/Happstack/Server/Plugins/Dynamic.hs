@@ -10,11 +10,10 @@ module Happstack.Server.Plugins.Dynamic
     ) where
 
 import Control.Monad.Trans          (MonadIO)
-import Language.Haskell.TH          (ExpQ, appE, varE)
-import Language.Haskell.TH.Syntax   (Name)
+import Language.Haskell.TH          (ExpQ, Name, appE, varE)
+import Language.Haskell.TH.Lift     (lift)
 import System.Plugins.Auto          ( initPlugins,initPluginsWithConf,PluginHandle,withMonadIO_
                                     , PluginConf(..), defaultPluginConf)
-import System.Plugins.Auto.LiftName (liftName)
 import Happstack.Server             (ServerMonad, FilterMonad, WebMonad, Response, internalServerError, escape, toResponse)
 
 -- |  dynamically load the specified symbol pass it as an argument to
@@ -28,7 +27,7 @@ import Happstack.Server             (ServerMonad, FilterMonad, WebMonad, Respons
 -- > $(withServerPart 'symbol) pluginHandle id $ \errors a -> ...
 --
 withServerPart :: Name -> ExpQ
-withServerPart name = appE (appE [| withServerPart_ |] (liftName name)) (varE name)
+withServerPart name = appE (appE [| withServerPart_ |] (lift name)) (varE name)
 
 -- | dynamically load the specified symbol pass it as an argument to
 -- the supplied server monad function.
@@ -41,10 +40,9 @@ withServerPart_ :: (MonadIO m, ServerMonad m, FilterMonad Response m, WebMonad R
                    Name         -- ^ name of the symbol to dynamically load
                 -> a            -- ^ the symbol (must be the function refered to by the 'Name' argument)
                 -> PluginHandle -- ^ Handle to the function reloader
-                -> (PluginConf -> PluginConf)   -- ^ Modifications to the plugin configuration.
                 -> ([String] -> a -> m b)   -- ^ function which uses the loaded result, and gets a list of compilation errors if any
                 -> m b 
-withServerPart_ name fun ph fconf use = withMonadIO_ name fun ph fconf notLoaded use
+withServerPart_ name fun ph use = withMonadIO_ name fun ph notLoaded use
  where
    notLoaded errs = escape $ internalServerError$ toResponse$ 
        case errs of
