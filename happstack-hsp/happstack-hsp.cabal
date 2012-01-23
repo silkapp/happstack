@@ -1,5 +1,5 @@
 Name:                happstack-hsp
-Version:             6.2.5
+Version:             6.2.6
 Synopsis:            Support for using HSP templates in Happstack
 Description:         Happstack is a web application framework. HSP is an XML templating solution. This package makes it easy to use HSP templates with Happstack.
 Homepage:            http://www.happstack.com/
@@ -30,7 +30,7 @@ Library
 
   Build-depends:       base             >= 3.0 && < 5.0,
                        bytestring       == 0.9.*,
-                       happstack-server >= 6.0 && < 6.5,
+                       happstack-server >= 6.0 && < 6.6,
                        harp             >= 0.4 && < 0.5,
                        hsx              >= 0.9.1 && < 0.10,
                        hsp              >= 0.6.1 && < 0.7,
