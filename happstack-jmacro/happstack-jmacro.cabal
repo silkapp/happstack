@@ -1,5 +1,5 @@
 Name:                happstack-jmacro
-Version:             6.0.0
+Version:             6.0.1
 Synopsis:            Support for using JMacro with Happstack
 Homepage:            http://www.happstack.com/
 License:             BSD3
@@ -10,14 +10,14 @@ Maintainer:          jeremy@n-heptane.com
 Stability:           Provisional
 Category:            Web
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
 
 
 Library
   Exposed-modules:     Happstack.Server.JMacro
   Build-depends:
-     base >4 && <5,
-     bytestring,
-     jmacro,
-     happstack-server,
-     utf8-string
+     base             >4 && <5,
+     bytestring       == 0.9.*,
+     jmacro           == 0.5.*,
+     happstack-server >= 6.4 && <6.6,
+     utf8-string      == 0.3.*
