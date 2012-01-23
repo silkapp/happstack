@@ -17,7 +17,8 @@ import Happstack.Server
   , Response
   )
 import HSP
-import HSP.ServerPartT ()
+import HSP.ServerPartT      () -- import 'instance XMLGen ServerPartT'
+import Happstack.Server.HSX () -- import 'instance Happstack XMLGenT'
 import qualified HSX.XMLGenerator as HSX
 
 instance ToMessage XML where
