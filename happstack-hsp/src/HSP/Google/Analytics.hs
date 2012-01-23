@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable, FlexibleContexts, TypeFamilies #-}
 {-# OPTIONS_GHC -F -pgmFtrhsx #-}
 module HSP.Google.Analytics 
     ( UACCT(..)
@@ -8,6 +8,7 @@ module HSP.Google.Analytics
 
 import Data.Generics (Data, Typeable)
 import HSP
+import qualified HSX.XMLGenerator as HSX
 import Prelude hiding (head)
 
 newtype UACCT = UACCT String -- ^ The UACCT provided to you by Google
@@ -34,7 +35,8 @@ analytics (UACCT uacct) =
 addAnalytics :: ( AppendChild m XML
                 , EmbedAsChild m XML
                 , EmbedAsAttr m Attribute
-                , XMLGenerator m) 
+                , XMLGenerator m
+                , HSX.XML m ~ XML) 
              => UACCT 
              -> XMLGenT m XML 
              -> GenXML m
@@ -45,7 +47,7 @@ addAnalytics uacct pg =
          <html hattrs><[ head, body ]></html> ->
              <html hattrs>
                 <% head %>
-                <% body <: a %>
+                <% body <: (a :: [XML]) %>
              </html>
          o -> error ("Failed to add analytics." ++ show o)
 

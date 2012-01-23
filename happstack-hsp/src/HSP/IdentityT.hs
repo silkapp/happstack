@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans -F -pgmF trhsx #-}
 module HSP.IdentityT 
     ( evalIdentityT
@@ -35,9 +35,15 @@ instance MonadTrans IdentityT where
 instance (Monad m, Functor m) => HSX.XMLGenerator (IdentityT m)
 
 instance (Functor m, Monad m) => HSX.XMLGen (IdentityT m) where
+#if __GLASGOW_HASKELL__ < 702
     type HSX.XML (IdentityT m) = XML
     newtype HSX.Child (IdentityT m) = IChild { unIChild :: XML }
     newtype HSX.Attribute (IdentityT m) = IAttr { unIAttr :: Attribute }
+#else
+    type XML (IdentityT m) = XML
+    newtype Child (IdentityT m) = IChild { unIChild :: XML }
+    newtype Attribute (IdentityT m) = IAttr { unIAttr :: Attribute }
+#endif
     genElement n attrs children = HSX.XMLGenT $ 
                                   do attrs'    <- HSX.unXMLGenT (fmap (map unIAttr . concat) (sequence attrs))
                                      children' <- HSX.unXMLGenT (fmap (map unIChild . concat) (sequence children))

@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module HSP.WebT where
 
@@ -10,9 +10,15 @@ import qualified HSX.XMLGenerator as HSX
 import Happstack.Server.Internal.Monads (WebT)
 
 instance (Monad m) => HSX.XMLGen (WebT m) where
+#if __GLASGOW_HASKELL__ < 702
     type HSX.XML (WebT m) = XML
     newtype HSX.Child (WebT m) = WChild { unWChild :: XML }
     newtype HSX.Attribute (WebT m) = WAttr { unWAttr :: Attribute }
+#else
+    type XML (WebT m) = XML
+    newtype Child (WebT m) = WChild { unWChild :: XML }
+    newtype Attribute (WebT m) = WAttr { unWAttr :: Attribute }
+#endif
     genElement n attrs children = 
         do attribs <- map unWAttr `liftM` asAttr attrs
            childer <- (flattenCDATA . map unWChild) `liftM` asChild children

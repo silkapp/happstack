@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module HSP.Identity 
     ( Ident
@@ -14,9 +14,15 @@ import qualified HSX.XMLGenerator as HSX
 instance HSX.XMLGenerator Identity
 
 instance HSX.XMLGen Identity where
+#if __GLASGOW_HASKELL__ < 702
     type HSX.XML Identity = XML
     newtype HSX.Child Identity = IChild { unIChild :: XML }
     newtype HSX.Attribute Identity = IAttr { unIAttr :: Attribute }
+#else
+    type XML Identity = XML
+    newtype Child Identity = IChild { unIChild :: XML }
+    newtype Attribute Identity = IAttr { unIAttr :: Attribute }
+#endif
     genElement n attrs children = HSX.XMLGenT $ Identity (Element
                                                           (toName n)
                                                           (map unIAttr $ concatMap runIdentity $ map HSX.unXMLGenT attrs)

@@ -1,5 +1,5 @@
 -- |This module provides, @instance 'XMLGenerator' ('ServerPartT' m)@
-{-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module HSP.ServerPartT () where
 
@@ -11,9 +11,15 @@ import qualified HSX.XMLGenerator as HSX
 import Happstack.Server (ServerPartT)
 
 instance (Monad m) => HSX.XMLGen (ServerPartT m) where
+#if __GLASGOW_HASKELL__ < 702
     type HSX.XML (ServerPartT m) = XML
     newtype HSX.Child (ServerPartT m) = SChild { unSChild :: XML }
     newtype HSX.Attribute (ServerPartT m) = SAttr { unSAttr :: Attribute }
+#else
+    type XML (ServerPartT m) = XML
+    newtype Child (ServerPartT m) = SChild { unSChild :: XML }
+    newtype Attribute (ServerPartT m) = SAttr { unSAttr :: Attribute }
+#endif
     genElement n attrs children = 
         do attribs <- map unSAttr `liftM` asAttr attrs
            childer <- (flattenCDATA . map unSChild) `liftM`asChild children
