@@ -43,7 +43,7 @@ defaultTemplate title headers body =
     unXMLGenT $
     <html>
      <head>
-      <title><% title %> </title>
+      <title><% title %></title>
       <% headers %>
      </head>
      <body>

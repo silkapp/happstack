@@ -161,5 +161,5 @@ wm16 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 >     where getn n = chr (fromIntegral (x0 `shiftR` (n*8) .&. 0xFF))
 
 > rotL :: Word32 -> Rotation -> Word32
-> rotL a s = shiftL a s .|. shiftL a (s-32)
+> rotL a s = shiftL a s .|. shiftR a (32 - s)
 
